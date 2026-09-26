@@ -1,6 +1,7 @@
 /* ============================================================
    TOPICS
-   t: "a" already taught (Y1–Y3) | "b" not taught yet | "c" Danish extra
+   t: "a" external part of the Slovak maturita | "c" Danish extra
+   ids a… were taught in Y1–Y3, b… were not — the ids are kept so saved progress still matches
    src: which year covered it     pre: prerequisite ids
    ============================================================ */
 const T = [
@@ -57,56 +58,56 @@ const T = [
 {id:"a42",t:"a", area:"kps", n:"Štatistický súbor, početnosť, histogram, kruhový a stĺpcový graf", src:"Y1"},
 
 /* ---------- B · ZÁKLADY (chýba) ---------- */
-{id:"b1", t:"b", area:"zaklady", n:"Logaritmus: definícia, dekadický a prirodzený, pravidlá pre logaritmy"},
-{id:"b2", t:"b", area:"zaklady", n:"Exponenciálne rovnice a nerovnice", pre:["a24"]},
-{id:"b3", t:"b", area:"zaklady", n:"Logaritmické rovnice a nerovnice", pre:["b1"]},
-{id:"b4", t:"b", area:"zaklady", n:"Kvadratické nerovnice, súčinový a podielový tvar", pre:["a15"]},
-{id:"b5", t:"b", area:"zaklady", n:"Rovnice a nerovnice s absolútnou hodnotou", pre:["a13"]},
-{id:"b6", t:"b", area:"zaklady", n:"Viètove vzťahy a koreňoví činitelia", pre:["a15"]},
-{id:"b7", t:"b", area:"zaklady", n:"Nerovnica s dvoma neznámymi a jej obraz v rovine"},
+{id:"b1", t:"a", area:"zaklady", n:"Logaritmus: definícia, dekadický a prirodzený, pravidlá pre logaritmy"},
+{id:"b2", t:"a", area:"zaklady", n:"Exponenciálne rovnice a nerovnice", pre:["a24"]},
+{id:"b3", t:"a", area:"zaklady", n:"Logaritmické rovnice a nerovnice", pre:["b1"]},
+{id:"b4", t:"a", area:"zaklady", n:"Kvadratické nerovnice, súčinový a podielový tvar", pre:["a15"]},
+{id:"b5", t:"a", area:"zaklady", n:"Rovnice a nerovnice s absolútnou hodnotou", pre:["a13"]},
+{id:"b6", t:"a", area:"zaklady", n:"Viètove vzťahy a koreňoví činitelia", pre:["a15"]},
+{id:"b7", t:"a", area:"zaklady", n:"Nerovnica s dvoma neznámymi a jej obraz v rovine"},
 
 /* ---------- B · FUNKCIE (chýba) ---------- */
-{id:"b8", t:"b", area:"funkcie", n:"Oblúková miera a jednotková kružnica", m:"Vstupná brána do celej goniometrie."},
-{id:"b9", t:"b", area:"funkcie", n:"Goniometrické funkcie sin, cos, tg — hodnoty, grafy, perióda", pre:["b8"]},
-{id:"b10",t:"b", area:"funkcie", n:"Goniometrické identity a vzorce pre dvojnásobný uhol", pre:["b9"]},
-{id:"b11",t:"b", area:"funkcie", n:"Goniometrické rovnice a nerovnice", pre:["b9"]},
-{id:"b12",t:"b", area:"funkcie", n:"Transformácie grafov: f(x)+a, f(x+a), a·f(x), f(ax), |f(x)|", pre:["a18"]},
-{id:"b13",t:"b", area:"funkcie", n:"Logaritmická funkcia a jej graf", pre:["b1"]},
-{id:"b14",t:"b", area:"funkcie", n:"Lineárna lomená funkcia a asymptoty", pre:["a12"]},
-{id:"b15",t:"b", area:"funkcie", n:"Mnohočleny: stupeň, počet reálnych koreňov, polynomická funkcia"},
+{id:"b8", t:"a", area:"funkcie", n:"Oblúková miera a jednotková kružnica", m:"Vstupná brána do celej goniometrie."},
+{id:"b9", t:"a", area:"funkcie", n:"Goniometrické funkcie sin, cos, tg — hodnoty, grafy, perióda", pre:["b8"]},
+{id:"b10",t:"a", area:"funkcie", n:"Goniometrické identity a vzorce pre dvojnásobný uhol", pre:["b9"]},
+{id:"b11",t:"a", area:"funkcie", n:"Goniometrické rovnice a nerovnice", pre:["b9"]},
+{id:"b12",t:"a", area:"funkcie", n:"Transformácie grafov: f(x)+a, f(x+a), a·f(x), f(ax), |f(x)|", pre:["a18"]},
+{id:"b13",t:"a", area:"funkcie", n:"Logaritmická funkcia a jej graf", pre:["b1"]},
+{id:"b14",t:"a", area:"funkcie", n:"Lineárna lomená funkcia a asymptoty", pre:["a12"]},
+{id:"b15",t:"a", area:"funkcie", n:"Mnohočleny: stupeň, počet reálnych koreňov, polynomická funkcia"},
 
 /* ---------- B · PLANIMETRIA (chýba) ---------- */
-{id:"b16",t:"b", area:"planimetria", n:"Goniometria pravouhlého trojuholníka", pre:["b9"]},
-{id:"b17",t:"b", area:"planimetria", n:"Sínusová a kosínusová veta, obsah S = ½ · a · b · sin γ", pre:["b9"]},
-{id:"b18",t:"b", area:"planimetria", n:"Stredový a obvodový uhol", pre:["a34"]},
-{id:"b19",t:"b", area:"planimetria", n:"Súradnice v rovine, vzdialenosť bodov, stred úsečky, deliaci pomer"},
-{id:"b20",t:"b", area:"planimetria", n:"Vektory: súradnice, súčet, násobok, dĺžka, skalárny súčin, uhol", pre:["b19"]},
-{id:"b21",t:"b", area:"planimetria", n:"Priamka: parametrické, všeobecná a smernicová rovnica, smerový a normálový vektor", pre:["b20"]},
-{id:"b22",t:"b", area:"planimetria", n:"Vzájomná poloha priamok, priesečník, uhol dvoch priamok", pre:["b21"]},
-{id:"b23",t:"b", area:"planimetria", n:"Vzdialenosť bodu od priamky, obsah trojuholníka z vrcholov", pre:["b21"]},
-{id:"b24",t:"b", area:"planimetria", n:"Rovnica kružnice, poloha priamky a kružnice, dvoch kružníc", pre:["b21"]},
-{id:"b25",t:"b", area:"planimetria", n:"Množiny bodov danej vlastnosti a ich analytické vyjadrenie", pre:["b24"]},
-{id:"b26",t:"b", area:"planimetria", n:"Zhodné zobrazenia: osová a stredová súmernosť, posunutie, otočenie"},
-{id:"b27",t:"b", area:"planimetria", n:"Rovnoľahlosť a podobné zobrazenia", pre:["b26"]},
-{id:"b28",t:"b", area:"planimetria", n:"Konštrukčné úlohy: základné konštrukcie a počet riešení", pre:["b26"], m:"Do písomky ide počet riešení a to, že si vieš situáciu narysovať ako pomôcku — rysovacie potreby na EČ smieš mať."},
+{id:"b16",t:"a", area:"planimetria", n:"Goniometria pravouhlého trojuholníka", pre:["b9"]},
+{id:"b17",t:"a", area:"planimetria", n:"Sínusová a kosínusová veta, obsah S = ½ · a · b · sin γ", pre:["b9"]},
+{id:"b18",t:"a", area:"planimetria", n:"Stredový a obvodový uhol", pre:["a34"]},
+{id:"b19",t:"a", area:"planimetria", n:"Súradnice v rovine, vzdialenosť bodov, stred úsečky, deliaci pomer"},
+{id:"b20",t:"a", area:"planimetria", n:"Vektory: súradnice, súčet, násobok, dĺžka, skalárny súčin, uhol", pre:["b19"]},
+{id:"b21",t:"a", area:"planimetria", n:"Priamka: parametrické, všeobecná a smernicová rovnica, smerový a normálový vektor", pre:["b20"]},
+{id:"b22",t:"a", area:"planimetria", n:"Vzájomná poloha priamok, priesečník, uhol dvoch priamok", pre:["b21"]},
+{id:"b23",t:"a", area:"planimetria", n:"Vzdialenosť bodu od priamky, obsah trojuholníka z vrcholov", pre:["b21"]},
+{id:"b24",t:"a", area:"planimetria", n:"Rovnica kružnice, poloha priamky a kružnice, dvoch kružníc", pre:["b21"]},
+{id:"b25",t:"a", area:"planimetria", n:"Množiny bodov danej vlastnosti a ich analytické vyjadrenie", pre:["b24"]},
+{id:"b26",t:"a", area:"planimetria", n:"Zhodné zobrazenia: osová a stredová súmernosť, posunutie, otočenie"},
+{id:"b27",t:"a", area:"planimetria", n:"Rovnoľahlosť a podobné zobrazenia", pre:["b26"]},
+{id:"b28",t:"a", area:"planimetria", n:"Konštrukčné úlohy: základné konštrukcie a počet riešení", pre:["b26"], m:"Do písomky ide počet riešení a to, že si vieš situáciu narysovať ako pomôcku — rysovacie potreby na EČ smieš mať."},
 
 /* ---------- B · STEREOMETRIA (chýba) ---------- */
-{id:"b29",t:"b", area:"stereometria", n:"Voľné rovnobežné premietanie, pôdorys, nárys, bokorys"},
-{id:"b30",t:"b", area:"stereometria", n:"Súradnicová sústava v priestore, vzdialenosť bodov", pre:["b19"]},
-{id:"b31",t:"b", area:"stereometria", n:"Vzájomná poloha priamok a rovín, mimobežky", pre:["b29"]},
-{id:"b32",t:"b", area:"stereometria", n:"Rezy kocky a kvádra rovinou", pre:["b31"]},
-{id:"b33",t:"b", area:"stereometria", n:"Uhly v priestore: dvoch priamok, priamky a roviny, dvoch rovín", pre:["b31","b16"]},
-{id:"b34",t:"b", area:"stereometria", n:"Vzdialenosti v priestore", pre:["b31"]},
-{id:"b35",t:"b", area:"stereometria", n:"Siete telies", pre:["a36"]},
+{id:"b29",t:"a", area:"stereometria", n:"Voľné rovnobežné premietanie, pôdorys, nárys, bokorys"},
+{id:"b30",t:"a", area:"stereometria", n:"Súradnicová sústava v priestore, vzdialenosť bodov", pre:["b19"]},
+{id:"b31",t:"a", area:"stereometria", n:"Vzájomná poloha priamok a rovín, mimobežky", pre:["b29"]},
+{id:"b32",t:"a", area:"stereometria", n:"Rezy kocky a kvádra rovinou", pre:["b31"]},
+{id:"b33",t:"a", area:"stereometria", n:"Uhly v priestore: dvoch priamok, priamky a roviny, dvoch rovín", pre:["b31","b16"]},
+{id:"b34",t:"a", area:"stereometria", n:"Vzdialenosti v priestore", pre:["b31"]},
+{id:"b35",t:"a", area:"stereometria", n:"Siete telies", pre:["a36"]},
 
 /* ---------- B · KPŠ (chýba) ---------- */
-{id:"b36",t:"b", area:"kps", n:"Variácie a permutácie s opakovaním", pre:["a40"]},
-{id:"b37",t:"b", area:"kps", n:"Pascalov trojuholník a vlastnosti kombinačných čísel", pre:["a39"]},
-{id:"b38",t:"b", area:"kps", n:"Doplnková pravdepodobnosť, nezávislé javy, súčet a súčin pravdepodobností", pre:["a41"]},
-{id:"b39",t:"b", area:"kps", n:"Geometrická pravdepodobnosť", pre:["a41"]},
-{id:"b40",t:"b", area:"kps", n:"Modus, medián, stredná hodnota, aritmetický priemer", pre:["a42"]},
-{id:"b41",t:"b", area:"kps", n:"Rozptyl a smerodajná odchýlka", pre:["b40"]},
-{id:"b42",t:"b", area:"kps", n:"Triedenie, výberový a základný súbor, bernoulliovské pokusy", pre:["a42"]},
+{id:"b36",t:"a", area:"kps", n:"Variácie a permutácie s opakovaním", pre:["a40"]},
+{id:"b37",t:"a", area:"kps", n:"Pascalov trojuholník a vlastnosti kombinačných čísel", pre:["a39"]},
+{id:"b38",t:"a", area:"kps", n:"Doplnková pravdepodobnosť, nezávislé javy, súčet a súčin pravdepodobností", pre:["a41"]},
+{id:"b39",t:"a", area:"kps", n:"Geometrická pravdepodobnosť", pre:["a41"]},
+{id:"b40",t:"a", area:"kps", n:"Modus, medián, stredná hodnota, aritmetický priemer", pre:["a42"]},
+{id:"b41",t:"a", area:"kps", n:"Rozptyl a smerodajná odchýlka", pre:["b40"]},
+{id:"b42",t:"a", area:"kps", n:"Triedenie, výberový a základný súbor, bernoulliovské pokusy", pre:["a42"]},
 
 /* ---------- C · DANISH DELTA ---------- */
 {id:"c1", t:"c", area:"dkDif", n:"Limits and continuity", dk:"Grænseværdi og kontinuitet", m:"No counterpart anywhere in the Slovak requirements."},

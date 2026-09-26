@@ -10,7 +10,6 @@ function renderNext(){
   }
   const scored = pool.map(x => {
     let p = AREAS[x.area].w / T.filter(y => y.area === x.area).length;
-    if(x.t === "a") p *= 2.2;
     const v = lv(x.id);
     if(v === 3) p *= 1.5;       /* skoro hotové — dotiahni */
     else if(v === 2) p *= 1.3;
@@ -22,8 +21,8 @@ function renderNext(){
   const li = scored.map(({x,b}) => {
     const v = lv(x.id);
     const why = v >= 2 ? `rozrobené (${LV[v].label}) — dotiahni to`
-              : x.t === "a" ? "prebrané, ale ešte nesedí"
-              : `nové učivo · ${AREAS[x.area].name.split(",")[0]}`;
+              : v === 1 ? `ešte nesedí · ${AREAS[x.area].name.split(",")[0]}`
+              : `ešte nepozreté · ${AREAS[x.area].name.split(",")[0]}`;
     const pre = b ? ` · najprv: ${blocked(x).map(id => `<a href="#/tema/${id}">${esc(shortName(BY_ID[id]))}</a>`).join(", ")}` : "";
     return `<li><a class="next-link" href="#/tema/${x.id}" data-act="seq-next"><i class="dot l${v}"></i>${x.n}</a><em>${why}${pre}</em></li>`;
   }).join("");

@@ -3,7 +3,7 @@
    Views register themselves in VIEWS; buttons say what they do
    with data-act="name" and inputs with data-in="name".
    Routes:  #/            overview
-            #/temy/a|b|c  topic list for a tab
+            #/temy/a|c    topic list for a tab (old #/temy/b links land on a)
             #/tema/<id>[/n/<noteId>]   one topic, optionally a note
             #/dennik[/<entryId>]       study diary (#/dennik/t/<id>: only entries about a topic)
             #/info        sources, backup, shortcuts
@@ -43,7 +43,7 @@ document.addEventListener("input", e => {
 function parseRoute(){
   const p = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean).map(decodeURIComponent);
   switch(p[0]){
-    case "temy":   return {view:"temy", tab:["a","b","c"].includes(p[1]) ? p[1] : ui.tab};
+    case "temy":   return {view:"temy", tab:p[1] === "c" ? "c" : p[1] ? "a" : ui.tab};
     case "tema":   return BY_ID[p[1]] ? {view:"tema", id:p[1], note:p[2] === "n" ? p[3] || null : null}
                                       : {view:"temy", tab:ui.tab};
     case "dennik": return p[1] === "t" && BY_ID[p[2]] ? {view:"dennik", topic:p[2]} : {view:"dennik", entry:p[1] || null};

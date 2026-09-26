@@ -66,7 +66,7 @@ js/components/editor.js            note editor: toolbar, symbols, live preview, 
 js/components/palette.js           quick search / topic picker
 js/components/{countdown,gauge,next}.js   pieces of the overview
 js/views/overview.js               #/
-js/views/topics.js                 #/temy/a|b|c
+js/views/topics.js                 #/temy/a|c
 js/views/topic.js                  #/tema/<id>
 js/views/journal.js                #/dennik
 js/views/info.js                   #/info

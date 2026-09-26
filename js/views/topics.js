@@ -2,8 +2,7 @@
    TOPIC LIST — tabs, search, filters, one row per topic
    ============================================================ */
 const TABS = [
-  {k:"a", label:"Prebraté · malo by sedieť", intro:'Témy, ktoré podľa sylabov Y1–Y3 už prebehli — čo je tu slabé, je najlacnejší bod na teste, lebo si to raz videl.'},
-  {k:"b", label:"Čaká nás · štvrták", intro:'Učivo na <strong>externú časť</strong>, ktoré sa v žiadnom z troch sylabov neobjavuje. Označuj podľa toho, ako to preberiete alebo dobehneš sám.'},
+  {k:"a", label:"Externá maturita", intro:'Všetko učivo na <strong>externú časť</strong> maturity z matematiky, rozdelené podľa blokov testu. Štítok Y1–Y3 pri téme hovorí, v ktorom ročníku sa podľa sylabu preberala.'},
   {k:"c", label:"Navyše pre Matematik A", intro:'Čo dánska Matematik A (STX) žiada <strong>nad rámec</strong> slovenskej maturity. Do odhadu na EČ sa nepočíta.'}
 ];
 
