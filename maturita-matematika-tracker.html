@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maturita z matematiky — externá časť</title>
+<style>
+:root{
+  --paper:#F2F4F7;
+  --panel:#FFFFFF;
+  --ink:#16202E;
+  --ink-soft:#54637A;
+  --grid:#C9D6E4;
+  --rule:#DDE4EC;
+  --blank:#B4BECC;
+  --flag:#A8382A;
+  --dk:#3A4E9E;
+  --dk-bg:#E8EBF7;
+
+  /* five levels */
+  --l0:#B4BECC;              /* nepozreté */
+  --l1:#A8382A; --l1-bg:#FBECE9;   /* neviem */
+  --l2:#B57A0E; --l2-bg:#FBF0DA;   /* slabo */
+  --l3:#5E8F3E; --l3-bg:#ECF4E4;   /* ide to */
+  --l4:#1D7A6B; --l4-bg:#E4F0ED;   /* perfektne */
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+.wrap{max-width:820px;margin:0 auto;padding:0 18px 90px}
+
+/* ---------- header + gauge ---------- */
+header{padding:34px 0 20px}
+h1{
+  font:600 27px/1.2 Georgia,"Iowan Old Style","Times New Roman",serif;
+  margin:0 0 6px;letter-spacing:-.01em;
+}
+.sub{color:var(--ink-soft);font-size:14px;margin:0}
+.sub b{font-weight:600;color:var(--ink)}
+
+.gauge{
+  background:var(--panel);
+  border:1px solid var(--rule);
+  border-radius:4px;
+  padding:18px 18px 14px;
+  margin:12px 0 0;
+}
+.blocks{display:flex;gap:14px;align-items:flex-end}
+.block{flex:0 0 auto}
+.cells{display:flex;gap:3px}
+.cell{
+  width:13px;height:26px;border-radius:1px;
+  background:var(--blank);opacity:.32;
+  transition:background .25s ease,opacity .25s ease;
+}
+.cell.shaky{background:var(--l2);opacity:.85}
+.cell.solid{background:var(--l4);opacity:1}
+.block-label{
+  font-size:11px;color:var(--ink-soft);margin-top:7px;
+  white-space:nowrap;
+}
+.block-label b{color:var(--ink);font-weight:600}
+
+.readout{
+  display:flex;flex-wrap:wrap;gap:22px;align-items:baseline;
+  margin-top:16px;padding-top:14px;border-top:1px solid var(--rule);
+}
+.score{font:600 30px/1 Georgia,serif;letter-spacing:-.02em}
+.score span{font-size:15px;color:var(--ink-soft);font-weight:400}
+.readout p{margin:0;font-size:13px;color:var(--ink-soft);max-width:44ch}
+
+.bar{position:relative;height:8px;background:#E7ECF2;border-radius:4px;margin-top:14px}
+.bar-fill{position:absolute;inset:0 auto 0 0;background:var(--l4);border-radius:4px;transition:width .3s ease}
+.tick{position:absolute;top:-5px;bottom:-5px;width:2px;background:var(--flag);opacity:.55}
+.tick-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-soft);margin-top:5px}
+
+.dist{display:flex;height:10px;border-radius:5px;overflow:hidden;margin-top:14px;background:#E7ECF2}
+.dist div{transition:width .3s ease}
+.dist-legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px;color:var(--ink-soft);margin-top:7px}
+.dist-legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+
+/* ---------- countdown ---------- */
+.clock{
+  background:var(--panel);border:1px solid var(--rule);border-radius:4px;
+  padding:14px 16px;border-top:3px solid var(--dk);margin-top:20px;
+}
+.clock h4{margin:0 0 2px;font:600 12px/1.3 system-ui,sans-serif;color:var(--ink-soft)}
+.clock .big{font:600 32px/1 Georgia,serif;letter-spacing:-.02em;display:flex;align-items:baseline;gap:6px}
+.clock .big span{font:400 13px/1 system-ui,sans-serif;color:var(--ink-soft)}
+.clock .when{font-size:12px;color:var(--ink-soft);margin-top:6px}
+.clock .pace{font-size:12px;color:var(--ink);margin-top:7px;padding-top:7px;border-top:1px solid var(--rule)}
+.clock .pace b{font-weight:600}
+.clock.past .big{color:var(--flag)}
+
+/* ---------- next up ---------- */
+.next{
+  background:var(--panel);border:1px solid var(--rule);border-left:3px solid var(--flag);
+  border-radius:3px;padding:15px 17px;margin-top:12px;
+}
+.next h2{font:600 13px/1.3 system-ui,sans-serif;margin:0 0 11px;color:var(--ink-soft)}
+.next ol{margin:0;padding-left:20px;font-size:14px}
+.next li{margin-bottom:5px;font-family:Georgia,serif}
+.next li em{font-family:system-ui,sans-serif;font-style:normal;font-size:12px;color:var(--ink-soft)}
+.next .done{font-family:system-ui,sans-serif;font-size:14px;color:var(--l4);margin:0}
+
+/* ---------- study log ---------- */
+.log{
+  background:var(--panel);border:1px solid var(--rule);border-left:3px solid var(--dk);
+  border-radius:3px;padding:15px 17px;margin-top:12px;
+}
+.log h2{font:600 13px/1.3 system-ui,sans-serif;margin:0 0 4px;color:var(--ink-soft)}
+.log .hint{font-size:12.5px;color:var(--ink-soft);margin:0 0 11px}
+.log-form{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:start}
+.log-form input[type=date]{
+  font:13px system-ui,sans-serif;border:1px solid var(--rule);border-radius:4px;padding:7px 8px;color:var(--ink);background:#fff;
+}
+.log-form textarea, .note-box textarea{
+  width:100%;min-height:74px;resize:vertical;
+  font:14px/1.45 system-ui,sans-serif;color:var(--ink);
+  border:1px solid var(--rule);border-radius:4px;padding:8px 10px;background:#FCFDFE;
+}
+.log-actions{grid-column:1 / -1;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{
+  appearance:none;cursor:pointer;font:600 12px/1 system-ui,sans-serif;
+  background:var(--ink);color:#fff;border:1px solid var(--ink);border-radius:4px;padding:9px 13px;
+}
+.btn.ghost{background:var(--panel);color:var(--ink-soft);border-color:var(--rule);font-weight:500}
+.btn.ghost:hover{color:var(--ink);border-color:var(--ink-soft)}
+.today-link{font-size:12.5px;color:var(--dk);background:none;border:0;cursor:pointer;padding:0;text-decoration:underline;font-family:inherit}
+.log-list{margin-top:14px}
+.entry{border-top:1px solid var(--rule);padding:10px 0 8px;display:flex;gap:12px}
+.entry-date{flex:0 0 78px;font:600 12px/1.5 system-ui,sans-serif;color:var(--dk)}
+.entry-text{flex:1;font-size:14px;white-space:pre-wrap;word-break:break-word;min-width:0}
+.entry-del{flex:0 0 auto;appearance:none;border:0;background:none;color:var(--blank);cursor:pointer;font-size:16px;line-height:1;padding:2px 4px}
+.entry-del:hover{color:var(--flag)}
+.more{font-size:12.5px;color:var(--ink-soft);background:none;border:0;cursor:pointer;padding:6px 0 0;text-decoration:underline;font-family:inherit}
+
+/* ---------- tabs ---------- */
+nav{display:flex;gap:2px;margin:26px 0 0;border-bottom:1px solid var(--rule);flex-wrap:wrap}
+.tab{
+  appearance:none;border:0;background:none;cursor:pointer;
+  font:500 14px/1 system-ui,sans-serif;color:var(--ink-soft);
+  padding:12px 14px;border-bottom:2px solid transparent;margin-bottom:-1px;
+}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink);font-weight:600}
+.tab .count{
+  display:inline-block;margin-left:6px;font-size:11px;font-weight:600;
+  background:#E7ECF2;color:var(--ink-soft);border-radius:9px;padding:2px 6px;
+}
+.tab[aria-selected="true"] .count{background:var(--ink);color:#fff}
+
+.intro{font-size:14px;color:var(--ink-soft);margin:20px 0 0;max-width:62ch}
+.intro strong{color:var(--ink);font-weight:600}
+
+.levels-key{
+  display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:14px 0 0;
+}
+.levels-key div{
+  font-size:11.5px;line-height:1.35;color:var(--ink-soft);
+  background:var(--panel);border:1px solid var(--rule);border-top:3px solid;border-radius:3px;padding:7px 8px;
+}
+.levels-key b{display:block;color:var(--ink);font-size:12px;margin-bottom:2px}
+
+/* ---------- filter + search ---------- */
+.search{
+  width:100%;margin:16px 0 0;font:14px system-ui,sans-serif;color:var(--ink);
+  border:1px solid var(--rule);border-radius:4px;padding:9px 11px;background:var(--panel);
+}
+.filters{display:flex;gap:6px;margin:10px 0 4px;flex-wrap:wrap}
+.filters button{
+  appearance:none;cursor:pointer;font:500 12px/1 system-ui,sans-serif;
+  background:var(--panel);border:1px solid var(--rule);color:var(--ink-soft);
+  border-radius:20px;padding:7px 13px;
+}
+.filters button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+
+/* ---------- topic list ---------- */
+.area{margin-top:26px}
+.area-head{
+  display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+  padding-bottom:7px;border-bottom:1.5px solid var(--ink);
+}
+.area-head h3{font:600 16px/1.2 Georgia,serif;margin:0}
+.area-weight{font-size:12px;color:var(--ink-soft);white-space:nowrap}
+.area-weight b{color:var(--ink);font-weight:600}
+
+.row{
+  display:flex;flex-wrap:wrap;gap:10px 12px;align-items:center;justify-content:space-between;
+  padding:11px 0 11px 11px;border-bottom:1px solid var(--rule);
+  border-left:3px solid transparent;
+}
+.row.s1{border-left-color:var(--l1);background:linear-gradient(90deg,var(--l1-bg),transparent 55%)}
+.row.s2{border-left-color:var(--l2);background:linear-gradient(90deg,var(--l2-bg),transparent 55%)}
+.row.s3{border-left-color:var(--l3);background:linear-gradient(90deg,var(--l3-bg),transparent 55%)}
+.row.s4{border-left-color:var(--l4);background:linear-gradient(90deg,var(--l4-bg),transparent 55%)}
+.row-main{min-width:0;flex:1 1 260px}
+.row-name{font:400 15px/1.35 Georgia,serif}
+.row-meta{font-size:12px;color:var(--ink-soft);margin-top:3px}
+.row-side{display:flex;gap:6px;align-items:center;flex:0 0 auto}
+.src{
+  display:inline-block;font-size:10px;font-weight:600;letter-spacing:.03em;
+  border:1px solid var(--grid);color:var(--ink-soft);border-radius:3px;
+  padding:1px 5px;margin-right:5px;
+}
+.upd{display:inline-block;font-size:11px;color:var(--ink-soft);margin-right:6px}
+.upd.today{color:var(--dk);font-weight:600}
+.dkterm{
+  display:inline-block;font:italic 11px/1.4 Georgia,serif;
+  color:var(--dk);background:var(--dk-bg);border-radius:3px;
+  padding:1px 6px;margin-right:6px;
+}
+.pre{color:var(--flag)}
+.note-prev{
+  font-size:12.5px;color:var(--ink);margin-top:6px;padding:5px 9px;
+  background:#FFFBEA;border-left:2px solid #E3C766;border-radius:0 3px 3px 0;
+  white-space:pre-wrap;word-break:break-word;cursor:pointer;
+}
+
+.seg{display:flex;flex:0 0 auto;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:var(--panel)}
+.seg button{
+  appearance:none;border:0;cursor:pointer;background:var(--panel);
+  font:500 11.5px/1 system-ui,sans-serif;color:var(--ink-soft);
+  padding:9px 8px;border-right:1px solid var(--rule);white-space:nowrap;
+}
+.seg button:last-child{border-right:0}
+.seg button:hover{background:#F5F8FB}
+.seg button[aria-pressed="true"]{color:#fff;font-weight:600}
+.seg button.b0[aria-pressed="true"]{background:var(--l0)}
+.seg button.b1[aria-pressed="true"]{background:var(--l1)}
+.seg button.b2[aria-pressed="true"]{background:var(--l2)}
+.seg button.b3[aria-pressed="true"]{background:var(--l3)}
+.seg button.b4[aria-pressed="true"]{background:var(--l4)}
+
+.note-toggle{
+  appearance:none;cursor:pointer;font:500 12px/1 system-ui,sans-serif;
+  background:var(--panel);border:1px solid var(--rule);color:var(--ink-soft);
+  border-radius:4px;padding:8px 9px;white-space:nowrap;
+}
+.note-toggle.has{border-color:#E3C766;background:#FFFBEA;color:var(--ink)}
+.note-toggle[aria-expanded="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.note-box{flex:1 1 100%;padding-right:2px}
+.note-box .note-hint{font-size:11px;color:var(--ink-soft);margin-top:4px}
+
+.empty{font-size:14px;color:var(--ink-soft);padding:26px 0;font-style:italic}
+
+/* ---------- footer ---------- */
+footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--rule);font-size:12.5px;color:var(--ink-soft)}
+footer p{margin:0 0 9px;max-width:66ch}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.tools button{
+  appearance:none;cursor:pointer;font:500 12px/1 system-ui,sans-serif;
+  background:var(--panel);border:1px solid var(--rule);color:var(--ink-soft);
+  border-radius:4px;padding:8px 12px;
+}
+.tools button:hover{border-color:var(--ink-soft);color:var(--ink)}
+#importArea{
+  width:100%;height:88px;margin-top:10px;font:11px/1.4 ui-monospace,monospace;
+  border:1px solid var(--rule);border-radius:4px;padding:8px;color:var(--ink-soft);
+}
+.status{font-size:12px;color:var(--l4);min-height:16px;margin-top:8px}
+
+:focus-visible{outline:2px solid var(--dk);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+@media (max-width:640px){
+  .row-side{flex:1 1 100%;flex-wrap:wrap}
+  .seg{flex:1 1 100%}
+  .seg button{flex:1;text-align:center;padding:10px 2px;font-size:11px}
+  .note-toggle{flex:1 1 100%}
+  .cell{width:7px;height:22px}
+  .cells{gap:2px}
+  .blocks{gap:8px}
+  .block-label{font-size:10px}
+  .gauge{padding:14px 12px 12px}
+  h1{font-size:22px}
+  .clock .big{font-size:27px}
+  .levels-key{grid-template-columns:1fr 1fr}
+  .log-form{grid-template-columns:1fr}
+  .entry{flex-wrap:wrap;gap:2px 10px}
+  .entry-date{flex:1 1 auto}
+  .entry-text{flex:1 1 100%;order:3}
+}
+
+/* ---------- topic descriptions ---------- */
+.desc-toggle{
+  appearance:none;border:0;background:none;cursor:pointer;padding:3px 0 0;
+  font:500 12px/1.3 system-ui,sans-serif;color:var(--dk);
+}
+.desc-toggle:hover{text-decoration:underline}
+.desc-box{
+  margin-top:7px;padding:9px 12px;border-radius:0 4px 4px 0;
+  background:var(--dk-bg);border-left:2px solid var(--dk);
+  font-size:13.5px;line-height:1.5;max-width:62ch;
+}
+.desc-box p{margin:0}
+.desc-box .ex{margin-top:6px;color:var(--ink-soft);font-size:12.5px}
+.desc-box .ex b{color:var(--ink);font-weight:600}
+.desc-all{
+  appearance:none;cursor:pointer;margin-left:auto;
+  font:500 12px/1 system-ui,sans-serif;background:none;border:0;color:var(--dk);padding:7px 2px;
+}
+.desc-all:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Maturita z matematiky — externá časť</h1>
+  <p class="sub">Externá časť je <b>30 úloh za 150 minút</b>. Po každom sedení: ohodnoť témy, ktoré si riešil, dopíš k nim poznámky a pridaj krátky záznam do denníka.</p>
+
+  <div class="clock" id="clockEc"></div>
+
+  <div class="gauge">
+    <div class="blocks" id="blocks"></div>
+
+    <div class="readout">
+      <div>
+        <div class="score" id="score">0<span> / 30</span></div>
+      </div>
+      <p id="verdict"></p>
+    </div>
+
+    <div class="bar">
+      <div class="bar-fill" id="barFill" style="width:0%"></div>
+      <div class="tick" style="left:25%"></div>
+      <div class="tick" style="left:33.3%"></div>
+    </div>
+    <div class="tick-labels"><span>0</span><span>25 % a 33 % — hranice úspešnosti</span><span>30</span></div>
+
+    <div class="dist" id="dist"></div>
+    <div class="dist-legend" id="distLegend"></div>
+  </div>
+
+  <div class="log">
+    <h2>Denník učenia</h2>
+    <p class="hint">Čo si dnes riešil, na čom si sa zasekol, čo si pochopil. Pri konkrétnych témach si to zapíš aj do ich poznámky nižšie.</p>
+    <div class="log-form">
+      <input type="date" id="logDate" aria-label="Dátum sedenia">
+      <textarea id="logText" placeholder="Napr. iracionálne rovnice — zabudol som na 2ab v (a−b)², skúška koreňov cez podmienku 2−x ≥ 0…"></textarea>
+      <div class="log-actions">
+        <button class="btn" id="logAdd">Pridať záznam</button>
+        <button class="today-link" id="todayLink" hidden></button>
+      </div>
+    </div>
+    <div class="log-list" id="logList"></div>
+  </div>
+
+  <div class="next" id="next"></div>
+</header>
+
+<nav role="tablist" id="tabs"></nav>
+<p class="intro" id="intro"></p>
+
+<div class="levels-key" id="levelsKey"></div>
+
+<input class="search" id="search" type="search" placeholder="Hľadať tému alebo text v poznámkach…" aria-label="Hľadať">
+
+<div class="filters" id="filters">
+  <button data-f="all" aria-pressed="true">Všetko</button>
+  <button data-f="n0" aria-pressed="false">Nepozreté</button>
+  <button data-f="n1" aria-pressed="false">Neviem</button>
+  <button data-f="mid" aria-pressed="false">Rozrobené</button>
+  <button data-f="n4" aria-pressed="false">Perfektne</button>
+  <button data-f="note" aria-pressed="false">S poznámkou</button>
+  <button data-f="today" aria-pressed="false">Zmenené dnes</button>
+  <button class="desc-all" id="descAll">Rozbaliť všetky popisy</button>
+</div>
+
+<main id="list"></main>
+
+<footer>
+  <p><b>Odkiaľ sú dáta.</b> Zoznam tém vychádza z Cieľových požiadaviek na vedomosti a zručnosti maturantov z matematiky (ŠPÚ) a z rozdelenia úloh v teste podľa špecifikácie NIVaM: základy 7, funkcie 8, planimetria 6, stereometria 5, kombinatorika s pravdepodobnosťou a štatistikou 4. Rozdelenie „prebraté / čaká nás“ je porovnaním sylabov Y1–Y3 s týmito požiadavkami — sylabus hovorí, čo sa učilo, nie čo sa naozaj stihlo.</p>
+  <p><b>Úrovne a odhad.</b> Odhad bodov na EČ počíta <i>perfektne</i> celé, <i>ide to</i> za dve tretiny a <i>slabo</i> za tretinu. <i>Nepozreté</i> a <i>neviem</i> sa nepočítajú, ale rozlišujú sa, aby si videl, čo ešte vôbec neotvoril.</p>
+  <p><b>Dánsko.</b> Posledná záložka je nastavená na Matematik A na STX podľa læreplanu z roku 2024 a do odhadu na EČ sa nepočíta. Písomná skúška má 5 hodín: delprøve 1 (3 h, iba formelsamling) a delprøve 2 (2 h, všetky pomôcky vrátane CAS).</p>
+  <p><b>Ukladanie.</b> <span id="storeNote"></span> Hodnotenia z predchádzajúcej verzie sa preniesli automaticky: <i>neisté</i> → <i>slabo</i>, <i>viem</i> → <i>perfektne</i>.</p>
+  <div class="tools">
+    <button id="btnExport">Skopírovať postup</button>
+    <button id="btnImportToggle">Vložiť postup</button>
+    <button id="btnReset">Vymazať všetko</button>
+  </div>
+  <div id="importBox" hidden>
+    <textarea id="importArea" placeholder="Sem vlož skopírovaný text."></textarea>
+    <button id="btnImport" class="btn ghost" style="margin-top:6px">Načítať</button>
+  </div>
+  <div class="status" id="status"></div>
+</footer>
+
+</div>
+
+<script>
+/* ============================================================
+   AREAS — the five official test blocks and their item counts
+   ============================================================ */
+const AREAS = {
+  zaklady:     {name:"Základy matematiky", w:7},
+  funkcie:     {name:"Funkcie",            w:8},
+  planimetria: {name:"Planimetria",        w:6},
+  stereometria:{name:"Stereometria",       w:5},
+  kps:         {name:"Kombinatorika, pravdepodobnosť, štatistika", w:4}
+};
+const DK_AREAS = {
+  dkDif:  {name:"Differential calculus"},
+  dkInt:  {name:"Integral calculus"},
+  dkLig:  {name:"Differential equations"},
+  dkVek:  {name:"Vectors — extended, and in 3D"},
+  dkSta:  {name:"Probability and statistics"},
+  dkFun:  {name:"Functions and modelling"},
+  dkVrk:  {name:"Tools and exam format"}
+};
+
+/* ============================================================
+   LEVELS
+   ============================================================ */
+const LV = [
+  {k:0, label:"nepozreté", w:0,   desc:"ešte som to neotvoril"},
+  {k:1, label:"neviem",    w:0,   desc:"pozrel som sa, sám to nevyriešim"},
+  {k:2, label:"slabo",     w:1/3, desc:"s pomocou alebo pozeraním do vzorcov"},
+  {k:3, label:"ide to",    w:2/3, desc:"vyriešim sám, občas sa pomýlim"},
+  {k:4, label:"perfektne", w:1,   desc:"rýchlo a bez chyby"}
+];
+const LV_COLOR = ["var(--l0)","var(--l1)","var(--l2)","var(--l3)","var(--l4)"];
+
+/* ============================================================
+   TOPICS
+   t: "a" already taught (Y1–Y3) | "b" not taught yet | "c" Danish extra
+   src: which year covered it     pre: prerequisite ids
+   ============================================================ */
+const T = [
+/* ---------- A · ZÁKLADY ---------- */
+{id:"a1", t:"a", area:"zaklady", n:"Percentá, promile, pomer, trojčlenka, priama a nepriama úmernosť", src:"Y1"},
+{id:"a2", t:"a", area:"zaklady", n:"Finančná matematika: úrok, pôžička, hypotéka, umorovací plán", src:"Y1"},
+{id:"a3", t:"a", area:"zaklady", n:"Zaokrúhľovanie, približné čísla, zápis v tvare a · 10ⁿ", src:"Y1"},
+{id:"a4", t:"a", area:"zaklady", n:"Pozičné číselné sústavy — dvojková, šestnástková, rímske čísla", src:"Y1 Y2 Y3"},
+{id:"a5", t:"a", area:"zaklady", n:"Deliteľnosť, prvočísla, prvočíselný rozklad, NSD a NSN", src:"Y2 Y3"},
+{id:"a6", t:"a", area:"zaklady", n:"Množiny, číselné obory, intervaly, Vennove diagramy", src:"Y2 Y3"},
+{id:"a7", t:"a", area:"zaklady", n:"Výrok, negácia, spojky, implikácia, ekvivalencia, pravdivostné tabuľky", src:"Y1 Y3"},
+{id:"a8", t:"a", area:"zaklady", n:"Kvantifikované výroky a ich negácia", src:"Y3"},
+{id:"a9", t:"a", area:"zaklady", n:"Dôkazy: priamy, nepriamy, sporom", src:"Y3 sem.", m:"V písomke sa to objaví ako protipríklad, obmena implikácie alebo posúdenie správnosti postupu riešenia — nie ako celý napísaný dôkaz."},
+{id:"a10",t:"a", area:"zaklady", n:"Úpravy výrazov, mnohočleny, rozklad na súčin, doplnenie na štvorec", src:"Y1 Y2 Y3"},
+{id:"a11",t:"a", area:"zaklady", n:"Mocniny, odmocniny, usmerňovanie zlomkov", src:"Y3"},
+{id:"a12",t:"a", area:"zaklady", n:"Lomené výrazy a ich definičný obor", src:"Y3"},
+{id:"a13",t:"a", area:"zaklady", n:"Výrazy s absolútnou hodnotou", src:"Y3"},
+{id:"a14",t:"a", area:"zaklady", n:"Lineárne rovnice a nerovnice, sústavy", src:"Y1 Y2 Y3"},
+{id:"a15",t:"a", area:"zaklady", n:"Kvadratická rovnica: diskriminant, doplnenie na štvorec", src:"Y2"},
+{id:"a16",t:"a", area:"zaklady", n:"Rovnica s neznámou v menovateli", src:"Y2"},
+{id:"a17",t:"a", area:"zaklady", n:"Iracionálne rovnice a nerovnice", src:"Y3"},
+
+/* ---------- A · FUNKCIE ---------- */
+{id:"a18",t:"a", area:"funkcie", n:"Pojem funkcie, definičný obor, obor hodnôt, graf", src:"Y2"},
+{id:"a19",t:"a", area:"funkcie", n:"Vlastnosti: monotónnosť, extrémy, ohraničenosť, parita, periodičnosť", src:"Y2 Y3"},
+{id:"a20",t:"a", area:"funkcie", n:"Prostá, inverzná a zložená funkcia", src:"Y3 sem."},
+{id:"a21",t:"a", area:"funkcie", n:"Lineárna funkcia a smernica", src:"Y2"},
+{id:"a22",t:"a", area:"funkcie", n:"Kvadratická funkcia a vrchol paraboly", src:"Y2"},
+{id:"a23",t:"a", area:"funkcie", n:"Mocninové funkcie y = xⁿ pre celé n", src:"Y3"},
+{id:"a24",t:"a", area:"funkcie", n:"Exponenciálna funkcia a jej graf", src:"Y3"},
+{id:"a25",t:"a", area:"funkcie", n:"Aritmetická postupnosť a súčet n členov", src:"Y3 sem."},
+{id:"a26",t:"a", area:"funkcie", n:"Geometrická postupnosť a súčet n členov", src:"Y3 sem."},
+
+/* ---------- A · PLANIMETRIA ---------- */
+{id:"a27",t:"a", area:"planimetria", n:"Uhly a ich dvojice, súhlasné a striedavé uhly", src:"Y1"},
+{id:"a28",t:"a", area:"planimetria", n:"Trojuholník: ťažnice, ťažisko, stredná priečka, vpísaná a opísaná kružnica", src:"Y2"},
+{id:"a29",t:"a", area:"planimetria", n:"Pytagorova veta", src:"Y1 Y2"},
+{id:"a30",t:"a", area:"planimetria", n:"Euklidove vety", src:"Y2"},
+{id:"a31",t:"a", area:"planimetria", n:"Tálesova veta a Tálesova kružnica", src:"Y2"},
+{id:"a32",t:"a", area:"planimetria", n:"Zhodnosť a podobnosť trojuholníkov (sss, sus, usu, Ssu, uu)", src:"Y1 Y2"},
+{id:"a33",t:"a", area:"planimetria", n:"Obvody a obsahy rovinných útvarov", src:"Y1 Y2"},
+{id:"a34",t:"a", area:"planimetria", n:"Kružnica a kruh: tetiva, dotyčnica, výsek, odsek, dĺžka oblúka", src:"Y2"},
+{id:"a35",t:"a", area:"planimetria", n:"Štvoruholníky a mnohouholníky", src:"Y2"},
+
+/* ---------- A · STEREOMETRIA ---------- */
+{id:"a36",t:"a", area:"stereometria", n:"Objem a povrch hranatých telies — kocka, kváder, hranol, ihlan", src:"Y2 Y3"},
+{id:"a37",t:"a", area:"stereometria", n:"Objem a povrch rotačných telies — valec, kužeľ, guľa", src:"Y2 Y3"},
+
+/* ---------- A · KPŠ ---------- */
+{id:"a38",t:"a", area:"kps", n:"Pravidlo súčtu a súčinu, systematické vypisovanie možností", src:"Y1 Y2"},
+{id:"a39",t:"a", area:"kps", n:"Faktoriál a kombinačné číslo", src:"Y1 Y2"},
+{id:"a40",t:"a", area:"kps", n:"Variácie, permutácie a kombinácie bez opakovania", src:"Y2"},
+{id:"a41",t:"a", area:"kps", n:"Pravdepodobnosť ako pomer priaznivých ku všetkým", src:"Y1"},
+{id:"a42",t:"a", area:"kps", n:"Štatistický súbor, početnosť, histogram, kruhový a stĺpcový graf", src:"Y1"},
+
+/* ---------- B · ZÁKLADY (chýba) ---------- */
+{id:"b1", t:"b", area:"zaklady", n:"Logaritmus: definícia, dekadický a prirodzený, pravidlá pre logaritmy"},
+{id:"b2", t:"b", area:"zaklady", n:"Exponenciálne rovnice a nerovnice", pre:["a24"]},
+{id:"b3", t:"b", area:"zaklady", n:"Logaritmické rovnice a nerovnice", pre:["b1"]},
+{id:"b4", t:"b", area:"zaklady", n:"Kvadratické nerovnice, súčinový a podielový tvar", pre:["a15"]},
+{id:"b5", t:"b", area:"zaklady", n:"Rovnice a nerovnice s absolútnou hodnotou", pre:["a13"]},
+{id:"b6", t:"b", area:"zaklady", n:"Viètove vzťahy a koreňoví činitelia", pre:["a15"]},
+{id:"b7", t:"b", area:"zaklady", n:"Nerovnica s dvoma neznámymi a jej obraz v rovine"},
+
+/* ---------- B · FUNKCIE (chýba) ---------- */
+{id:"b8", t:"b", area:"funkcie", n:"Oblúková miera a jednotková kružnica", m:"Vstupná brána do celej goniometrie."},
+{id:"b9", t:"b", area:"funkcie", n:"Goniometrické funkcie sin, cos, tg — hodnoty, grafy, perióda", pre:["b8"]},
+{id:"b10",t:"b", area:"funkcie", n:"Goniometrické identity a vzorce pre dvojnásobný uhol", pre:["b9"]},
+{id:"b11",t:"b", area:"funkcie", n:"Goniometrické rovnice a nerovnice", pre:["b9"]},
+{id:"b12",t:"b", area:"funkcie", n:"Transformácie grafov: f(x)+a, f(x+a), a·f(x), f(ax), |f(x)|", pre:["a18"]},
+{id:"b13",t:"b", area:"funkcie", n:"Logaritmická funkcia a jej graf", pre:["b1"]},
+{id:"b14",t:"b", area:"funkcie", n:"Lineárna lomená funkcia a asymptoty", pre:["a12"]},
+{id:"b15",t:"b", area:"funkcie", n:"Mnohočleny: stupeň, počet reálnych koreňov, polynomická funkcia"},
+
+/* ---------- B · PLANIMETRIA (chýba) ---------- */
+{id:"b16",t:"b", area:"planimetria", n:"Goniometria pravouhlého trojuholníka", pre:["b9"]},
+{id:"b17",t:"b", area:"planimetria", n:"Sínusová a kosínusová veta, obsah S = ½ · a · b · sin γ", pre:["b9"]},
+{id:"b18",t:"b", area:"planimetria", n:"Stredový a obvodový uhol", pre:["a34"]},
+{id:"b19",t:"b", area:"planimetria", n:"Súradnice v rovine, vzdialenosť bodov, stred úsečky, deliaci pomer"},
+{id:"b20",t:"b", area:"planimetria", n:"Vektory: súradnice, súčet, násobok, dĺžka, skalárny súčin, uhol", pre:["b19"]},
+{id:"b21",t:"b", area:"planimetria", n:"Priamka: parametrické, všeobecná a smernicová rovnica, smerový a normálový vektor", pre:["b20"]},
+{id:"b22",t:"b", area:"planimetria", n:"Vzájomná poloha priamok, priesečník, uhol dvoch priamok", pre:["b21"]},
+{id:"b23",t:"b", area:"planimetria", n:"Vzdialenosť bodu od priamky, obsah trojuholníka z vrcholov", pre:["b21"]},
+{id:"b24",t:"b", area:"planimetria", n:"Rovnica kružnice, poloha priamky a kružnice, dvoch kružníc", pre:["b21"]},
+{id:"b25",t:"b", area:"planimetria", n:"Množiny bodov danej vlastnosti a ich analytické vyjadrenie", pre:["b24"]},
+{id:"b26",t:"b", area:"planimetria", n:"Zhodné zobrazenia: osová a stredová súmernosť, posunutie, otočenie"},
+{id:"b27",t:"b", area:"planimetria", n:"Rovnoľahlosť a podobné zobrazenia", pre:["b26"]},
+{id:"b28",t:"b", area:"planimetria", n:"Konštrukčné úlohy: základné konštrukcie a počet riešení", pre:["b26"], m:"Do písomky ide počet riešení a to, že si vieš situáciu narysovať ako pomôcku — rysovacie potreby na EČ smieš mať."},
+
+/* ---------- B · STEREOMETRIA (chýba) ---------- */
+{id:"b29",t:"b", area:"stereometria", n:"Voľné rovnobežné premietanie, pôdorys, nárys, bokorys"},
+{id:"b30",t:"b", area:"stereometria", n:"Súradnicová sústava v priestore, vzdialenosť bodov", pre:["b19"]},
+{id:"b31",t:"b", area:"stereometria", n:"Vzájomná poloha priamok a rovín, mimobežky", pre:["b29"]},
+{id:"b32",t:"b", area:"stereometria", n:"Rezy kocky a kvádra rovinou", pre:["b31"]},
+{id:"b33",t:"b", area:"stereometria", n:"Uhly v priestore: dvoch priamok, priamky a roviny, dvoch rovín", pre:["b31","b16"]},
+{id:"b34",t:"b", area:"stereometria", n:"Vzdialenosti v priestore", pre:["b31"]},
+{id:"b35",t:"b", area:"stereometria", n:"Siete telies", pre:["a36"]},
+
+/* ---------- B · KPŠ (chýba) ---------- */
+{id:"b36",t:"b", area:"kps", n:"Variácie a permutácie s opakovaním", pre:["a40"]},
+{id:"b37",t:"b", area:"kps", n:"Pascalov trojuholník a vlastnosti kombinačných čísel", pre:["a39"]},
+{id:"b38",t:"b", area:"kps", n:"Doplnková pravdepodobnosť, nezávislé javy, súčet a súčin pravdepodobností", pre:["a41"]},
+{id:"b39",t:"b", area:"kps", n:"Geometrická pravdepodobnosť", pre:["a41"]},
+{id:"b40",t:"b", area:"kps", n:"Modus, medián, stredná hodnota, aritmetický priemer", pre:["a42"]},
+{id:"b41",t:"b", area:"kps", n:"Rozptyl a smerodajná odchýlka", pre:["b40"]},
+{id:"b42",t:"b", area:"kps", n:"Triedenie, výberový a základný súbor, bernoulliovské pokusy", pre:["a42"]},
+
+/* ---------- C · DANISH DELTA ---------- */
+{id:"c1", t:"c", area:"dkDif", n:"Limits and continuity", dk:"Grænseværdi og kontinuitet", m:"No counterpart anywhere in the Slovak requirements."},
+{id:"c2", t:"c", area:"dkDif", n:"The derivative, and rate of change", dk:"Differentialkvotient og væksthastighed", pre:["c1"]},
+{id:"c3", t:"c", area:"dkDif", n:"Differentiation rules: f + g, k · f, f · g, and the chain rule f ∘ g", dk:"Regneregler og kædereglen", pre:["c2"]},
+{id:"c4", t:"c", area:"dkDif", n:"Derivatives of xⁿ, √x, 1/x, eˣ, ln x, sin, cos, aˣ", dk:"Afledede funktioner", pre:["c2"]},
+{id:"c5", t:"c", area:"dkDif", n:"Tangents and the tangent line equation", dk:"Tangent og tangentligning", pre:["c4"]},
+{id:"c6", t:"c", area:"dkDif", n:"Increasing and decreasing intervals, extrema, optimisation", dk:"Monotoniforhold, ekstrema og optimering", pre:["c4"]},
+{id:"c7", t:"c", area:"dkDif", n:"Newton's method for finding roots numerically", dk:"Newtons metode", pre:["c5"]},
+
+{id:"c8", t:"c", area:"dkInt", n:"Antiderivatives, indefinite and definite integrals", dk:"Stamfunktion, ubestemt og bestemt integral", pre:["c4"]},
+{id:"c9", t:"c", area:"dkInt", n:"How area under a curve connects to the antiderivative", dk:"Sammenhængen mellem areal og stamfunktion", pre:["c8"]},
+{id:"c10",t:"c", area:"dkInt", n:"Integration rules and integration by substitution", dk:"Regneregler og integration ved substitution", pre:["c8"]},
+{id:"c11",t:"c", area:"dkInt", n:"Area between two graphs", dk:"Areal mellem to grafer", pre:["c9"]},
+{id:"c12",t:"c", area:"dkInt", n:"Volume of solids of revolution", dk:"Volumen af omdrejningslegemer", pre:["c9"]},
+
+{id:"c13",t:"c", area:"dkLig", n:"First-order differential equations and qualitative analysis", dk:"Differentialligninger af 1. orden", pre:["c8"]},
+{id:"c14",t:"c", area:"dkLig", n:"The set forms y′ = k · y, y′ = b − a · y, and logistic y′ = a · y · (M − y)", dk:"De faste typer", pre:["c13"]},
+{id:"c15",t:"c", area:"dkLig", n:"Separation of variables", dk:"Separation af variable", pre:["c10"]},
+{id:"c16",t:"c", area:"dkLig", n:"Euler's method", dk:"Eulers metode", pre:["c13"]},
+{id:"c17",t:"c", area:"dkLig", n:"Slope fields — reading and interpreting them", dk:"Hældningsfelter", pre:["c13"]},
+{id:"c18",t:"c", area:"dkLig", n:"Building a differential equation model from a worded description", dk:"Opstille differentialligningsmodeller", pre:["c14"]},
+
+{id:"c19",t:"c", area:"dkVek", n:"The perpendicular vector, determinant, area of a parallelogram", dk:"Tværvektor, determinant, areal af parallelogram", pre:["b20"]},
+{id:"c20",t:"c", area:"dkVek", n:"Projection of one vector onto another", dk:"Projektion af vektor på vektor", pre:["b20"]},
+{id:"c21",t:"c", area:"dkVek", n:"Parametric form of a line and a circle in the plane", dk:"Parameterfremstilling i planen", pre:["b21"]},
+{id:"c22",t:"c", area:"dkVek", n:"Vectors in 3D and the cross product", dk:"Vektorer i rummet og krydsprodukt", pre:["b20"]},
+{id:"c23",t:"c", area:"dkVek", n:"Equation and parametric form of a plane", dk:"Planens ligning og parameterfremstilling", pre:["c22"]},
+{id:"c24",t:"c", area:"dkVek", n:"Lines in 3D and the equation of a sphere", dk:"Linje i rummet og kuglens ligning", pre:["c22"]},
+{id:"c25",t:"c", area:"dkVek", n:"Intersections, angles and distances in 3D", dk:"Skæring, vinkler og afstande i rummet", pre:["c23"]},
+
+{id:"c26",t:"c", area:"dkSta", n:"Random variables, expected value and standard deviation", dk:"Stokastisk variabel, middelværdi og spredning", pre:["b41"]},
+{id:"c27",t:"c", area:"dkSta", n:"The binomial distribution", dk:"Binomialfordelingen", pre:["c26"]},
+{id:"c28",t:"c", area:"dkSta", n:"The normal distribution", dk:"Normalfordelingen", pre:["c27"]},
+{id:"c29",t:"c", area:"dkSta", n:"Grouped data: cumulative frequency curve, box plot, quartiles, percentiles", dk:"Grupperede data", pre:["b40"], m:"Not examined in writing, but it is taught and can come up orally."},
+{id:"c30",t:"c", area:"dkSta", n:"Hypothesis testing on a binomial, significance level, p-value", dk:"Hypotesetest i binomialfordelingen", pre:["c27"], m:"Also kept out of the written paper — oral only."},
+
+{id:"c31",t:"c", area:"dkFun", n:"b · aˣ and b · e^(k·x), doubling and halving constants", dk:"Fordoblings- og halveringskonstant", pre:["a24"]},
+{id:"c32",t:"c", area:"dkFun", n:"Power functions and percent-to-percent growth", dk:"Potensfunktioner og procent-procentvækst", pre:["a23"]},
+{id:"c33",t:"c", area:"dkFun", n:"f(x) = A · sin(ω·x + φ) + d — amplitude and period", dk:"Trigonometriske modeller", pre:["b9"]},
+{id:"c34",t:"c", area:"dkFun", n:"Semi-log and log-log coordinate systems", dk:"Enkelt- og dobbeltlogaritmisk koordinatsystem", pre:["b13"]},
+{id:"c35",t:"c", area:"dkFun", n:"Regression: linear, exponential, power, quadratic, trigonometric", dk:"Regression"},
+{id:"c36",t:"c", area:"dkFun", n:"Judging a model: absolute and relative deviation, systematic variation", dk:"Modelkritik", pre:["c35"]},
+
+{id:"c37",t:"c", area:"dkVrk", n:"CAS software — TI-Nspire, Maple or GeoGebra", dk:"CAS-værktøj", m:"Banned on the Slovak maturita, required in Denmark."},
+{id:"c38",t:"c", area:"dkVrk", n:"Spreadsheets, and importing data from Excel", dk:"Regneark og dataimport", pre:["c37"]},
+{id:"c39",t:"c", area:"dkVrk", n:"The official Matematik A formula booklet", dk:"Formelsamlingen"},
+{id:"c40",t:"c", area:"dkVrk", n:"Exam wording and notation — decimal comma, \"find by calculation\" vs \"read off\"", dk:"„bestem ved beregning“ vs. „aflæs“"},
+{id:"c41",t:"c", area:"dkVrk", n:"Part 1 of the written paper: 3 hours, no tools, everything by hand", dk:"Delprøve 1 uden hjælpemidler", pre:["c39"]},
+{id:"c42",t:"c", area:"dkVrk", n:"Proofs prepared for the oral exam", dk:"Beviser til den mundtlige prøve", pre:["a9"]}
+];
+
+/* ============================================================
+   DESCRIPTIONS — [what the topic covers, a typical task]
+   ============================================================ */
+const DESC = {
+/* A · základy */
+a1:["Počítanie s časťou z celku: koľko je p % z čísla, o koľko % sa niečo zmenilo, zdraženie a zľava po sebe. Pomer delí celok na diely, trojčlenka rieši priamu a nepriamu úmernosť.","Tovar zdražel o 20 % a potom zlacnel o 20 %. Je teraz lacnejší alebo drahší ako na začiatku a o koľko %?"],
+a2:["Jednoduché a zložené úročenie (K · (1 + p)ⁿ), daň z úroku, splácanie pôžičky v pravidelných splátkach a čítanie umorovacieho plánu.","Koľko budeš mať po 3 rokoch, ak vložíš 1 000 € na účet s 2 % ročným úrokom?"],
+a3:["Zaokrúhlenie na rády a platné číslice, odhad výsledku a zápis veľmi veľkých alebo malých čísel v tvare a · 10ⁿ.","Zapíš 0,000 45 v tvare a · 10ⁿ."],
+a4:["Prevod čísel medzi desiatkovou, dvojkovou a šestnástkovou sústavou a čítanie rímskych čísel.","Preveď 101101₂ do desiatkovej sústavy."],
+a5:["Pravidlá deliteľnosti (2, 3, 4, 5, 6, 9, 10…), rozklad na prvočinitele, najväčší spoločný deliteľ a najmenší spoločný násobok v slovných úlohách.","Dnešné telefónne číslo 7145AB deliteľné 3, 4 a 5; alebo kedy sa znova stretnú dva autobusy s intervalom 12 a 18 minút."],
+a6:["Zjednotenie, prienik, rozdiel a doplnok množín; obory N, Z, Q, R; zápis intervalov; slovné úlohy cez Vennove diagramy.","Z 30 žiakov hrá 18 futbal, 12 hokej a 5 oboje. Koľkí nehrajú ani jedno?"],
+a7:["Čo je výrok, jeho pravdivostná hodnota, spojky „a“, „alebo“, „ak…tak“, „práve vtedy, keď“ a negácia zloženého výroku.","Zneguj výrok: „Ak prší, zoberiem si dáždnik.“"],
+a8:["Výroky so slovami „každý“, „existuje“, „aspoň“, „najviac“, „práve“ a ich správna negácia.","Zneguj: „Každý žiak v triede má aspoň jednu jednotku.“"],
+a9:["Rozlíšiť priamy dôkaz, dôkaz obmenou a dôkaz sporom; nájsť protipríklad k tvrdeniu; nájsť chybu v cudzom postupe.","Nájdi protipríklad k tvrdeniu „Súčet dvoch iracionálnych čísel je vždy iracionálny.“"],
+a10:["Roznásobovanie, vzorce (a ± b)² a a² − b², vyberanie pred zátvorku, rozklad na súčin a doplnenie na štvorec.","Uprav (2 − x)², rozlož x² − 9, uprav x² − 6x + 2 doplnením na štvorec."],
+a11:["Pravidlá pre počítanie s mocninami s celým aj zlomkovým exponentom, prevod odmocniny na mocninu a odstránenie odmocniny z menovateľa (usmernenie).","Zjednoduš (a³ · a⁻¹)²; usmerni 1/√2."],
+a12:["Krátenie, sčítanie, násobenie a delenie zlomkov s premennými a podmienky, pre ktoré x má výraz zmysel (menovateľ nesmie byť 0).","Zjednoduš (x² − 1)/(x + 1) a urč, pre aké x má výraz zmysel."],
+a13:["|x| ako vzdialenosť čísla od nuly; ako rozpísať výraz s absolútnou hodnotou podľa toho, či je vnútro kladné alebo záporné.","Uprav |x − 3| + |x| pre x z intervalu (0; 3)."],
+a14:["Rovnice a nerovnice typu ax + b = 0, sústavy dvoch rovníc (dosadzovacia a sčítacia metóda) a slovné úlohy, ktoré na ne vedú.","V triede je 28 žiakov a chlapcov je o 4 viac ako dievčat. Koľko je dievčat?"],
+a15:["ax² + bx + c = 0 riešená cez diskriminant, rozkladom alebo doplnením na štvorec; počet riešení podľa znamienka D.","x² − 3x − 40 = 0 z dnešného príkladu."],
+a16:["Rovnice, kde je x v menovateli: vynásobiť spoločným menovateľom a vylúčiť hodnoty, pre ktoré je menovateľ 0.","2/(x − 1) = 3/(x + 1)"],
+a17:["Rovnice s neznámou pod odmocninou: umocniť obe strany a potom urobiť skúšku alebo overiť podmienky, lebo umocnenie môže pridať cudzí koreň.","√(44 − x) = 2 − x z dnešného príkladu."],
+/* A · funkcie */
+a18:["Funkcia priradí každému x práve jedno y. Treba vedieť určiť, pre aké x je definovaná (D(f)), aké hodnoty nadobúda (H(f)), a čítať to z grafu.","Urči definičný obor f(x) = √(x − 2) / (x − 5)."],
+a19:["Kde funkcia rastie a klesá, kde má maximum a minimum, či je ohraničená, párna (súmerná podľa osi y), nepárna (súmerná podľa počiatku) alebo periodická.","Je f(x) = x³ − x párna, nepárna alebo ani jedno?"],
+a20:["Prostá funkcia nenadobúda žiadnu hodnotu dvakrát. Inverzná f⁻¹ „vracia“ x z y a jej graf je súmerný podľa priamky y = x. Zložená f(g(x)) znamená dosadiť jednu funkciu do druhej.","Nájdi inverznú funkciu k f(x) = 2x + 3; vypočítaj f(g(1)) pre g(x) = x²."],
+a21:["y = kx + q: k je smernica (o koľko sa zmení y, keď x vzrastie o 1), q je priesečník s osou y. Zostavenie funkcie z dvoch bodov.","Nájdi lineárnu funkciu, ktorej graf prechádza bodmi [1; 2] a [3; 8]."],
+a22:["y = ax² + bx + c, graf je parabola: vrchol, priesečníky s osami, kedy je otvorená hore a kedy dole, maximum a minimum v slovných úlohách.","Urči vrchol paraboly y = x² − 4x + 1."],
+a23:["Grafy funkcií y = x², x³, x⁻¹, x⁻²… a ako sa líšia pre párne, nepárne, kladné a záporné n.","Ktorý z nakreslených grafov patrí funkcii y = x⁻²?"],
+a24:["y = aˣ rastie pre a > 1 a klesá pre 0 < a < 1, hodnoty má vždy kladné a prechádza bodom [0; 1]. Modely rastu a rozpadu.","Populácia rastie o 5 % ročne. Zapíš jej veľkosť ako funkciu času."],
+a25:["Postupnosť, kde sa každý ďalší člen líši od predošlého o rovnaké číslo d. aₙ = a₁ + (n − 1)d, sₙ = n(a₁ + aₙ)/2.","Prvý rad amfiteátra má 20 sedadiel a každý ďalší o 2 viac. Koľko sedadiel je v 15 radoch spolu?"],
+a26:["Každý ďalší člen je q-násobkom predošlého. aₙ = a₁ · qⁿ⁻¹, sₙ = a₁(qⁿ − 1)/(q − 1).","Počet baktérií sa každú hodinu zdvojnásobí. Koľko ich bude po 10 hodinách?"],
+/* A · planimetria */
+a27:["Vrcholové, susedné, súhlasné a striedavé uhly pri rovnobežkách; súčet uhlov v trojuholníku a v mnohouholníku.","Dve rovnobežky pretína priečka pod uhlom 65°. Dopočítaj ostatné uhly."],
+a28:["Významné čiary trojuholníka: ťažnice a ťažisko (delí ťažnicu v pomere 2 : 1), výšky, osi strán (stred opísanej kružnice), osi uhlov (stred vpísanej kružnice).","Aký je polomer kružnice opísanej rovnostrannému trojuholníku so stranou 6?"],
+a29:["V pravouhlom trojuholníku platí c² = a² + b². Používa sa všade, kde sa počíta vzdialenosť alebo uhlopriečka, aj v priestore.","Aká dlhá je uhlopriečka obdĺžnika so stranami 6 a 8?"],
+a30:["Vzťahy medzi výškou na preponu a úsekmi prepony v pravouhlom trojuholníku: v² = cₐ · c_b a a² = c · cₐ.","Výška na preponu ju delí na úseky 4 cm a 9 cm. Aká je výška?"],
+a31:["Každý uhol s vrcholom na kružnici nad jej priemerom je pravý. Využíva sa pri konštrukcii pravého uhla a dotyčníc.","Bod C leží na kružnici s priemerom AB. Aký veľký je uhol ACB?"],
+a32:["Kedy sú trojuholníky zhodné a kedy podobné. Pri podobnosti s pomerom k sa dĺžky menia k-krát a obsahy k²-krát.","Palica dĺžky 1 m vrhá tieň 1,5 m a strom vrhá tieň 12 m. Aký vysoký je strom?"],
+a33:["Vzorce pre obvod a obsah trojuholníka, štvorca, obdĺžnika, rovnobežníka, lichobežníka, kosoštvorca a kruhu, aj pre útvary z nich poskladané.","Obsah lichobežníka so základňami 10 a 6 a výškou 4."],
+a34:["Tetiva, dotyčnica (je kolmá na polomer), kruhový výsek a odsek, dĺžka oblúka l = πrα/180°.","Obsah kruhového výseku s polomerom 5 a stredovým uhlom 72°."],
+a35:["Vlastnosti rovnobežníkov, lichobežníka a deltoidu; pravidelné n-uholníky a súčet vnútorných uhlov (n − 2) · 180°.","Aký veľký je vnútorný uhol pravidelného šesťuholníka?"],
+/* A · stereometria */
+a36:["Objem a povrch kocky, kvádra, hranola a ihlana; stenová a telesová uhlopriečka.","Aká dlhá je telesová uhlopriečka kocky s hranou 3?"],
+a37:["Valec V = πr²v, kužeľ V = ⅓πr²v, guľa V = ⁴⁄₃πr³ a ich povrchy; ako sa zmení objem, keď sa zmenia rozmery.","Koľko guľôčok s polomerom 1 cm sa dá odliať z valca s polomerom 3 cm a výškou 4 cm?"],
+/* A · KPŠ */
+a38:["Keď voľby idú po sebe, počty možností sa násobia; keď sa vyberá jedna z viacerých skupín, sčítajú sa. Stromový diagram a vypisovanie.","Koľko trojciferných čísel sa dá zostaviť z cifier 1 až 5, ak sa cifry nesmú opakovať?"],
+a39:["n! = 1 · 2 · … · n. Kombinačné číslo (n nad k) = n! / (k! · (n − k)!) je počet spôsobov, ako vybrať k prvkov z n bez ohľadu na poradie.","Vypočítaj (7 nad 3)."],
+a40:["Záleží na poradí → variácie alebo permutácie. Nezáleží → kombinácie. Kľúčové je rozpoznať typ zo slovnej úlohy.","Koľkými spôsobmi vyberieš z 10 žiakov trojčlennú delegáciu? A predsedu, podpredsedu a pokladníka?"],
+a41:["P(A) = počet priaznivých výsledkov / počet všetkých rovnako možných výsledkov. Kocky, mince, karty, losovanie.","Aká je pravdepodobnosť, že na dvoch kockách padne súčet 7?"],
+a42:["Zostavenie a čítanie tabuľky početností (absolútna a relatívna), histogramu, stĺpcového a koláčového grafu.","Z koláčového grafu urči, koľko žiakov z 150 odpovedalo „áno“."],
+/* B · základy */
+b1:["log_a x = y znamená aʸ = x („na koľkú musím umocniť a, aby vyšlo x“). Pravidlá: log(xy) = log x + log y, log(x/y) = log x − log y, log xⁿ = n · log x.","Vypočítaj log₂ 32; zjednoduš log 20 + log 5."],
+b2:["Rovnice s neznámou v exponente: previesť obe strany na rovnaký základ, alebo obe strany zlogaritmovať.","2ˣ⁺¹ = 16; 3ˣ = 7."],
+b3:["Rovnice s neznámou v logaritme: použiť pravidlá pre logaritmy, odlogaritmovať a overiť, že argument logaritmu je kladný.","log₃(x − 1) = 2."],
+b4:["Nerovnice typu ax² + bx + c > 0: nájsť korene a podľa tvaru paraboly alebo znamienkovej tabuľky určiť intervaly. Podobne pre (x − 1)(x + 2)/(x − 3) ≥ 0.","x² − 5x + 6 < 0."],
+b5:["Rozdeliť číselnú os podľa nulových bodov a riešiť na každom intervale zvlášť, alebo úlohu chápať ako vzdialenosť na osi.","|x − 2| = 5; |2x + 1| < 3."],
+b6:["Pre x² + px + q = 0 platí x₁ + x₂ = −p a x₁ · x₂ = q. Rozklad ax² + bx + c = a(x − x₁)(x − x₂).","Zostav kvadratickú rovnicu, ktorej korene sú 2 a −3."],
+b7:["Riešenie nerovnice ako y > 2x − 1 je polrovina. Treba ju vyšrafovať v súradnicovej sústave, prípadne nájsť prienik viacerých polrovín.","Zakresli množinu bodov, pre ktoré platí x + y ≤ 4 a zároveň x ≥ 0."],
+/* B · funkcie */
+b8:["Veľkosť uhla v radiánoch (180° = π) a jednotková kružnica, kde sin a cos sú súradnice bodu na kružnici s polomerom 1.","Preveď 135° na radiány."],
+b9:["Hodnoty sin, cos a tg pre 0°, 30°, 45°, 60°, 90° a ich násobky, znamienka v kvadrantoch, grafy a perióda (2π pre sin a cos, π pre tg).","Koľko je sin 150°? Aká je perióda funkcie y = sin 2x?"],
+b10:["sin²x + cos²x = 1, tg x = sin x / cos x, sin 2x = 2 sin x cos x, cos 2x = cos²x − sin²x.","Ak sin x = 3/5 a x je ostrý uhol, vypočítaj cos x."],
+b11:["Rovnice typu sin x = ½: nájsť všetky riešenia (vďaka periodicite pribudne + 2kπ) a vybrať tie, ktoré ležia v zadanom intervale.","Vyrieš 2 cos x = 1 na intervale ⟨0; 2π)."],
+b12:["Ako sa zmení graf: f(x) + a posun hore/dole, f(x + a) posun doľava/doprava, a · f(x) natiahnutie, |f(x)| preklopenie záporných častí nad os x.","Ako vznikne graf y = (x − 2)² + 1 z grafu y = x²?"],
+b13:["y = log_a x je inverzná k aˣ, je definovaná len pre x > 0 a prechádza bodom [1; 0].","Urči definičný obor f(x) = log(3 − x)."],
+b14:["y = (ax + b)/(cx + d), graf je hyperbola so zvislou a vodorovnou asymptotou.","Urči asymptoty funkcie y = (2x + 1)/(x − 3)."],
+b15:["Stupeň mnohočlena, mnohočlen n-tého stupňa má najviac n reálnych koreňov, delenie mnohočlenov a tvar grafu.","Koľko reálnych koreňov môže mať mnohočlen 3. stupňa?"],
+/* B · planimetria */
+b16:["V pravouhlom trojuholníku: sin = protiľahlá / prepona, cos = priľahlá / prepona, tg = protiľahlá / priľahlá. Dopočítanie strán a uhlov.","Rebrík dlhý 5 m zviera so zemou uhol 70°. Do akej výšky siaha?"],
+b17:["Pre ľubovoľný trojuholník: a / sin α = b / sin β (sínusová veta), c² = a² + b² − 2ab · cos γ (kosínusová veta).","Z prístavu vyplávajú dve lode pod uhlom 50° a preplávajú 8 km a 5 km. Aká je vzdialenosť medzi nimi?"],
+b18:["Obvodový uhol je polovicou stredového uhla nad tým istým oblúkom kružnice.","Stredový uhol nad oblúkom má 100°. Aký je obvodový uhol nad tým istým oblúkom?"],
+b19:["Bod v rovine ako [x; y]. Vzdialenosť |AB| = √((x₂ − x₁)² + (y₂ − y₁)²), stred úsečky je priemer súradníc.","Urči stred a dĺžku úsečky s krajnými bodmi A[1; 2] a B[7; 10]."],
+b20:["Vektor ako posunutie (u₁; u₂): sčítanie, násobenie číslom, dĺžka, skalárny súčin u · v = u₁v₁ + u₂v₂, uhol medzi vektormi a kolmosť.","Sú vektory (2; 3) a (−3; 2) na seba kolmé?"],
+b21:["Tri tvary rovnice priamky: parametrický X = A + t · u, všeobecný ax + by + c = 0 (kde (a; b) je normálový vektor) a smernicový y = kx + q.","Napíš všeobecnú rovnicu priamky cez body A[1; 2] a B[3; −2]."],
+b22:["Či sú priamky rovnobežné, totožné alebo rôznobežné; výpočet priesečníka cez sústavu; uhol priamok cez ich smerové alebo normálové vektory.","Nájdi priesečník priamok x + y = 3 a 2x − y = 0."],
+b23:["Vzdialenosť bodu od priamky d = |ax₀ + by₀ + c| / √(a² + b²); obsah trojuholníka zo súradníc jeho vrcholov.","Vzdialenosť bodu [2; 3] od priamky 3x + 4y − 1 = 0."],
+b24:["(x − m)² + (y − n)² = r²: určiť stred a polomer (často doplnením na štvorec) a zistiť, či priamka kružnicu pretína, dotýka sa jej alebo ju míňa.","Urči stred a polomer kružnice x² + y² − 4x + 6y − 3 = 0."],
+b25:["Os úsečky, os uhla, kružnica a Tálesova kružnica ako množiny bodov s danou vlastnosťou, a ich zápis rovnicou.","Napíš rovnicu množiny bodov, ktoré sú rovnako vzdialené od A[0; 0] a B[4; 2]."],
+b26:["Kam sa zobrazí bod alebo útvar pri osovej a stredovej súmernosti, posunutí a otočení, a aké budú súradnice obrazu.","Aký je obraz bodu [3; −1] v osovej súmernosti podľa osi x?"],
+b27:["Zväčšenie alebo zmenšenie útvaru zo stredu s koeficientom k; dĺžky sa menia |k|-krát, obsahy k²-krát.","Trojuholník zobrazíš rovnoľahlosťou s k = −2. Ako sa zmení jeho obsah?"],
+b28:["Postup konštrukcie trojuholníka alebo štvoruholníka zo zadaných prvkov a určenie, koľko riešení úloha má.","Koľko rôznych trojuholníkov existuje so stranami a = 5, b = 3 a uhlom α = 30°?"],
+/* B · stereometria */
+b29:["Ako nakresliť teleso na papier a ako čítať jeho pohľady zhora (pôdorys), spredu (nárys) a zboku (bokorys).","Ktorý z nárysov patrí telesu poskladanému z kociek?"],
+b30:["Bod v priestore ako [x; y; z]; vzdialenosť bodov cez Pytagorovu vetu rozšírenú o tretiu súradnicu.","Aká je vzdialenosť bodov [1; 2; 3] a [4; 6; 3]?"],
+b31:["Priamky v priestore môžu byť rovnobežné, rôznobežné alebo mimobežné; priamka môže ležať v rovine, byť s ňou rovnobežná alebo ju pretínať.","V kocke ABCDEFGH: sú priamky AB a GH rovnobežné, rôznobežné alebo mimobežné?"],
+b32:["Zostrojiť, kadiaľ rovina prechádzajúca tromi danými bodmi „prereže“ kocku alebo kváder, a určiť tvar rezu.","Aký útvar je rez kocky rovinou, ktorá prechádza stredmi troch hrán z jedného vrcholu?"],
+b33:["Uhol dvoch mimobežiek, uhol priamky a roviny (cez kolmý priemet) a uhol dvoch rovín; počíta sa cez pravouhlé trojuholníky vnútri telesa.","Aký uhol zviera telesová uhlopriečka kocky s rovinou podstavy?"],
+b34:["Vzdialenosť bodu od priamky a od roviny, vzdialenosť dvoch rovnobežných rovín v kocke a kvádri.","Aká je vzdialenosť vrcholu G od roviny ABC v kocke s hranou a?"],
+b35:["Rozloženie telesa do roviny: rozpoznať, ktorá sieť sa dá zložiť do telesa a ktoré steny budú oproti sebe.","Ktorá z nakreslených sietí je sieťou kocky?"],
+/* B · KPŠ */
+b36:["Výbery, v ktorých sa prvky môžu opakovať (PIN, heslo): nᵏ možností. Permutácie s opakovaním: preskupenie písmen slova s rovnakými písmenami.","Koľko štvorciferných PIN kódov existuje? Koľko rôznych slov vznikne z písmen slova MAMA?"],
+b37:["(n nad k) = (n nad n − k), súčet dvoch susedných čísel v Pascalovom trojuholníku dáva číslo pod nimi, binomická veta.","Aký je koeficient pri x² v (1 + x)⁵?"],
+b38:["P(opačný jav) = 1 − P(A); pre nezávislé javy P(A aj B) = P(A) · P(B); úlohy s „aspoň jeden“ sa riešia cez opačný jav.","Aká je pravdepodobnosť, že pri troch hodoch mincou padne aspoň raz hlava?"],
+b39:["Pravdepodobnosť ako pomer dĺžok alebo obsahov: náhodne zvolený bod padne do určitej časti útvaru.","Aká je pravdepodobnosť, že náhodný bod štvorca padne do kruhu vpísaného do tohto štvorca?"],
+b40:["Najčastejšia hodnota (modus), prostredná hodnota po zoradení (medián), aritmetický priemer a vážený priemer z tabuľky početností.","Urči medián a modus známok 1, 3, 2, 2, 4, 1."],
+b41:["Ako veľmi sú hodnoty rozptýlené okolo priemeru: rozptyl je priemer druhých mocnín odchýlok od priemeru, smerodajná odchýlka je jeho odmocnina.","Vypočítaj smerodajnú odchýlku súboru 2, 4, 4, 4, 5, 5, 7, 9."],
+b42:["Rozdiel medzi celým základným súborom a vybranou vzorkou, triedenie hodnôt do intervalov; opakované nezávislé pokusy s dvoma výsledkami.","Aká je pravdepodobnosť, že pri 5 hodoch kockou padne šestka presne dvakrát?"],
+/* C · Danish extra */
+c1:["K akej hodnote sa blíži f(x), keď sa x blíži k číslu alebo do nekonečna. Spojitosť znamená, že graf nemá „skoky“ ani „diery“.","lim (x² − 1)/(x − 1) pre x → 1."],
+c2:["Derivácia je okamžitá rýchlosť zmeny funkcie a zároveň smernica dotyčnice ku grafu v danom bode.","Dráha auta je s(t) = t². Aká je jeho rýchlosť v čase t = 3?"],
+c3:["Ako derivovať súčet, násobok, súčin a zloženú funkciu (reťazové pravidlo).","Derivuj (3x² + 1)⁵."],
+c4:["Tabuľka základných derivácií, ktorú treba vedieť naspamäť.","Aká je derivácia eˣ, ln x a sin x?"],
+c5:["Rovnica dotyčnice ku grafu v bode x₀: y = f′(x₀)(x − x₀) + f(x₀).","Nájdi dotyčnicu ku grafu y = x² v bode x = 3."],
+c6:["Kde je f′ > 0, funkcia rastie; kde f′ = 0, môže byť extrém. Slovné úlohy na najväčšiu alebo najmenšiu hodnotu.","Z plechu 20 × 20 cm vystrihneš rohy a zohneš škatuľu. Pri akom výreze bude mať najväčší objem?"],
+c7:["Približné hľadanie koreňa rovnice opakovaným výpočtom xₙ₊₁ = xₙ − f(xₙ)/f′(xₙ).","Nájdi približne koreň rovnice x³ − 2 = 0."],
+c8:["Integrovanie je opak derivovania. Určitý integrál ∫ₐᵇ f(x) dx = F(b) − F(a), kde F je primitívna funkcia.","Vypočítaj ∫₀² x² dx."],
+c9:["Obsah plochy pod grafom funkcie sa vypočíta ako rozdiel hodnôt primitívnej funkcie v krajných bodoch.","Aký je obsah plochy pod grafom y = sin x od 0 po π?"],
+c10:["Integrál súčtu a násobku a integrovanie substitúciou, čo je opak reťazového pravidla.","∫ 2x · (x² + 1)³ dx."],
+c11:["Obsah plochy medzi dvoma grafmi je integrál z (horná − dolná) funkcia medzi ich priesečníkmi.","Aký je obsah plochy medzi y = x a y = x²?"],
+c12:["V = π ∫ f(x)² dx: objem telesa, ktoré vznikne otočením grafu okolo osi x.","Odvoď objem gule otočením polkružnice okolo osi x."],
+c13:["Rovnica, v ktorej je neznámou funkcia a vystupuje v nej aj jej derivácia; správanie riešenia sa dá čítať aj bez výpočtu.","Je y = e²ˣ riešením rovnice y′ = 2y?"],
+c14:["Tri typy, ktorých všeobecné riešenie je vo formulári: exponenciálny rast, ohraničený rast a logistický rast.","Nájdi riešenie y′ = 0,3y, pre ktoré y(0) = 5."],
+c15:["Presunúť všetko s y na jednu stranu a všetko s x na druhú, potom obe strany zintegrovať.","Vyrieš y′ = x · y."],
+c16:["Numerické riešenie po malých krokoch: yₙ₊₁ = yₙ + h · f(xₙ, yₙ).","Urob dva kroky Eulerovej metódy s krokom h = 0,1."],
+c17:["Graf z malých úsečiek, ktoré ukazujú smernicu y′ v každom bode; z neho sa dá odhadnúť tvar riešení.","Ktoré smerové pole patrí k rovnici y′ = x − y?"],
+c18:["Zo slovného popisu („mení sa úmerne k…“) zostaviť diferenciálnu rovnicu.","Čaj chladne rýchlosťou úmernou rozdielu jeho teploty a teploty izby. Zapíš to rovnicou."],
+c19:["Vektor otočený o 90° a determinant dvoch vektorov, ktorého absolútna hodnota je obsah rovnobežníka, ktorý vektory určujú.","Aký je obsah rovnobežníka určeného vektormi (3; 1) a (1; 4)?"],
+c20:["„Tieň“ jedného vektora na priamke druhého, vypočítaný cez skalárny súčin.","Nájdi priemet vektora (4; 2) na vektor (1; 1)."],
+c21:["Priamka a kružnica zapísané pomocou parametra t, napríklad x = r · cos t, y = r · sin t.","Napíš parametrické vyjadrenie kružnice so stredom [1; 2] a polomerom 3."],
+c22:["Vektory (x; y; z) v priestore a vektorový súčin, ktorý dá vektor kolmý na oba pôvodné.","Vypočítaj (1; 2; 0) × (0; 1; 3)."],
+c23:["Rovina ako ax + by + cz + d = 0 s normálovým vektorom (a; b; c), alebo cez bod a dva smerové vektory.","Napíš rovnicu roviny prechádzajúcej bodmi [1; 0; 0], [0; 1; 0] a [0; 0; 1]."],
+c24:["Priamka X = A + t · u v priestore a guľová plocha (x − a)² + (y − b)² + (z − c)² = r².","Pretína priamka X = [0; 0; 0] + t · (1; 1; 1) guľu so stredom [2; 2; 2] a polomerom 1?"],
+c25:["Priesečník priamky s rovinou, uhol dvoch rovín a vzdialenosť bodu od roviny v priestore.","Aká je vzdialenosť bodu [1; 1; 1] od roviny x + 2y + 2z = 0?"],
+c26:["Veličina s náhodnou hodnotou, tabuľka jej rozdelenia, stredná hodnota E(X) a smerodajná odchýlka.","Aká je stredná hodnota čísla, ktoré padne na kocke?"],
+c27:["P(X = k) = (n nad k) · pᵏ · (1 − p)ⁿ⁻ᵏ: počet úspechov v n nezávislých opakovaniach.","Test má 10 otázok so 4 možnosťami. Aká je pravdepodobnosť, že tipovaním trafíš presne 3?"],
+c28:["Zvonovitá krivka s priemerom μ a smerodajnou odchýlkou σ a pravidlo 68 – 95 – 99,7 %.","Výška mužov má priemer 180 cm a σ = 7 cm. Koľko % mužov je vyšších ako 187 cm?"],
+c29:["Dáta rozdelené do intervalov, súčtová (kumulatívna) krivka, krabicový graf, kvartily a percentily.","Z krabicového grafu odčítaj medián a kvartilové rozpätie."],
+c30:["Overenie hypotézy: je výsledok taký nezvyčajný, že už nie je pravdepodobné, že ide o náhodu?","Na minci padlo 16 hláv z 20 hodov. Je minca falošná na hladine 5 %?"],
+c31:["Exponenciálne modely b · aˣ a b · eᵏˣ, čas zdvojnásobenia a polčas rozpadu.","Za ako dlho sa zdvojnásobí vklad pri 4 % ročnom úroku?"],
+c32:["y = b · xᵃ: keď x vzrastie o pevné percento, y vzrastie tiež o pevné (iné) percento.","Ako sa zmení objem gule, keď polomer vzrastie o 10 %?"],
+c33:["Periodické javy (príliv, teplota počas roka) modelované funkciou A · sin(ωx + φ) + d s amplitúdou, periódou a posunom.","Z tabuľky výšky prílivu urči amplitúdu a periódu modelu."],
+c34:["Osi s logaritmickou mierkou, v ktorých sa exponenciálna alebo mocninová funkcia zobrazí ako priamka.","Zo sklonu priamky v semilogaritmickom grafe urči rastový koeficient."],
+c35:["Pomocou CAS alebo tabuľkového programu nájsť typ funkcie, ktorý najlepšie sedí na namerané dáta.","Urob exponenciálnu regresiu na údajoch o počte používateľov aplikácie."],
+c36:["Posúdiť, či model dobre sedí: rezíduá, absolútna a relatívna odchýlka, systematické odchýlky.","Je lineárny model vhodný, ak rezíduá tvoria oblúk?"],
+c37:["Počítačový systém na riešenie rovníc, derivovanie, grafy a regresiu; v Dánsku je na skúške povinný.","Vyrieš rovnicu, zderivuj funkciu a urob regresiu v GeoGebre."],
+c38:["Práca s tabuľkou dát a jej prenesenie do CAS.","Načítaj dáta z Excelu a urob z nich regresiu."],
+c39:["Oficiálny zošit vzorcov na skúšku: vedieť, čo v ňom je a kde to rýchlo nájsť.","Nájdi vo formulári riešenie logistickej rovnice."],
+c40:["Desatinná čiarka, typické formulácie zadaní a čo presne sa od teba v odpovedi čaká.","Aký je rozdiel medzi „bestem ved beregning“ (vypočítaj) a „aflæs“ (odčítaj z grafu)?"],
+c41:["Prvá časť písomky, v ktorej sa všetko počíta ručne, s pomocou jedine formulára: derivácie, rovnice, jednoduché integrály.","Bez CAS zderivuj funkciu a urči, kde rastie a kde klesá."],
+c42:["Súbor dôkazov (napr. derivácia súčinu alebo vzorec pre obsah pod grafom), ktoré treba vedieť predviesť na ústnej skúške.","Dokáž, že derivácia x² je 2x."]
+};
+
+const BY_ID = Object.fromEntries(T.map(x=>[x.id,x]));
+const EC_ITEMS = T.filter(x => x.t !== "c");
+
+/* ============================================================
+   STATE + STORAGE
+   state = {
+     v: 2,
+     lv:    { id: 0–4 },            level per topic
+     notes: { id: "text" },         free notes per topic
+     upd:   { id: timestamp },      last change to level or note
+     log:   [ {id, d:"YYYY-MM-DD", text, ts} ]   study diary
+   }
+   Two places progress can live:
+     1. window.storage — exists when this page runs inside Claude
+     2. localStorage   — exists when the file is opened from disk
+   If neither works, the Copy / Paste buttons are the backup.
+   ============================================================ */
+const KEY = "maturita-mat-v2";
+const OLD_KEY = "maturita-mat-progress";
+
+const emptyState = () => ({v:2, lv:{}, notes:{}, upd:{}, log:[]});
+let state = emptyState();
+let tab = "a";
+let filter = "all";
+let query = "";
+let store = "none";
+let showAllLog = false;
+const openNotes = new Set();
+const openDesc = new Set();
+let allDesc = false;
+
+const hasClaudeStore = typeof window !== "undefined"
+  && window.storage && typeof window.storage.get === "function";
+
+const hasLocal = (()=>{
+  try{ localStorage.setItem("__probe","1"); localStorage.removeItem("__probe"); return true; }
+  catch(e){ return false; }
+})();
+
+if(hasClaudeStore)   store = "claude";
+else if(hasLocal)    store = "local";
+
+/* old saves: {id: 0|1|2} or {id:{p,t}} → new five-level scale */
+function migrate(old){
+  if(!old || typeof old !== "object") return emptyState();
+  if(old.v === 2){
+    const s = Object.assign(emptyState(), old);
+    if(!Array.isArray(s.log)) s.log = [];
+    return s;
+  }
+  const s = emptyState();
+  const map = [0, 2, 4];
+  for(const id in old){
+    const v = old[id];
+    const p = typeof v === "number" ? v : (v && v.p) || 0;
+    if(p > 0 && BY_ID[id]) s.lv[id] = map[p] || 0;
+  }
+  return s;
+}
+
+async function readKey(k){
+  if(hasClaudeStore){
+    try{ const r = await window.storage.get(k); if(r && r.value) return r.value; }catch(e){}
+  }
+  if(hasLocal){
+    try{ const v = localStorage.getItem(k); if(v) return v; }catch(e){}
+  }
+  return null;
+}
+
+async function load(){
+  let raw = await readKey(KEY);
+  if(raw){ try{ state = migrate(JSON.parse(raw)); return; }catch(e){} }
+  raw = await readKey(OLD_KEY);
+  if(raw){ try{ state = migrate(JSON.parse(raw)); await save(); }catch(e){} }
+}
+
+async function save(){
+  const txt = JSON.stringify(state);
+  let ok = false;
+  if(hasClaudeStore){ try{ await window.storage.set(KEY, txt); ok = true; }catch(e){} }
+  if(hasLocal){ try{ localStorage.setItem(KEY, txt); ok = true; }catch(e){} }
+  if(!ok) store = "none";
+  renderStoreNote();
+}
+
+let saveTimer = null;
+function saveSoon(){ clearTimeout(saveTimer); saveTimer = setTimeout(save, 400); }
+
+function renderStoreNote(){
+  const el = document.getElementById("storeNote");
+  if(!el) return;
+  if(store === "claude"){
+    el.textContent = "Postup sa ukladá sem do Claude a nájdeš ho tu aj nabudúce. Ak si súbor stiahneš a otvoríš v prehliadači, ukladá sa doň zvlášť.";
+  } else if(store === "local"){
+    el.textContent = "Postup sa ukladá priamo v tomto prehliadači. Zostane tam, kým nevymažeš dáta stránok — súbor si nechaj na jednom mieste a otváraj ten istý.";
+  } else {
+    el.textContent = "Ukladanie tu nefunguje. Po každom sedení klikni Skopírovať postup a text si nechaj; cez Vložiť postup ho vrátiš späť.";
+  }
+}
+
+/* ---------- accessors ---------- */
+const lv = id => state.lv[id] || 0;
+const note = id => (state.notes[id] || "");
+
+function setLevel(id, v){
+  if(v === 0) delete state.lv[id]; else state.lv[id] = v;
+  state.upd[id] = Date.now();
+}
+
+/* ---------- helpers ---------- */
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const norm = s => String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+function todayIso(){
+  const n = new Date();
+  return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,"0")}-${String(n.getDate()).padStart(2,"0")}`;
+}
+function isoOf(ts){
+  const n = new Date(ts);
+  return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,"0")}-${String(n.getDate()).padStart(2,"0")}`;
+}
+function fmtIso(iso){
+  const [y,m,d] = iso.split("-").map(Number);
+  return `${d}. ${m}. ${y}`;
+}
+const changedToday = id => state.upd[id] && isoOf(state.upd[id]) === todayIso();
+
+function itemsOf(k){ return T.filter(x => x.t === k); }
+
+/* ============================================================
+   COUNTDOWN
+   ============================================================ */
+const EXAM = {d:"2027-03-11", label:"Externá časť", full:"štvrtok 11. marca 2027"};
+
+function daysTo(iso){
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const [y,m,d] = iso.split("-").map(Number);
+  return Math.round((new Date(y, m-1, d) - today) / 86400000);
+}
+function skWeeks(n){ return n === 1 ? "týždeň" : (n >= 2 && n <= 4 ? "týždne" : "týždňov"); }
+function skDays(n){  return n === 1 ? "deň"    : (n >= 2 && n <= 4 ? "dni"    : "dní"); }
+function skPieces(n){return n === 1 ? "téma"   : (n >= 2 && n <= 4 ? "témy"   : "tém"); }
+
+function renderClock(){
+  const left = EC_ITEMS.filter(x => lv(x.id) < 4).length;
+  const days = daysTo(EXAM.d);
+  const weeks = Math.floor(days / 7);
+  const rest = days - weeks * 7;
+  const host = document.getElementById("clockEc");
+  host.classList.toggle("past", days < 0);
+
+  let big, when;
+  if(days < 0){ big = `<div class="big">po skúške</div>`; when = EXAM.full; }
+  else if(days === 0){ big = `<div class="big">dnes</div>`; when = EXAM.full; }
+  else {
+    big = `<div class="big">${weeks}<span>${skWeeks(weeks)}${rest ? " a " + rest + " " + skDays(rest) : ""}</span></div>`;
+    when = `${EXAM.full} · ${days} ${skDays(days)}`;
+  }
+
+  let pace = "";
+  if(days > 0 && left > 0){
+    const per = left / Math.max(weeks, 1);
+    const shown = per >= 10 ? Math.round(per) : Math.round(per * 10) / 10;
+    pace = `<div class="pace">Ešte nie je na <i>perfektne</i> <b>${left}</b> ${skPieces(left)} — to je <b>${shown}</b> na týždeň.</div>`;
+  } else if(left === 0){
+    pace = `<div class="pace">Všetko na úrovni perfektne.</div>`;
+  }
+  host.innerHTML = `<h4>${EXAM.label}</h4>${big}<div class="when">${when}</div>${pace}`;
+}
+
+/* ============================================================
+   SCORING — weighted by the real test blueprint
+   ============================================================ */
+function areaStats(key){
+  const items = T.filter(x => x.area === key);
+  const n = items.length || 1;
+  let sum = 0, s4 = 0, mid = 0;
+  items.forEach(x => {
+    const v = lv(x.id);
+    sum += LV[v].w;
+    if(v === 4) s4++; else if(v >= 2) mid++;
+  });
+  const w = AREAS[key].w;
+  return { n, s4, mid, w, solidFrac: s4/n, midFrac: mid/n, est: sum / n * w };
+}
+
+function renderGauge(){
+  const host = document.getElementById("blocks");
+  let total = 0, html = "";
+  for(const key in AREAS){
+    const st = areaStats(key);
+    total += st.est;
+    const teal  = Math.min(st.w, Math.round(st.solidFrac * st.w));
+    const amber = Math.min(st.w - teal, Math.round(st.midFrac * st.w));
+    let cells = "";
+    for(let i=0;i<st.w;i++){
+      const cls = i<teal ? "solid" : (i<teal+amber ? "shaky" : "");
+      cells += `<div class="cell ${cls}"></div>`;
+    }
+    html += `<div class="block"><div class="cells">${cells}</div>
+      <div class="block-label">${AREAS[key].name.split(",")[0]} <b>${st.w}</b></div></div>`;
+  }
+  host.innerHTML = html;
+
+  const rounded = Math.round(total*10)/10;
+  document.getElementById("score").innerHTML = `${rounded}<span> / 30 odhad na EČ</span>`;
+  document.getElementById("barFill").style.width = (total/30*100).toFixed(1)+"%";
+
+  const v = document.getElementById("verdict");
+  const pct = Math.round(total/30*100);
+  if(total === 0){
+    v.innerHTML = "Odhad rastie z toho, čo si označíš nižšie — <b>perfektne</b> celé, <b>ide to</b> za dve tretiny, <b>slabo</b> za tretinu.";
+  } else {
+    let msg;
+    if(pct < 25)      msg = "Zatiaľ pod oboma hranicami. Najrýchlejší posun dostaneš z blokov, kde má jedna téma najväčšiu váhu.";
+    else if(pct < 34) msg = "Medzi hranicami 25 % a 33 %. Tesné — jeden slabý blok vie výsledok stiahnuť.";
+    else if(pct < 60) msg = "Nad hranicami. Odtiaľto už ide o percentil, nie o prejdenie.";
+    else if(pct < 85) msg = "Silné pásmo. Rozdiel teraz robia úlohy na hodnotenie a tvorenie — tých býva 6 až 8.";
+    else              msg = "Takmer plná mapa. Zvyšok je rýchlosť a presnosť pod 150 minútami.";
+    v.innerHTML = `Približne <b>${pct} %</b> testu. ${msg}`;
+  }
+
+  /* distribution across the five levels */
+  const counts = [0,0,0,0,0];
+  EC_ITEMS.forEach(x => counts[lv(x.id)]++);
+  const n = EC_ITEMS.length;
+  document.getElementById("dist").innerHTML = counts.map((c,i) =>
+    `<div style="width:${(c/n*100).toFixed(2)}%;background:${LV_COLOR[i]};${i===0?"opacity:.45":""}" title="${LV[i].label}: ${c}"></div>`
+  ).join("");
+  document.getElementById("distLegend").innerHTML = counts.map((c,i) =>
+    `<span><i style="background:${LV_COLOR[i]}"></i>${LV[i].label} <b>${c}</b></span>`
+  ).join("");
+}
+
+/* ============================================================
+   NEXT UP
+   ============================================================ */
+const blocked = item => (item.pre||[]).filter(p => lv(p) < 3);
+
+function renderNext(){
+  const host = document.getElementById("next");
+  const pool = EC_ITEMS.filter(x => lv(x.id) < 4);
+  if(!pool.length){
+    host.innerHTML = `<h2>Čo ďalej</h2><p class="done">Všetko je na úrovni perfektne. Rob celé testy na čas.</p>`;
+    return;
+  }
+  const scored = pool.map(x => {
+    let p = AREAS[x.area].w / T.filter(y => y.area === x.area).length;
+    if(x.t === "a") p *= 2.2;
+    const v = lv(x.id);
+    if(v === 3) p *= 1.5;       /* skoro hotové — dotiahni */
+    else if(v === 2) p *= 1.3;
+    const b = blocked(x).length;
+    if(b) p /= (1 + b);
+    return {x, p, b};
+  }).sort((m,k) => k.p - m.p).slice(0,5);
+
+  const li = scored.map(({x,b}) => {
+    const v = lv(x.id);
+    const why = v >= 2 ? `rozrobené (${LV[v].label}) — dotiahni to`
+              : x.t === "a" ? "prebrané, ale ešte nesedí"
+              : `nové učivo · ${AREAS[x.area].name.split(",")[0]}`;
+    const pre = b ? ` · najprv: ${blocked(x).map(id => BY_ID[id].n.split(/[:—,]/)[0].trim()).join(", ")}` : "";
+    return `<li>${x.n}<br><em>${why}${pre}</em></li>`;
+  }).join("");
+  host.innerHTML = `<h2>Čo ďalej — podľa váhy v teste a toho, čo si označil</h2><ol>${li}</ol>`;
+}
+
+/* ============================================================
+   STUDY LOG
+   ============================================================ */
+function renderLog(){
+  const host = document.getElementById("logList");
+  const entries = [...state.log].sort((a,b) => b.d.localeCompare(a.d) || (b.ts||0) - (a.ts||0));
+  const shown = showAllLog ? entries : entries.slice(0, 4);
+  let html = shown.map(e => `
+    <div class="entry">
+      <div class="entry-date">${fmtIso(e.d)}</div>
+      <div class="entry-text">${esc(e.text)}</div>
+      <button class="entry-del" data-del="${e.id}" title="Zmazať záznam" aria-label="Zmazať záznam">×</button>
+    </div>`).join("");
+  if(entries.length > 4){
+    html += `<button class="more" id="logMore">${showAllLog ? "Zobraziť menej" : `Zobraziť všetky (${entries.length})`}</button>`;
+  }
+  host.innerHTML = html;
+
+  const tl = document.getElementById("todayLink");
+  const nToday = T.filter(x => changedToday(x.id)).length;
+  if(nToday){
+    tl.hidden = false;
+    tl.textContent = `Dnes si zmenil ${nToday} ${skPieces(nToday)} → zobraziť`;
+  } else tl.hidden = true;
+}
+
+/* ============================================================
+   TABS + LIST
+   ============================================================ */
+const TABS = [
+  {k:"a", label:"Prebraté · malo by sedieť", intro:'Témy, ktoré podľa sylabov Y1–Y3 už prebehli — čo je tu slabé, je najlacnejší bod na teste, lebo si to raz videl.'},
+  {k:"b", label:"Čaká nás · štvrták", intro:'Učivo na <strong>externú časť</strong>, ktoré sa v žiadnom z troch sylabov neobjavuje. Označuj podľa toho, ako to preberiete alebo dobehneš sám.'},
+  {k:"c", label:"Navyše pre Matematik A", intro:'Čo dánska Matematik A (STX) žiada <strong>nad rámec</strong> slovenskej maturity. Do odhadu na EČ sa nepočíta.'}
+];
+
+function renderTabs(){
+  document.getElementById("tabs").innerHTML = TABS.map(t => {
+    const left = itemsOf(t.k).filter(x => lv(x.id) < 4).length;
+    return `<button class="tab" role="tab" data-k="${t.k}" aria-selected="${tab===t.k}">
+      ${t.label}<span class="count">${left}</span></button>`;
+  }).join("");
+  document.getElementById("intro").innerHTML = TABS.find(t => t.k === tab).intro;
+}
+
+function renderKey(){
+  document.getElementById("levelsKey").innerHTML = LV.map(l =>
+    `<div style="border-top-color:${LV_COLOR[l.k]}"><b>${l.label}</b>${l.desc}</div>`
+  ).join("");
+}
+
+function passes(x){
+  const v = lv(x.id);
+  const f = filter;
+  const ok = f === "all" || (f === "n0" && v === 0) || (f === "n1" && v === 1)
+          || (f === "mid" && (v === 2 || v === 3)) || (f === "n4" && v === 4)
+          || (f === "note" && note(x.id).trim()) || (f === "today" && changedToday(x.id));
+  if(!ok) return false;
+  if(!query) return true;
+  const q = norm(query);
+  const d = DESC[x.id] ? DESC[x.id].join(" ") : "";
+  return norm(x.n).includes(q) || norm(note(x.id)).includes(q) || (x.dk && norm(x.dk).includes(q)) || norm(d).includes(q);
+}
+
+function rowHtml(x){
+  const v = lv(x.id);
+  const nt = note(x.id);
+  const open = openNotes.has(x.id);
+
+  let meta = "";
+  if(x.src) meta += `<span class="src">${x.src}</span>`;
+  if(state.upd[x.id]){
+    const t = changedToday(x.id);
+    meta += `<span class="upd${t ? " today" : ""}">${t ? "zmenené dnes" : "zmenené " + fmtIso(isoOf(state.upd[x.id]))}</span>`;
+  }
+  if(x.dk) meta += `<span class="dkterm">${x.dk}</span>`;
+  const b = blocked(x);
+  if(b.length) meta += `<span class="pre">najprv: ${b.map(id => BY_ID[id].n.split(/[:—,]/)[0].trim()).join(", ")}</span> `;
+  if(x.m) meta += x.m;
+
+  const seg = LV.map(l =>
+    `<button class="b${l.k}" data-id="${x.id}" data-v="${l.k}" aria-pressed="${v===l.k}" title="${l.desc}">${l.label}</button>`
+  ).join("");
+
+  const preview = (!open && nt.trim())
+    ? `<div class="note-prev" data-open="${x.id}">${esc(nt.length > 220 ? nt.slice(0,220) + "…" : nt)}</div>` : "";
+
+  const box = open ? `<div class="note-box">
+      <textarea data-note="${x.id}" placeholder="Čo si zistil, kde robíš chyby, vzorce, na čo si dať pozor…">${esc(nt)}</textarea>
+      <div class="note-hint">Ukladá sa automaticky.</div>
+    </div>` : "";
+
+  const dsc = DESC[x.id];
+  const dOpen = allDesc || openDesc.has(x.id);
+  const descHtml = dsc ? `<button class="desc-toggle" data-desc="${x.id}" aria-expanded="${dOpen}">${dOpen ? "▾ Skryť popis" : "▸ O čom to je"}</button>
+    ${dOpen ? `<div class="desc-box"><p>${esc(dsc[0])}</p><div class="ex"><b>Typická úloha:</b> ${esc(dsc[1])}</div></div>` : ""}` : "";
+
+  return `<div class="row s${v}">
+    <div class="row-main">
+      <div class="row-name">${x.n}</div>
+      ${descHtml}
+      ${meta ? `<div class="row-meta">${meta}</div>` : ""}
+      ${preview}
+    </div>
+    <div class="row-side">
+      <div class="seg" role="group" aria-label="${x.n.replace(/"/g,"")}">${seg}</div>
+      <button class="note-toggle${nt.trim() ? " has" : ""}" data-toggle="${x.id}" aria-expanded="${open}">✎ ${open ? "Zavrieť" : (nt.trim() ? "Poznámka" : "Pridať poznámku")}</button>
+    </div>
+    ${box}
+  </div>`;
+}
+
+function renderList(){
+  const host = document.getElementById("list");
+  const areas = tab === "c" ? DK_AREAS : AREAS;
+  let html = "", shown = 0;
+
+  for(const key in areas){
+    const all = T.filter(x => x.t === tab && x.area === key);
+    const items = all.filter(passes);
+    if(!items.length) continue;
+    shown += items.length;
+
+    const done = all.filter(x => lv(x.id) === 4).length;
+    const badge = tab === "c"
+      ? `<b>${done}</b> / ${all.length} perfektne`
+      : `<b>${AREAS[key].w}</b> úloh v teste · ${done} / ${all.length} perfektne`;
+
+    html += `<section class="area"><div class="area-head">
+      <h3>${areas[key].name}</h3><div class="area-weight">${badge}</div></div>`;
+    items.forEach(x => { html += rowHtml(x); });
+    html += `</section>`;
+  }
+  if(!shown) html = `<p class="empty">Pri tomto filtri tu nič nie je.</p>`;
+  host.innerHTML = html;
+}
+
+function renderAll(){
+  renderClock(); renderGauge(); renderNext(); renderLog(); renderTabs(); renderList();
+}
+
+/* ============================================================
+   EVENTS
+   ============================================================ */
+document.getElementById("tabs").addEventListener("click", e => {
+  const b = e.target.closest(".tab"); if(!b) return;
+  tab = b.dataset.k; renderTabs(); renderList();
+});
+
+function setFilter(f){
+  filter = f;
+  [...document.querySelectorAll("#filters [data-f]")].forEach(c => c.setAttribute("aria-pressed", c.dataset.f === f));
+  renderList();
+}
+document.getElementById("filters").addEventListener("click", e => {
+  const b = e.target.closest("button"); if(!b) return;
+  if(b.id === "descAll"){
+    allDesc = !allDesc;
+    if(!allDesc) openDesc.clear();
+    b.textContent = allDesc ? "Zbaliť všetky popisy" : "Rozbaliť všetky popisy";
+    renderList();
+    return;
+  }
+  setFilter(b.dataset.f);
+});
+
+document.getElementById("search").addEventListener("input", e => {
+  query = e.target.value.trim(); renderList();
+});
+
+document.getElementById("list").addEventListener("click", e => {
+  const lvBtn = e.target.closest(".seg button");
+  if(lvBtn){
+    setLevel(lvBtn.dataset.id, Number(lvBtn.dataset.v));
+    save(); renderAll();
+    return;
+  }
+  const dt = e.target.closest("[data-desc]");
+  if(dt){
+    const id = dt.dataset.desc;
+    if(allDesc){
+      /* leaving "all open" mode: keep everything open except this one */
+      allDesc = false;
+      document.getElementById("descAll").textContent = "Rozbaliť všetky popisy";
+      T.forEach(x => openDesc.add(x.id));
+      openDesc.delete(id);
+    } else if(openDesc.has(id)) openDesc.delete(id);
+    else openDesc.add(id);
+    renderList();
+    return;
+  }
+  const tg = e.target.closest("[data-toggle],[data-open]");
+  if(tg){
+    const id = tg.dataset.toggle || tg.dataset.open;
+    if(openNotes.has(id)) openNotes.delete(id); else openNotes.add(id);
+    renderList();
+    if(openNotes.has(id)){
+      const ta = document.querySelector(`textarea[data-note="${id}"]`);
+      if(ta){ ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+    }
+  }
+});
+
+document.getElementById("list").addEventListener("input", e => {
+  const ta = e.target.closest("textarea[data-note]"); if(!ta) return;
+  const id = ta.dataset.note;
+  if(ta.value.trim()) state.notes[id] = ta.value; else delete state.notes[id];
+  state.upd[id] = Date.now();
+  saveSoon();
+  const btn = document.querySelector(`[data-toggle="${id}"]`);
+  if(btn) btn.classList.toggle("has", !!ta.value.trim());
+});
+
+/* log */
+document.getElementById("logDate").value = todayIso();
+document.getElementById("logAdd").addEventListener("click", () => {
+  const ta = document.getElementById("logText");
+  const text = ta.value.trim();
+  if(!text){ ta.focus(); return; }
+  const d = document.getElementById("logDate").value || todayIso();
+  state.log.push({id: Date.now().toString(36), d, text, ts: Date.now()});
+  ta.value = "";
+  save(); renderLog(); flash("Záznam pridaný.");
+});
+document.getElementById("logList").addEventListener("click", e => {
+  const del = e.target.closest("[data-del]");
+  if(del){
+    if(!confirm("Zmazať tento záznam z denníka?")) return;
+    state.log = state.log.filter(x => x.id !== del.dataset.del);
+    save(); renderLog();
+    return;
+  }
+  if(e.target.id === "logMore"){ showAllLog = !showAllLog; renderLog(); }
+});
+document.getElementById("todayLink").addEventListener("click", () => {
+  setFilter("today");
+  document.getElementById("tabs").scrollIntoView({behavior:"smooth"});
+});
+
+/* backup */
+document.getElementById("btnExport").addEventListener("click", async () => {
+  const txt = JSON.stringify(state);
+  try{ await navigator.clipboard.writeText(txt); flash("Postup je v schránke."); }
+  catch(err){
+    document.getElementById("importBox").hidden = false;
+    document.getElementById("importArea").value = txt;
+    flash("Skopíruj text z poľa nižšie.");
+  }
+});
+document.getElementById("btnImportToggle").addEventListener("click", () => {
+  const box = document.getElementById("importBox");
+  box.hidden = !box.hidden;
+});
+document.getElementById("btnImport").addEventListener("click", () => {
+  try{
+    state = migrate(JSON.parse(document.getElementById("importArea").value.trim()));
+    save(); renderAll(); flash("Načítané.");
+  }catch(err){ flash("Text sa nedal prečítať — skontroluj, či je celý."); }
+});
+document.getElementById("btnReset").addEventListener("click", () => {
+  if(!confirm("Naozaj vymazať všetky hodnotenia, poznámky aj denník?")) return;
+  state = emptyState(); openNotes.clear(); save(); renderAll(); flash("Vymazané.");
+});
+function flash(msg){
+  const s = document.getElementById("status");
+  s.textContent = msg;
+  setTimeout(() => { s.textContent = ""; }, 4000);
+}
+
+/* ---------- go ---------- */
+renderKey();
+load().then(() => { renderAll(); renderStoreNote(); });
+setInterval(renderClock, 60*60*1000);
+</script>
+</body>
+</html>
