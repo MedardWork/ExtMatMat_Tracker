@@ -1,0 +1,118 @@
+/* ============================================================
+   TOPIC LIST — tabs, search + filters, area sections, rows
+   ============================================================ */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--rule);flex-wrap:wrap}
+.tab{
+  font:500 14px/1 var(--sans);color:var(--ink-soft);text-decoration:none;
+  padding:12px 14px;border-bottom:2px solid transparent;margin-bottom:-1px;
+}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink);font-weight:600}
+.tab[aria-selected="true"] .count{background:var(--ink);color:var(--on-ink)}
+
+.intro{font-size:14px;color:var(--ink-soft);margin:18px 0 0;max-width:66ch}
+.intro strong{color:var(--ink);font-weight:600}
+
+.levels-help{margin-top:10px;font-size:13px}
+.levels-help summary{cursor:pointer;color:var(--dk);width:max-content}
+.levels-key{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:10px 0 0}
+.levels-key div{
+  font-size:11.5px;line-height:1.35;color:var(--ink-soft);
+  background:var(--panel);border:1px solid var(--rule);border-top:3px solid;border-radius:3px;padding:7px 8px;
+}
+.levels-key b{display:block;color:var(--ink);font-size:12px;margin-bottom:2px}
+
+/* search + filters stay reachable while scrolling a long list */
+.list-tools{
+  position:sticky;top:var(--bar-h);z-index:5;
+  margin:14px -18px 0;padding:10px 18px 8px;
+  background:color-mix(in srgb, var(--paper) 94%, transparent);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+}
+.filters{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap;align-items:center}
+.filters button{
+  appearance:none;cursor:pointer;font:500 12px/1 var(--sans);
+  background:var(--panel);border:1px solid var(--rule);color:var(--ink-soft);
+  border-radius:20px;padding:7px 12px;display:inline-flex;gap:6px;align-items:center;
+}
+.filters button span{font-size:11px;opacity:.75}
+.filters button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--on-ink)}
+.filters button:disabled{opacity:.45;cursor:default}
+.filters .desc-all{margin-left:auto;background:none;border:0;color:var(--dk);padding:7px 2px}
+.filters .desc-all:hover{text-decoration:underline}
+
+.area-jump{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;font-size:12px;color:var(--ink-soft);margin-top:6px}
+.area-jump:empty{display:none}
+.area-jump button{appearance:none;border:0;background:none;cursor:pointer;padding:3px 0;font:500 12px/1 var(--sans);color:var(--dk)}
+.area-jump button span{color:var(--ink-soft);margin-left:4px;font-weight:400}
+.area-jump button:hover{text-decoration:underline}
+
+.area{margin-top:26px;scroll-margin-top:calc(var(--bar-h) + 110px)}
+.area-head{
+  display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+  padding-bottom:7px;border-bottom:1.5px solid var(--ink);
+}
+.area-head h3{font:600 16px/1.2 var(--serif)}
+.area-weight{font-size:12px;color:var(--ink-soft);white-space:nowrap}
+.area-weight b{color:var(--ink);font-weight:600}
+
+/* ---------- rows ---------- */
+.row{
+  display:flex;flex-wrap:wrap;gap:10px 12px;align-items:center;justify-content:space-between;
+  padding:11px 0 11px 11px;border-bottom:1px solid var(--rule);
+  border-left:3px solid transparent;scroll-margin-top:calc(var(--bar-h) + 120px);
+}
+.row.s1{border-left-color:var(--l1);background:linear-gradient(90deg,var(--l1-bg),transparent 55%)}
+.row.s2{border-left-color:var(--l2);background:linear-gradient(90deg,var(--l2-bg),transparent 55%)}
+.row.s3{border-left-color:var(--l3);background:linear-gradient(90deg,var(--l3-bg),transparent 55%)}
+.row.s4{border-left-color:var(--l4);background:linear-gradient(90deg,var(--l4-bg),transparent 55%)}
+.row-main{min-width:0;flex:1 1 260px}
+.row-name{font:400 15px/1.35 var(--serif);text-decoration:none}
+.row-name .nw{white-space:nowrap}
+.row-name .go{display:inline-block;margin-left:6px;color:var(--blank);font-family:var(--sans);transition:transform .15s ease,color .15s ease}
+.row-name:hover{color:var(--dk);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+.row-name:hover .go{color:var(--dk);transform:translateX(3px)}
+.row-meta{font-size:12px;color:var(--ink-soft);margin-top:3px}
+.row-side{display:flex;gap:6px;align-items:center;flex:0 0 auto}
+
+.note-prev{
+  display:block;font-size:12.5px;color:var(--ink);margin-top:6px;padding:5px 9px;text-decoration:none;
+  background:var(--note-bg);border-left:2px solid var(--note-rule);border-radius:0 3px 3px 0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.note-prev b{font-weight:600}
+.note-prev em{font-style:normal;color:var(--ink-soft);margin-left:6px}
+.note-prev:hover{outline:1px solid var(--note-rule)}
+
+.note-btn{
+  font:500 12px/1 var(--sans);color:var(--ink-soft);text-decoration:none;white-space:nowrap;
+  background:var(--panel);border:1px solid var(--rule);border-radius:5px;padding:8px 9px;
+}
+.note-btn:hover{color:var(--ink);border-color:var(--ink-soft)}
+.note-btn.has{border-color:var(--note-rule);background:var(--note-bg);color:var(--ink)}
+
+.desc-toggle{
+  appearance:none;border:0;background:none;cursor:pointer;padding:3px 0 0;display:block;
+  font:500 12px/1.3 var(--sans);color:var(--dk);
+}
+.desc-toggle:hover{text-decoration:underline}
+.desc-box{
+  margin-top:7px;padding:9px 12px;border-radius:0 4px 4px 0;
+  background:var(--dk-bg);border-left:2px solid var(--dk);
+  font-size:13.5px;line-height:1.5;max-width:62ch;
+}
+.desc-box p{margin:0}
+.desc-box .ex{margin-top:6px;color:var(--ink-soft);font-size:12.5px}
+.desc-box .ex b{color:var(--ink);font-weight:600}
+
+@media (max-width:640px){
+  .list-tools{margin:12px -14px 0;padding:8px 14px}
+  .filters{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-right:-14px;padding-right:14px}
+  .filters button{flex:0 0 auto}
+  .levels-key{grid-template-columns:1fr 1fr}
+  .row-side{flex:1 1 100%;flex-wrap:wrap}
+  .row-side .seg{flex:1 1 100%}
+  .row-side .seg button{flex:1;text-align:center;padding:10px 2px;font-size:11px}
+  .note-btn{flex:1 1 100%;text-align:center}
+  .tab{padding:11px 10px;font-size:13px}
+}

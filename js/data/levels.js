@@ -17,6 +17,8 @@ const DK_AREAS = {
   dkFun:  {name:"Functions and modelling"},
   dkVrk:  {name:"Tools and exam format"}
 };
+const TAB_LABEL = {a:"Prebraté", b:"Čaká nás", c:"Matematik A"};
+const areaName = x => (AREAS[x.area] || DK_AREAS[x.area]).name.split(",")[0];
 
 /* ============================================================
    LEVELS

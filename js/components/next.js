@@ -24,8 +24,12 @@ function renderNext(){
     const why = v >= 2 ? `rozrobené (${LV[v].label}) — dotiahni to`
               : x.t === "a" ? "prebrané, ale ešte nesedí"
               : `nové učivo · ${AREAS[x.area].name.split(",")[0]}`;
-    const pre = b ? ` · najprv: ${blocked(x).map(id => BY_ID[id].n.split(/[:—,]/)[0].trim()).join(", ")}` : "";
-    return `<li>${x.n}<br><em>${why}${pre}</em></li>`;
+    const pre = b ? ` · najprv: ${blocked(x).map(id => `<a href="#/tema/${id}">${esc(shortName(BY_ID[id]))}</a>`).join(", ")}` : "";
+    return `<li><a class="next-link" href="#/tema/${x.id}" data-act="seq-next"><i class="dot l${v}"></i>${x.n}</a><em>${why}${pre}</em></li>`;
   }).join("");
+  host.dataset.ids = scored.map(({x}) => x.id).join(" ");
   host.innerHTML = `<h2>Čo ďalej — podľa váhy v teste a toho, čo si označil</h2><ol>${li}</ol>`;
 }
+
+/* ‹ › in the topic view then walks through these suggestions */
+action("seq-next", () => { ui.seq = $("#next").dataset.ids.split(" "); ui.seqLabel = "z Čo ďalej"; });

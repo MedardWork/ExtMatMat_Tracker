@@ -1,0 +1,76 @@
+/* ============================================================
+   JOURNAL — activity calendar, composer, entries
+   ============================================================ */
+.journal .card{margin-bottom:14px}
+
+/* ---------- activity ---------- */
+.j-activity{display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+.hm-stats{display:flex;gap:22px}
+.hm-stats div{display:flex;flex-direction:column}
+.hm-stats b{font:600 26px/1 var(--serif)}
+.hm-stats span{font-size:11.5px;color:var(--ink-soft);margin-top:4px}
+.hm{margin-left:auto;min-width:0;overflow-x:auto}
+.hm-months{display:grid;grid-auto-flow:column;grid-auto-columns:14px;gap:3px;font-size:10px;color:var(--ink-soft);height:14px}
+.hm-months span{white-space:nowrap}
+.hm-grid{display:flex;gap:3px}
+.hm-col{display:flex;flex-direction:column;gap:3px}
+.hm-cell{display:block;width:14px;height:14px;border-radius:3px;background:var(--track)}
+.hm-cell.k1{background:color-mix(in srgb, var(--dk) 30%, var(--track))}
+.hm-cell.k2{background:color-mix(in srgb, var(--dk) 55%, var(--track))}
+.hm-cell.k3{background:color-mix(in srgb, var(--dk) 78%, var(--track))}
+.hm-cell.k4{background:var(--dk)}
+.hm-cell.future{background:transparent}
+.hm-cell.today{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.hm-cell.sel{box-shadow:0 0 0 2px var(--flag)}
+.hm-cell[data-act]{cursor:pointer}
+.hm-legend{display:flex;align-items:center;gap:3px;font-size:10.5px;color:var(--ink-soft);margin-top:6px;white-space:nowrap}
+.hm-legend .hm-cell{width:10px;height:10px}
+
+/* ---------- composer ---------- */
+.jc-top{display:flex;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap}
+.jc-top h2{font:600 16px/1.2 var(--serif);margin:0}
+.jc-date{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-soft)}
+.jc-top .jc-date{margin-left:auto}
+.jc-links, .jc-sugg{display:flex;gap:6px 10px;align-items:baseline;margin-top:10px;flex-wrap:wrap}
+.jc-label{font:600 12px/1.3 var(--sans);color:var(--ink-soft);flex:0 0 auto;min-width:118px}
+.jc-links .chips, .jc-sugg .chips{flex:1;min-width:0}
+.jc-actions{display:flex;justify-content:flex-end;margin-top:12px}
+.jc-sugg:empty{display:none}
+
+/* ---------- list ---------- */
+.j-tools{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin:24px 0 4px;scroll-margin-top:calc(var(--bar-h) + 12px)}
+.j-tools h2{font:600 20px/1.2 var(--serif);margin-right:auto}
+.j-tools .search{width:min(340px, 100%)}
+.j-tools .chips{flex:1 1 100%}
+.j-month{font:600 12px/1.3 var(--sans);color:var(--ink-soft);text-transform:uppercase;letter-spacing:.06em;margin:22px 0 8px}
+
+.entry{
+  display:flex;gap:16px;align-items:flex-start;
+  background:var(--panel);border:1px solid var(--rule);border-radius:8px;
+  padding:14px 12px 14px 16px;margin-bottom:10px;scroll-margin-top:calc(var(--bar-h) + 16px);
+}
+.e-date{flex:0 0 76px;display:flex;flex-direction:column;gap:1px}
+.e-date b{font:600 17px/1.2 var(--serif);color:var(--dk)}
+.e-date span{font-size:11.5px;color:var(--ink-soft)}
+.e-date em{font-style:normal;font:600 10.5px/1 var(--sans);color:var(--l4);margin-top:3px;text-transform:uppercase;letter-spacing:.05em}
+.e-body{flex:1;min-width:0}
+.e-text{font-size:15px}
+.e-body .chips{margin-top:10px}
+.e-text + .chips{padding-top:10px;border-top:1px dashed var(--rule)}
+.e-acts{display:flex;gap:2px;flex:0 0 auto;opacity:.45}
+.entry:hover .e-acts, .entry:focus-within .e-acts{opacity:1}
+.e-acts button{appearance:none;border:0;background:none;cursor:pointer;color:var(--ink-soft);font-size:15px;line-height:1;padding:5px 7px;border-radius:4px}
+.e-acts button:hover{background:var(--hover);color:var(--ink)}
+.e-acts button[data-act="j-del"]:hover{color:var(--flag)}
+.entry.editing{border-color:var(--dk)}
+.e-edit .jc-date{margin-bottom:8px}
+
+@media (max-width:640px){
+  .j-activity{gap:14px}
+  .hm{margin-left:0;width:100%}
+  .jc-label{min-width:0;flex:1 1 100%}
+  .entry{flex-wrap:wrap;gap:6px 12px;padding:12px}
+  .e-date{flex:1 1 auto;flex-direction:row;align-items:baseline;gap:8px}
+  .e-body{flex:1 1 100%;order:3}
+  .e-acts{opacity:1}
+}

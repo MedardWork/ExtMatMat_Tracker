@@ -16,6 +16,7 @@ function renderClock(){
   const weeks = Math.floor(days / 7);
   const rest = days - weeks * 7;
   const host = document.getElementById("clockEc");
+  if(!host) return;
   host.classList.toggle("past", days < 0);
 
   let big, when;
@@ -35,4 +36,13 @@ function renderClock(){
     pace = `<div class="pace">Všetko na úrovni perfektne.</div>`;
   }
   host.innerHTML = `<h4>${EXAM.label}</h4>${big}<div class="when">${when}</div>${pace}`;
+}
+
+/* compact version for the top bar */
+function renderMiniClock(){
+  const el = document.getElementById("miniClock");
+  if(!el) return;
+  const days = daysTo(EXAM.d);
+  el.textContent = days > 0 ? `${days} ${skDays(days)} do EČ` : days === 0 ? "EČ je dnes" : "";
+  el.title = EXAM.full;
 }

@@ -16,6 +16,7 @@ function areaStats(key){
 
 function renderGauge(){
   const host = document.getElementById("blocks");
+  if(!host) return;
   let total = 0, html = "";
   for(const key in AREAS){
     const st = areaStats(key);
