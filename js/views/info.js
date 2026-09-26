@@ -4,7 +4,8 @@
 const SHORTCUTS = [
   ["<kbd>/</kbd> alebo <kbd>Ctrl</kbd>+<kbd>K</kbd>", "hľadať tému alebo poznámku"],
   ["<kbd>←</kbd> <kbd>→</kbd>", "predošlá / ďalšia téma"],
-  ["<kbd>0</kbd> – <kbd>4</kbd>", "nastaviť úroveň otvorenej témy"],
+  ["<kbd>↑</kbd> <kbd>↓</kbd>", "vybrať podtému v otvorenej téme"],
+  ["<kbd>0</kbd> – <kbd>4</kbd>", "nastaviť úroveň vybranej podtémy"],
   ["<kbd>N</kbd>", "nová poznámka k otvorenej téme"],
   ["<kbd>Esc</kbd>", "zavrieť editor, späť na zoznam"],
   ["<kbd>Ctrl</kbd>+<kbd>Enter</kbd>", "uložiť a zavrieť poznámku, pridať záznam do denníka"],
@@ -43,7 +44,8 @@ VIEWS.info = {
       <section class="card prose">
         <h2>Odkiaľ sú dáta</h2>
         <p>Zoznam tém vychádza z Cieľových požiadaviek na vedomosti a zručnosti maturantov z matematiky (ŠPÚ) a z rozdelenia úloh v teste podľa špecifikácie NIVaM: základy 7, funkcie 8, planimetria 6, stereometria 5, kombinatorika s pravdepodobnosťou a štatistikou 4. Rozdelenie „prebraté / čaká nás“ je porovnaním sylabov Y1–Y3 s týmito požiadavkami — sylabus hovorí, čo sa učilo, nie čo sa naozaj stihlo.</p>
-        <p><b>Úrovne a odhad.</b> Odhad bodov na EČ počíta <i>perfektne</i> celé, <i>ide to</i> za dve tretiny a <i>slabo</i> za tretinu. <i>Nepozreté</i> a <i>neviem</i> sa nepočítajú, ale rozlišujú sa, aby si videl, čo ešte vôbec neotvoril.</p>
+        <p><b>Úrovne a odhad.</b> Každá téma sa delí na podtémy a úroveň sa dáva každej zvlášť. Odhad bodov na EČ počíta podtému na <i>perfektne</i> celú, <i>ide to</i> za dve tretiny a <i>slabo</i> za tretinu. <i>Nepozreté</i> a <i>neviem</i> sa nepočítajú, ale rozlišujú sa, aby si videl, čo ešte vôbec neotvoril. Úroveň celej témy je priemer podtém — <i>perfektne</i> je až vtedy, keď sú perfektne všetky.</p>
+        <p><b>Poznámky</b> majú vlastné „rozumiem“: ako rozumieš tomu, čo je napísané práve v nich. Do odhadu sa nepočíta — slúži na orientáciu a filtrovanie.</p>
         <p><b>Dánsko.</b> Záložka Matematik A je nastavená na Matematik A na STX podľa læreplanu z roku 2024 a do odhadu na EČ sa nepočíta. Písomná skúška má 5 hodín: delprøve 1 (3 h, iba formelsamling) a delprøve 2 (2 h, všetky pomôcky vrátane CAS).</p>
       </section>
     </div>`;

@@ -69,7 +69,7 @@ function passes(x){
   if(!F.test(x)) return false;
   if(!ui.query) return true;
   const words = norm(ui.query).split(/\s+/);
-  const hay = norm([x.n, x.dk || "", DESC[x.id] ? DESC[x.id].join(" ") : "", noteHaystack(x.id)].join(" "));
+  const hay = norm([x.n, x.dk || "", DESC[x.id] ? DESC[x.id].join(" ") : "", subHaystack(x.id), noteHaystack(x.id)].join(" "));
   return words.every(w => hay.includes(w));
 }
 
@@ -88,7 +88,8 @@ function rowHtml(x){
   const v = lv(x.id);
   const notes = notesOf(x.id);
 
-  let meta = "";
+  const nSub = subsOf(x.id).length, rated = ratedSubs(x.id);
+  let meta = `<span class="sub-count" title="Ohodnotené podtémy">${subMeter(x.id)}${rated}/${nSub}</span>`;
   if(x.src) meta += `<span class="src">${x.src}</span>`;
   if(state.upd[x.id]){
     const t = changedToday(x.id);
@@ -100,7 +101,7 @@ function rowHtml(x){
   if(x.m) meta += x.m;
 
   const last = latestNote(x.id);
-  const preview = last ? `<a class="note-prev" href="#/tema/${x.id}/n/${last.id}" data-act="from-list" data-id="${x.id}">
+  const preview = last ? `<a class="note-prev nl${last.lv || 0}" href="#/tema/${x.id}/n/${last.id}" data-act="from-list" data-id="${x.id}">
       <b>✎ ${inline(noteTitle(last))}</b>${last.title.trim() && last.body.trim() ? ` — ${inline(plainText(last.body, 110))}` : ""}
       ${notes.length > 1 ? `<em>+ ${notes.length - 1} ${plural(notes.length - 1, "ďalšia", "ďalšie", "ďalších")}</em>` : ""}</a>` : "";
 
@@ -117,7 +118,7 @@ function rowHtml(x){
     <div class="row-main">
       <a class="row-name" href="#/tema/${x.id}" data-act="from-list" data-id="${x.id}">${gluedArrow(x.n)}</a>
       ${descHtml}
-      ${meta ? `<div class="row-meta">${meta}</div>` : ""}
+      <div class="row-meta">${meta}</div>
       ${preview}
     </div>
     <div class="row-side">

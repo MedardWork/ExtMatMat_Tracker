@@ -70,6 +70,7 @@ function palSearch(q){
       if(name.startsWith(qn)) score = 5;
       else if(hit(x.n)) score = 4;
       else if(x.dk && hit(x.dk)) score = 3;
+      else if(subsOf(x.id).some(s => hit(s.n))) score = 3;
       else if(hit(areaName(x)) || x.id === qn) score = 2;
       else if(DESC[x.id] && hit(DESC[x.id].join(" "))) score = 1;
       if(score) topics.push({t:x.id, score, group:"Témy"});

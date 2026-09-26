@@ -116,3 +116,7 @@
   .note-btn{flex:1 1 100%;text-align:center}
   .tab{padding:11px 10px;font-size:13px}
 }
+
+.sub-count{display:inline-flex;align-items:center;gap:5px;margin-right:8px;font-size:11px;color:var(--ink-soft)}
+.note-prev.nl1{border-left-color:var(--l1)} .note-prev.nl2{border-left-color:var(--l2)}
+.note-prev.nl3{border-left-color:var(--l3)} .note-prev.nl4{border-left-color:var(--l4)}

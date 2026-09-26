@@ -128,10 +128,23 @@ function flashEl(el){
 }
 
 /* ---------- level buttons, shared by every view ---------- */
+/* a topic's button sets all its subtopics at once — undoable when they differed */
 action("lv", el => {
   const id = el.dataset.id, v = Number(el.dataset.v);
-  if(lv(id) === v) return;
-  setLevel(id, v);
+  if(allSubsAt(id, v)) return;
+  const before = setLevel(id, v);
+  save();
+  refresh("level");
+  if(new Set(Object.values(before)).size > 1)
+    toast(`Všetky podtémy (${Object.keys(before).length}) nastavené na „${LV[v].label}“.`, () => {
+      restoreLevels(id, before); save(); refresh("level");
+    });
+});
+action("slv", el => {
+  const id = el.dataset.id, k = el.dataset.k, v = Number(el.dataset.v);
+  ui.subSel = k;
+  if(subLv(id, k) === v) return;
+  setSubLevel(id, k, v);
   save();
   refresh("level");
 });
@@ -139,12 +152,26 @@ action("lv", el => {
 /* ---------- shared bits of markup ---------- */
 const LV_CLASS = v => `l${v}`;
 
-function levelSeg(id, big){
+function levelSeg(id){
   const v = lv(id);
   const x = BY_ID[id];
-  return `<div class="seg${big ? " big" : ""}" role="group" aria-label="Úroveň: ${esc(x.n)}">${LV.map(l =>
-    `<button class="b${l.k}" data-act="lv" data-id="${id}" data-v="${l.k}" aria-pressed="${v === l.k}" title="${l.desc}${big ? ` (kláves ${l.k})` : ""}">${l.label}</button>`
+  return `<div class="seg" role="group" aria-label="Úroveň: ${esc(x.n)}">${LV.map(l =>
+    `<button class="b${l.k}" data-act="lv" data-id="${id}" data-v="${l.k}" aria-pressed="${v === l.k}" title="${l.desc} — nastaví všetky podtémy">${l.label}</button>`
   ).join("")}</div>`;
+}
+function subSeg(tid, k, name){
+  const v = subLv(tid, k);
+  return `<div class="seg" role="group" aria-label="Úroveň: ${esc(name)}">${LV.map(l =>
+    `<button class="b${l.k}" data-act="slv" data-id="${tid}" data-k="${k}" data-v="${l.k}" aria-pressed="${v === l.k}" title="${l.desc} (kláves ${l.k})">${l.label}</button>`
+  ).join("")}</div>`;
+}
+/* one small cell per subtopic, coloured by its level */
+function subMeter(id){
+  const subs = subsOf(id);
+  return `<span class="submeter">${subs.map(x => {
+    const v = subLv(id, x.k);
+    return `<i class="l${v}" title="${esc(x.n)}: ${LV[v].label}"></i>`;
+  }).join("")}</span>`;
 }
 
 /* a topic (and optionally one of its notes) as a clickable chip */

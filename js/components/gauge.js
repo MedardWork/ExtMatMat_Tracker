@@ -7,7 +7,7 @@ function areaStats(key){
   let sum = 0, s4 = 0, mid = 0;
   items.forEach(x => {
     const v = lv(x.id);
-    sum += LV[v].w;
+    sum += understanding(x.id);
     if(v === 4) s4++; else if(v >= 2) mid++;
   });
   const w = AREAS[key].w;

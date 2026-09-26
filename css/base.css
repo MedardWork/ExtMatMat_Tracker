@@ -170,3 +170,14 @@ input[type=date]{
 
 :focus-visible{outline:2px solid var(--dk);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+
+/* ---------- subtopic cells + computed level pill ---------- */
+.submeter{display:inline-flex;gap:2px;vertical-align:-1px}
+.submeter i{display:block;width:9px;height:9px;border-radius:2px;background:var(--track);box-shadow:inset 0 0 0 1px var(--rule)}
+.submeter i.l1{background:var(--l1);box-shadow:none} .submeter i.l2{background:var(--l2);box-shadow:none}
+.submeter i.l3{background:var(--l3);box-shadow:none} .submeter i.l4{background:var(--l4);box-shadow:none}
+.lv-pill{
+  display:inline-block;font:700 12px/1 var(--sans);letter-spacing:.02em;border-radius:999px;padding:6px 11px;
+  background:var(--l0);color:var(--on-level);
+}
+.lv-pill.l1{background:var(--l1)} .lv-pill.l2{background:var(--l2)} .lv-pill.l3{background:var(--l3)} .lv-pill.l4{background:var(--l4)}
