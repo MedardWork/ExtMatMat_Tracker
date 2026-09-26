@@ -171,13 +171,14 @@ action("j-add", () => {
   save();
   drawCompose(); drawActivity(); drawEntries();
   flashEl($(`#entry-${e.id}`));
-  toast("Záznam pridaný.", () => { state.log = state.log.filter(x => x.id !== e.id); save(); refresh(); });
+  toast("Záznam pridaný.", () => { removeLog(e.id); save(); refresh(); });
 });
 
 /* target "new" = the entry being written, otherwise an entry id */
-const linksOf = target => target === "new" ? jr.links : (state.log.find(e => e.id === target) || {links:[]}).links;
+const linksOf = target => target === "new" ? jr.links : (findLog(target) || {links:[]}).links;
 function redrawLinks(target){
-  if(target === "new"){ drawLinks(); drawSuggest(); refocusCompose(); } else { saveSoon(); drawEntries(); }
+  if(target === "new"){ drawLinks(); drawSuggest(); refocusCompose(); }
+  else { updateLog(target, {}); saveSoon(); drawEntries(); }
 }
 /* the chip that was clicked is gone after a redraw — put the cursor back in the text */
 function refocusCompose(){ const ta = $("#jCompose .ed-in"); if(ta) ta.focus({preventScroll:true}); }
@@ -267,7 +268,7 @@ function drawEntries(){
 
 function entryEditorHtml(e){
   EDITORS[`log:${e.id}`] = {
-    onChange: t => { e.text = t; saveSoon(); },
+    onChange: t => { updateLog(e.id, {text:t}); saveSoon(); },
     onDone: () => ACTIONS["j-edit-done"]()
   };
   return `<div class="e-edit">
@@ -282,8 +283,7 @@ function entryEditorHtml(e){
 
 onInput("j-search", el => { jr.q = el.value; jr.shown = 12; drawEntries(); });
 onInput("j-edit-date", el => {
-  const e = state.log.find(x => x.id === el.dataset.id);
-  if(e && el.value){ e.d = el.value; saveSoon(); }
+  if(el.value){ updateLog(el.dataset.id, {d:el.value}); saveSoon(); }
 });
 
 action("j-more", () => { jr.shown += 20; drawEntries(); });
@@ -313,9 +313,8 @@ action("j-edit-done", () => {
   flashEl($(`#entry-${id}`));
 });
 action("j-del", el => {
-  const i = state.log.findIndex(x => x.id === el.dataset.id);
-  if(i < 0) return;
-  const [e] = state.log.splice(i, 1);
+  const e = removeLog(el.dataset.id);
+  if(!e) return;
   save(); refresh();
-  toast("Záznam zmazaný.", () => { state.log.push(e); save(); refresh(); });
+  toast("Záznam zmazaný.", () => { restoreLog(e); save(); refresh(); });
 });

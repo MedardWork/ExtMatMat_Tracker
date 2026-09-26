@@ -72,10 +72,11 @@ action("import-toggle", () => { const b = $("#importBox"); b.hidden = !b.hidden;
 action("import", () => {
   try{
     state = migrate(JSON.parse($("#importArea").value.trim()));
+    newEpoch();   /* the import replaces what other open tabs hold */
     save(); toast("Načítané.");
   }catch(err){ toast("Text sa nedal prečítať — skontroluj, či je celý."); }
 });
 action("reset", () => {
   if(!confirm("Naozaj vymazať všetky hodnotenia, poznámky aj denník?")) return;
-  state = emptyState(); ui.editing = null; save(); toast("Vymazané.");
+  state = emptyState(); newEpoch(); ui.editing = null; save(); toast("Vymazané.");
 });

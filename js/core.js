@@ -85,6 +85,28 @@ window.addEventListener("hashchange", e => {
   else if(!(ui.route.view === "tema" && ui.route.note) && !(ui.route.view === "dennik" && ui.route.entry)) window.scrollTo(0, 0);
 });
 
+/* ---------- another tab saved ---------- */
+let remotePending = false;
+window.addEventListener("storage", e => {
+  if(e.key !== KEY || !e.newValue) return;
+  let incoming;
+  try{ incoming = migrate(JSON.parse(e.newValue)); }catch(err){ return; }
+  const before = JSON.stringify(state);
+  state = mergeStates(state, incoming);
+  if(JSON.stringify(state) === before) return;
+  if(ui.editing && !findNote(ui.editing.t, ui.editing.n)) ui.editing = null;
+  if(jr.edit && !findLog(jr.edit)) jr.edit = null;
+  /* don't yank the text box out from under someone typing — redraw once they leave it */
+  if(isTyping()) remotePending = true; else refresh("remote");
+});
+function isTyping(){
+  const a = document.activeElement;
+  return !!(a && a.closest && a.closest("#view") && a.matches("input, textarea"));
+}
+document.addEventListener("focusout", () => setTimeout(() => {
+  if(remotePending && !isTyping()){ remotePending = false; refresh("remote"); }
+}, 0));
+
 /* ---------- toast with optional undo ---------- */
 let toastTimer = null, toastUndo = null;
 function toast(msg, undo){

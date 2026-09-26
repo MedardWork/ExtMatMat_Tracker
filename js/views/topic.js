@@ -324,7 +324,7 @@ action("qlog-add", () => {
   save();
   drawTSide(); drawTNotes();
   toast("Zapísané do denníka.", () => {
-    state.log = state.log.filter(x => x.id !== e.id); save();
+    removeLog(e.id); save();
     if(ui.route.view === "tema"){ drawTSide(); drawTNotes(); }
   });
 });

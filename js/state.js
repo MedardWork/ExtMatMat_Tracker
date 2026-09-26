@@ -6,8 +6,11 @@
      notes:  { topicId: [ {id, title, body, c, u} ] }
                                                 named notes; c = created, u = updated
      upd:    { topicId: timestamp },            last change to level or notes
-     log:    [ {id, d:"YYYY-MM-DD", text, ts, links:[{t, n?}]} ]
+     lvAt:   { topicId: timestamp },            last change to the level alone
+     log:    [ {id, d:"YYYY-MM-DD", text, ts, u, links:[{t, n?}]} ]
                                                 study diary; links point at topics / notes
+     del:    { noteOrEntryId: timestamp },      tombstones, so a deletion survives merging
+     epoch:  timestamp,                         bumped by import / reset: a newer epoch wins outright
      recent: [ topicId ],                       last opened topics, newest first
      prefs:  { noteOrder: "new" | "old" }
    }
@@ -20,7 +23,7 @@ const KEY = "maturita-mat-v2";              /* storage slot name; the data insid
 const OLD_KEY = "maturita-mat-progress";
 const BACKUP_KEY = "maturita-mat-v2-backup"; /* untouched copy of a v2 save, written once before upgrading */
 
-const emptyState = () => ({v:3, lv:{}, notes:{}, upd:{}, log:[], recent:[], prefs:{}});
+const emptyState = () => ({v:3, lv:{}, notes:{}, upd:{}, lvAt:{}, log:[], del:{}, epoch:0, recent:[], prefs:{}});
 let state = emptyState();
 let store = "none";
 
@@ -42,7 +45,8 @@ function migrate(old){
   if(!isObj(old)) return emptyState();
   if(old.v === 2 || old.v === 3){
     const s = emptyState();
-    for(const k of ["lv","notes","upd","prefs"]) if(isObj(old[k])) s[k] = old[k];
+    for(const k of ["lv","notes","upd","lvAt","del","prefs"]) if(isObj(old[k])) s[k] = old[k];
+    s.epoch = +old.epoch || 0;
     if(Array.isArray(old.log)) s.log = old.log;
     if(Array.isArray(old.recent)) s.recent = old.recent;
     return tidy(s);
@@ -75,7 +79,7 @@ function tidy(s){
     if(list.length && BY_ID[id]) s.notes[id] = list; else delete s.notes[id];
   }
   s.log = s.log.filter(e => isObj(e) && typeof e.d === "string").map(e => ({
-    id: String(e.id || uid()), d: e.d, text: String(e.text || ""), ts: +e.ts || Date.now(),
+    id: String(e.id || uid()), d: e.d, text: String(e.text || ""), ts: +e.ts || Date.now(), u: +e.u || +e.ts || Date.now(),
     links: Array.isArray(e.links)
       ? e.links.filter(l => isObj(l) && BY_ID[l.t]).map(l => l.n ? {t:l.t, n:String(l.n)} : {t:l.t})
       : []
@@ -119,6 +123,16 @@ async function load(){
 }
 
 async function save(){
+  clearTimeout(saveTimer);
+  /* another tab may have saved since we loaded — fold its changes in instead of overwriting them */
+  if(hasLocal){
+    try{
+      const raw = localStorage.getItem(KEY);
+      const stored = raw && JSON.parse(raw);
+      /* only v3 carries ids and timestamps to merge by; an older save is being upgraded right now */
+      if(stored && stored.v === 3) state = mergeStates(state, migrate(stored));
+    }catch(e){}
+  }
   const ok = await writeKey(KEY, JSON.stringify(state));
   if(!ok) store = "none";
   renderStoreNote();
@@ -126,6 +140,46 @@ async function save(){
 
 let saveTimer = null;
 function saveSoon(){ clearTimeout(saveTimer); saveTimer = setTimeout(save, 400); }
+/* a pending save must not be lost when the tab closes */
+window.addEventListener("pagehide", () => { if(saveTimer) save(); });
+
+/* ---------- several tabs at once ----------
+   Every level, note and diary entry carries the time it last changed; deletions leave a tombstone.
+   Merging two copies keeps the newer version of each piece, so tabs never undo each other.
+   Import and "Vymazať všetko" start a new epoch, which replaces older copies instead of merging. */
+function mergeStates(a, b){
+  if((a.epoch || 0) !== (b.epoch || 0)) return (b.epoch || 0) > (a.epoch || 0) ? b : a;
+  const out = emptyState();
+  out.epoch = a.epoch || 0;
+  const cutoff = Date.now() - 90 * 86400000;
+  for(const src of [b.del, a.del]) for(const id in src)
+    if(src[id] > cutoff && !(out.del[id] >= src[id])) out.del[id] = src[id];
+  const alive = x => !(out.del[x.id] >= x.u);
+
+  const ids = new Set([a.upd, b.upd, a.lv, b.lv, a.notes, b.notes].flatMap(Object.keys));
+  for(const id of ids){
+    const la = a.lvAt[id] || a.upd[id] || 0, lb = b.lvAt[id] || b.upd[id] || 0;
+    const v = (la >= lb ? a : b).lv[id];
+    if(v) out.lv[id] = v;
+    if(la || lb) out.lvAt[id] = Math.max(la, lb);
+    const u = Math.max(a.upd[id] || 0, b.upd[id] || 0);
+    if(u) out.upd[id] = u;
+    const notes = newest([...(b.notes[id] || []), ...(a.notes[id] || [])]).filter(alive);
+    if(notes.length) out.notes[id] = notes;
+  }
+  out.log = newest([...b.log, ...a.log]).filter(alive);
+  out.recent = [...new Set([...a.recent, ...b.recent])].slice(0, 8);
+  out.prefs = {...b.prefs, ...a.prefs};
+  return out;
+}
+/* one item per id, the most recently changed (ties go to the later copy = this tab) */
+function newest(list){
+  const m = new Map();
+  for(const x of list){ const y = m.get(x.id); if(!y || x.u >= y.u) m.set(x.id, x); }
+  return [...m.values()];
+}
+const bury = id => { state.del[id] = Date.now(); };
+function newEpoch(){ state.epoch = Date.now(); }
 
 function renderStoreNote(){
   const el = document.getElementById("storeNote");
@@ -146,6 +200,7 @@ const touch = id => { state.upd[id] = Date.now(); };
 function setLevel(id, v){
   if(v === 0) delete state.lv[id]; else state.lv[id] = v;
   touch(id);
+  state.lvAt[id] = state.upd[id];
 }
 
 const changedToday = id => state.upd[id] && isoOf(state.upd[id]) === todayIso();
@@ -188,9 +243,14 @@ function removeNote(tid, nid){
   if(i < 0) return null;
   const [n] = list.splice(i, 1);
   if(!list.length) delete state.notes[tid];
+  bury(nid);
   return n;
 }
-function restoreNote(tid, n){ (state.notes[tid] ||= []).push(n); }
+function restoreNote(tid, n){
+  delete state.del[n.id];
+  n.u = Date.now();
+  (state.notes[tid] ||= []).push(n);
+}
 
 const noteHaystack = id => notesOf(id).map(n => n.title + " " + n.body).join(" ");
 
@@ -201,9 +261,27 @@ const logForNote = (tid, nid) => state.log.filter(e => e.links.some(l => l.t ===
 const sameLink = (a, b) => a.t === b.t && (a.n || null) === (b.n || null);
 
 function addLog(d, text, links){
-  const e = {id:uid(), d, text, ts:Date.now(), links:links.map(l => ({...l}))};
+  const now = Date.now();
+  const e = {id:uid(), d, text, ts:now, u:now, links:links.map(l => ({...l}))};
   state.log.push(e);
   return e;
+}
+const findLog = id => state.log.find(e => e.id === id);
+function updateLog(id, patch){
+  const e = findLog(id);
+  if(e) Object.assign(e, patch, {u:Date.now()});
+  return e;
+}
+function removeLog(id){
+  const i = state.log.findIndex(e => e.id === id);
+  if(i < 0) return null;
+  bury(id);
+  return state.log.splice(i, 1)[0];
+}
+function restoreLog(e){
+  delete state.del[e.id];
+  e.u = Date.now();
+  state.log.push(e);
 }
 
 /* ---------- recently opened ---------- */

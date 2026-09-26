@@ -80,3 +80,8 @@ vendor → data → helpers → state → core → components → views → boot
 Everything lives in `localStorage` under `maturita-mat-v2` (the data inside is version 3). Saves from
 the earlier single-note version are upgraded automatically on first load; the untouched original is
 kept under `maturita-mat-v2-backup`.
+
+Several tabs can be open at once. Each level, note and diary entry remembers when it last changed
+and deletions leave a tombstone; every save first merges what other tabs stored (newer version of
+each item wins), and open tabs pick up each other's saves live (`mergeStates` in `js/state.js`).
+Import and "Vymazať všetko" start a new epoch, which replaces other tabs' copies instead of merging.
