@@ -28,6 +28,10 @@ while none is rated. The score estimate counts each subtopic by weight (*perfekt
 *slabo* ⅓). The level buttons in the topic list set all subtopics at once (with undo). Note levels
 are for your orientation only and don't feed the estimate.
 
+Topics you know won't be on the test can be marked ⊘ (row button or topic page). They move to the
+**Nerelevantné** tab and drop out of the estimate, "Čo ďalej" and the pace counter — each block's item
+count is then spread over the topics still in play. Levels and notes stay; ↩ Vrátiť brings them back.
+
 ## Writing notes
 
 Notes and diary entries use a small Markdown dialect with formulas (rendered by KaTeX):

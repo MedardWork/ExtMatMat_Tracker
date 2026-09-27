@@ -161,4 +161,3 @@ const T = [
 ];
 
 const BY_ID = Object.fromEntries(T.map(x=>[x.id,x]));
-const EC_ITEMS = T.filter(x => x.t !== "c");

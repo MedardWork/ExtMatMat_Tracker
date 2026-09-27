@@ -66,7 +66,7 @@ function renderResume(){
 
   html += `<div class="resume-acts">
     <a class="btn" href="#/dennik" data-act="focus-compose">+ Zapísať dnešné sedenie</a>
-    ${today ? `<a class="btn ghost" href="#/temy/${T.find(x => changedToday(x.id)).t}" data-act="filter-today">Dnes zmenené: ${today} ${skPieces(today)}</a>` : ""}
+    ${today ? `<a class="btn ghost" href="#/temy/${tabOf(T.find(x => changedToday(x.id)))}" data-act="filter-today">Dnes zmenené: ${today} ${skPieces(today)}</a>` : ""}
   </div>`;
   host.innerHTML = html;
 }

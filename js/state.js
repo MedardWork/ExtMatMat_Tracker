@@ -5,6 +5,7 @@
      slv:    { "topicId/subKey": 1–4 },         level per subtopic — a topic's level is computed from these
      slvAt:  { "topicId/subKey": timestamp },   when that level last changed
      subs:   { topicId: [ {id, n, c, u} ] },    subtopics you added yourself
+     rel:    { topicId: {off, at} },            off = moved to "Nerelevantné", left out of the estimate
      notes:  { topicId: [ {id, title, body, c, u, lv, sub} ] }
                                                 named notes; c = created, u = updated,
                                                 lv = how well you understand it (0 = not set), sub = subtopic key
@@ -27,7 +28,7 @@ const STATE_V = 4;
 /* untouched copy of an older save, written once before upgrading it */
 const backupKey = v => `maturita-mat-v${v || 1}-backup`;
 
-const emptyState = () => ({v:STATE_V, slv:{}, slvAt:{}, subs:{}, notes:{}, upd:{}, log:[], del:{}, epoch:0, recent:[], prefs:{}});
+const emptyState = () => ({v:STATE_V, slv:{}, slvAt:{}, subs:{}, rel:{}, notes:{}, upd:{}, log:[], del:{}, epoch:0, recent:[], prefs:{}});
 let state = emptyState();
 let store = "none";
 
@@ -54,7 +55,7 @@ function migrate(old){
   const s = emptyState();
   let levels = {}, levelAt = {};
   if(old.v >= 2 && old.v <= STATE_V){
-    for(const k of ["slv","slvAt","subs","notes","upd","del","prefs"]) if(isObj(old[k])) s[k] = old[k];
+    for(const k of ["slv","slvAt","subs","rel","notes","upd","del","prefs"]) if(isObj(old[k])) s[k] = old[k];
     s.epoch = +old.epoch || 0;
     if(Array.isArray(old.log)) s.log = old.log;
     if(Array.isArray(old.recent)) s.recent = old.recent;
@@ -112,6 +113,10 @@ function tidy(s){
       id: String(x.id || "u" + uid()), n: String(x.n).trim(), c: +x.c || Date.now(), u: +x.u || +x.c || Date.now()
     })) : [];
     if(list.length && BY_ID[id]) s.subs[id] = list; else delete s.subs[id];
+  }
+  for(const id in s.rel){
+    const r = s.rel[id];
+    if(BY_ID[id] && isObj(r)) s.rel[id] = {off:!!r.off, at:+r.at || 0}; else delete s.rel[id];
   }
   for(const key in s.slv){
     const v = +s.slv[key];
@@ -197,6 +202,10 @@ function mergeStates(a, b){
     if(notes.length) out.notes[id] = notes;
     const subs = newest([...(b.subs[id] || []), ...(a.subs[id] || [])]).filter(alive);
     if(subs.length) out.subs[id] = subs;
+  }
+  for(const id of new Set([a.rel, b.rel].flatMap(Object.keys))){
+    const ra = a.rel[id], rb = b.rel[id];
+    out.rel[id] = !rb || (ra && ra.at >= rb.at) ? ra : rb;
   }
   for(const key of new Set([a.slv, b.slv, a.slvAt, b.slvAt].flatMap(Object.keys))){
     const la = a.slvAt[key] || 0, lb = b.slvAt[key] || 0;
@@ -304,7 +313,14 @@ const changedToday = id => state.upd[id] && isoOf(state.upd[id]) === todayIso();
 const blocked = item => (item.pre||[]).filter(p => lv(p) < 3);
 const dependents = id => T.filter(x => (x.pre||[]).includes(id));
 
-function itemsOf(k){ return T.filter(x => x.t === k); }
+/* ---------- relevance: topics you've decided won't be on the test ---------- */
+const isOff = id => !!(state.rel[id] && state.rel[id].off);
+function setOff(id, off){ state.rel[id] = {off, at:Date.now()}; touch(id); }
+/* which tab a topic shows in: its own, or "x" = Nerelevantné */
+const tabOf = x => isOff(x.id) ? "x" : x.t;
+function itemsOf(k){ return T.filter(x => tabOf(x) === k); }
+/* the topics that count toward the external-part estimate */
+const ecItems = () => T.filter(x => x.t === "a" && !isOff(x.id));
 
 /* ---------- notes ---------- */
 const notesOf = id => state.notes[id] || [];

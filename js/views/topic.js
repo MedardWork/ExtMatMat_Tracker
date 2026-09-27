@@ -14,7 +14,7 @@ VIEWS.tema = {
     if(ui.editing && ui.editing.t !== id) finishEditing(true);
     markRecent(id); saveSoon();
     ui.lastTopic = id;
-    if(!ui.seq || !ui.seq.includes(id)){ ui.seq = itemsOf(x.t).map(y => y.id); ui.seqLabel = ""; }
+    if(!ui.seq || !ui.seq.includes(id)){ ui.seq = itemsOf(tabOf(x)).map(y => y.id); ui.seqLabel = ""; }
     if(ui.pendingNew === id){ ui.pendingNew = null; startNote(id); }
     if(nf.t !== id){ nf.t = id; nf.sub = null; nf.lv = null; ui.subSel = null; }
 
@@ -62,7 +62,7 @@ VIEWS.tema = {
       setSubLevel(id, k, Number(e.key)); save(); refresh("level");
     }
     else if(e.key === "n" || e.key === "N"){ e.preventDefault(); ACTIONS["note-new"](); }
-    else if(e.key === "Escape"){ go(`#/temy/${BY_ID[id].t}`); }
+    else if(e.key === "Escape"){ go(`#/temy/${tabOf(BY_ID[id])}`); }
   }
 };
 
@@ -80,7 +80,7 @@ function drawTNav(){
     ? `<a class="t-step ${cls}" href="#/tema/${to}" title="${esc(BY_ID[to].n)} (${key})"><span>${label}</span><b>${esc(shortName(BY_ID[to]))}</b></a>`
     : `<span class="t-step ${cls} off"><span>${label}</span></span>`;
   $("#tNav").innerHTML = `
-    <a class="t-back" href="#/temy/${x.t}" title="Späť na zoznam (Esc)">← ${TABS.find(t => t.k === x.t).label.split(" · ")[0]}</a>
+    <a class="t-back" href="#/temy/${tabOf(x)}" title="Späť na zoznam (Esc)">← ${TAB_LABEL[tabOf(x)]}</a>
     <span class="t-pos">${pos + 1} / ${ui.seq.length}${ui.seqLabel ? ` · ${ui.seqLabel}` : ""}</span>
     <span class="t-steps">${arrow(prev, "prev", "‹ Predošlá", "←")}${arrow(next, "next", "Ďalšia ›", "→")}</span>`;
 }
@@ -91,9 +91,10 @@ function drawTHead(){
   const head = $("#tHead");
   head.className = `t-head s${v}`;
   const upd = state.upd[id] ? `<span class="upd${changedToday(id) ? " today" : ""}">${changedToday(id) ? "zmenené dnes" : "zmenené " + fmtIso(isoOf(state.upd[id]))}</span>` : "";
-  const weight = x.t !== "c" ? `<span class="t-weight">blok <b>${AREAS[x.area].w}</b> úloh v teste</span>` : "";
+  const weight = isOff(id) ? `<span class="t-weight off">mimo odhadu</span>`
+    : x.t !== "c" ? `<span class="t-weight">blok <b>${AREAS[x.area].w}</b> úloh v teste</span>` : "";
   head.innerHTML = `
-    <div class="t-kicker">${esc(areaName(x))} · ${TAB_LABEL[x.t]}${x.src ? ` <span class="src">${x.src}</span>` : ""}${weight}</div>
+    <div class="t-kicker">${esc(areaName(x))} · ${TAB_LABEL[tabOf(x)]}${x.src ? ` <span class="src">${x.src}</span>` : ""}${weight}</div>
     <h1 class="t-title">${x.n}</h1>
     ${x.dk ? `<div class="t-dk"><span class="dkterm">${x.dk}</span></div>` : ""}
     <div class="t-level">
@@ -102,6 +103,9 @@ function drawTHead(){
       <span class="t-pct">porozumenie <b>${Math.round(understanding(id) * 100)} %</b> · ohodnotené ${ratedSubs(id)} z ${subsOf(id).length} podtém</span>
       ${upd}
     </div>
+    <div class="t-rel">${isOff(id)
+      ? `<span class="t-rel-note">Táto téma je v <b>Nerelevantné</b> — nepočíta sa do odhadu ani do „Čo ďalej“.</span> <button class="btn ghost small" data-act="rel" data-id="${id}">↩ Vrátiť ${TAB_INTO[x.t]}</button>`
+      : `<button class="linkish rel-link" data-act="rel" data-id="${id}">⊘ Nebude na teste — vyradiť z odhadu</button>`}</div>
     ${x.m ? `<p class="t-remark">${x.m}</p>` : ""}`;
 }
 

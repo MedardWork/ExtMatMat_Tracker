@@ -52,7 +52,7 @@ function palSearch(q){
     };
     if(o.pick) T.filter(x => changedToday(x.id)).forEach(x => add(x.id, "Zmenené dnes"));
     state.recent.forEach(id => add(id, "Naposledy otvorené"));
-    if(items.length < 8) EC_ITEMS.filter(x => lv(x.id) > 0 && lv(x.id) < 4).slice(0, 8 - items.length).forEach(x => add(x.id, "Rozrobené"));
+    if(items.length < 8) ecItems().filter(x => lv(x.id) > 0 && lv(x.id) < 4).slice(0, 8 - items.length).forEach(x => add(x.id, "Rozrobené"));
     if(o.notes !== false && o.pick){
       /* in pick mode, today's notes are the most likely thing to link */
       T.forEach(x => notesOf(x.id).forEach(n => {
@@ -106,7 +106,7 @@ function palDraw(){
     const main = n ? `✎ ${esc(noteTitle(n))}` : esc(x.n);
     const sub = n
       ? `${esc(shortName(x))} · ${fmtAgo(isoOf(n.c))}`
-      : `${esc(areaName(x))} · ${TAB_LABEL[x.t]}${notesOf(x.id).length ? ` · ✎ ${notesOf(x.id).length}` : ""}`;
+      : `${esc(areaName(x))} · ${TAB_LABEL[tabOf(x)]}${notesOf(x.id).length ? ` · ✎ ${notesOf(x.id).length}` : ""}`;
     html += `<div class="pal-item${i === pal.sel ? " sel" : ""}" role="option" aria-selected="${i === pal.sel}" data-act="pal-pick" data-i="${i}">
       <i class="dot l${lv(it.t)}"></i><div><div class="pal-main">${main}</div><div class="pal-sub">${sub}</div></div>
       ${!n ? `<span class="pal-lv">${LV[lv(it.t)].label}</span>` : ""}

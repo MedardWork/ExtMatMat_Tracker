@@ -3,13 +3,14 @@
    ============================================================ */
 function renderNext(){
   const host = document.getElementById("next");
-  const pool = EC_ITEMS.filter(x => lv(x.id) < 4);
+  const ec = ecItems();
+  const pool = ec.filter(x => lv(x.id) < 4);
   if(!pool.length){
     host.innerHTML = `<h2>Čo ďalej</h2><p class="done">Všetko je na úrovni perfektne. Rob celé testy na čas.</p>`;
     return;
   }
   const scored = pool.map(x => {
-    let p = AREAS[x.area].w / T.filter(y => y.area === x.area).length;
+    let p = AREAS[x.area].w / ec.filter(y => y.area === x.area).length;
     const v = lv(x.id);
     if(v === 3) p *= 1.5;       /* skoro hotové — dotiahni */
     else if(v === 2) p *= 1.3;

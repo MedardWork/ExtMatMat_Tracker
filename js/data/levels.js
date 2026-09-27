@@ -17,7 +17,8 @@ const DK_AREAS = {
   dkFun:  {name:"Functions and modelling"},
   dkVrk:  {name:"Tools and exam format"}
 };
-const TAB_LABEL = {a:"Externá maturita", c:"Matematik A"};
+const TAB_LABEL = {a:"Externá maturita", c:"Matematik A", x:"Nerelevantné"};
+const TAB_INTO = {a:"do Externej maturity", c:"do Matematik A", x:"do Nerelevantné"};   /* "vrátiť …" */
 const areaName = x => (AREAS[x.area] || DK_AREAS[x.area]).name.split(",")[0];
 
 /* ============================================================

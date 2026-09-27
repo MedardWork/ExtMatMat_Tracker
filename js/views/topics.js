@@ -3,7 +3,8 @@
    ============================================================ */
 const TABS = [
   {k:"a", label:"Externá maturita", intro:'Všetko učivo na <strong>externú časť</strong> maturity z matematiky, rozdelené podľa blokov testu. Štítok Y1–Y3 pri téme hovorí, v ktorom ročníku sa podľa sylabu preberala.'},
-  {k:"c", label:"Navyše pre Matematik A", intro:'Čo dánska Matematik A (STX) žiada <strong>nad rámec</strong> slovenskej maturity. Do odhadu na EČ sa nepočíta.'}
+  {k:"c", label:"Navyše pre Matematik A", intro:'Čo dánska Matematik A (STX) žiada <strong>nad rámec</strong> slovenskej maturity. Do odhadu na EČ sa nepočíta.'},
+  {k:"x", label:"Nerelevantné", intro:'Témy, o ktorých vieš, že na teste nebudú. <strong>Do odhadu sa nepočítajú</strong> — úlohy ich bloku sa rozdelia medzi zvyšné témy. Tlačidlom <b>↩ Vrátiť</b> ich presunieš späť; hodnotenie aj poznámky zostávajú.'}
 ];
 
 const FILTERS = [
@@ -16,7 +17,7 @@ const FILTERS = [
   {f:"today", label:"Zmenené dnes", test: x => changedToday(x.id)}
 ];
 
-const areasOf = tab => tab === "c" ? DK_AREAS : AREAS;
+const areasOf = tab => tab === "c" ? DK_AREAS : tab === "x" ? {...AREAS, ...DK_AREAS} : AREAS;
 
 VIEWS.temy = {
   title: () => "Témy",
@@ -46,8 +47,9 @@ VIEWS.temy = {
 };
 
 function renderTabs(){
-  $("#tabs").innerHTML = TABS.map(t => {
-    const left = itemsOf(t.k).filter(x => lv(x.id) < 4).length;
+  /* Nerelevantné only appears once something is in it */
+  $("#tabs").innerHTML = TABS.filter(t => t.k !== "x" || ui.tab === "x" || itemsOf("x").length).map(t => {
+    const left = t.k === "x" ? itemsOf("x").length : itemsOf(t.k).filter(x => lv(x.id) < 4).length;
     return `<a class="tab" role="tab" href="#/temy/${t.k}" aria-selected="${ui.tab === t.k}">
       ${t.label}<span class="count" title="ešte nie na perfektne">${left}</span></a>`;
   }).join("");
@@ -75,7 +77,7 @@ function passes(x){
 /* ids in the order they're shown, for ‹ › in the topic view */
 function visibleIds(){
   const areas = areasOf(ui.tab);
-  return Object.keys(areas).flatMap(key => T.filter(x => x.t === ui.tab && x.area === key && passes(x)).map(x => x.id));
+  return Object.keys(areas).flatMap(key => T.filter(x => tabOf(x) === ui.tab && x.area === key && passes(x)).map(x => x.id));
 }
 
 const gluedArrow = name => {
@@ -123,6 +125,7 @@ function rowHtml(x){
     <div class="row-side">
       ${levelSeg(x.id)}
       ${noteBtn}
+      ${relBtn(x)}
     </div>
   </div>`;
 }
@@ -133,14 +136,14 @@ function renderList(){
   let html = "", shown = 0, jump = "";
 
   for(const key in areas){
-    const all = T.filter(x => x.t === ui.tab && x.area === key);
+    const all = T.filter(x => tabOf(x) === ui.tab && x.area === key);
     const items = all.filter(passes);
     if(!items.length) continue;
     shown += items.length;
 
     const done = all.filter(x => lv(x.id) === 4).length;
-    const badge = ui.tab === "c"
-      ? `<b>${done}</b> / ${all.length} perfektne`
+    const badge = ui.tab === "x" ? `${all.length} ${skPieces(all.length)} mimo odhadu`
+      : ui.tab === "c" ? `<b>${done}</b> / ${all.length} perfektne`
       : `<b>${AREAS[key].w}</b> úloh v teste · ${done} / ${all.length} perfektne`;
     const name = areas[key].name;
     jump += `<button data-act="jump" data-to="area-${key}">${esc(name.split(/[,—]/)[0].trim())}<span>${items.length}</span></button>`;
@@ -150,9 +153,16 @@ function renderList(){
     items.forEach(x => { html += rowHtml(x); });
     html += `</section>`;
   }
-  if(!shown) html = `<p class="empty">Pri tomto filtri tu nič nie je.${ui.query || ui.filter !== "all" ? ` <button class="linkish" data-act="clear-filters">Zrušiť filter a hľadanie</button>` : ""}</p>`;
+  if(!shown && ui.tab === "x" && !itemsOf("x").length) html = `<p class="empty">Nič tu nie je. Tému sem presunieš tlačidlom ⊘ v jej riadku alebo v okne témy.</p>`;
+  else if(!shown) html = `<p class="empty">Pri tomto filtri tu nič nie je.${ui.query || ui.filter !== "all" ? ` <button class="linkish" data-act="clear-filters">Zrušiť filter a hľadanie</button>` : ""}</p>`;
   host.innerHTML = html;
   $("#areaJump").innerHTML = shown > 6 ? `<span>Skok na:</span>${jump}` : "";
+}
+
+function relBtn(x){
+  return isOff(x.id)
+    ? `<button class="rel-btn back" data-act="rel" data-id="${x.id}" title="Vrátiť medzi témy na test a do odhadu">↩ Vrátiť</button>`
+    : `<button class="rel-btn" data-act="rel" data-id="${x.id}" title="Nebude na teste — presunúť do Nerelevantné a vyradiť z odhadu" aria-label="Označiť ako nerelevantné">⊘</button>`;
 }
 
 /* ---------- actions ---------- */

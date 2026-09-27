@@ -2,7 +2,8 @@
    SCORING — weighted by the real test blueprint
    ============================================================ */
 function areaStats(key){
-  const items = T.filter(x => x.area === key);
+  /* the block's items spread over the topics still in play */
+  const items = ecItems().filter(x => x.area === key);
   const n = items.length || 1;
   let sum = 0, s4 = 0, mid = 0;
   items.forEach(x => {
@@ -53,8 +54,9 @@ function renderGauge(){
 
   /* distribution across the five levels */
   const counts = [0,0,0,0,0];
-  EC_ITEMS.forEach(x => counts[lv(x.id)]++);
-  const n = EC_ITEMS.length;
+  const ec = ecItems();
+  ec.forEach(x => counts[lv(x.id)]++);
+  const n = ec.length || 1;
   document.getElementById("dist").innerHTML = counts.map((c,i) =>
     `<div style="width:${(c/n*100).toFixed(2)}%;background:${LV_COLOR[i]};${i===0?"opacity:.45":""}" title="${LV[i].label}: ${c}"></div>`
   ).join("");

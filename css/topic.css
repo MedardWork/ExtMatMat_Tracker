@@ -223,3 +223,9 @@
   .sub-row .seg button{flex:1;padding:9px 2px;font-size:10.5px}
   .sub-new{opacity:1}
 }
+
+.t-rel{margin-top:12px;font-size:13px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.rel-link{color:var(--ink-soft);text-decoration:none;font-size:12.5px}
+.rel-link:hover{color:var(--flag);text-decoration:underline}
+.t-rel-note{color:var(--ink-soft)}
+.t-weight.off{color:var(--flag);font-weight:600}

@@ -11,7 +11,7 @@ function daysTo(iso){
 }
 
 function renderClock(){
-  const left = EC_ITEMS.filter(x => lv(x.id) < 4).length;
+  const left = ecItems().filter(x => lv(x.id) < 4).length;
   const days = daysTo(EXAM.d);
   const weeks = Math.floor(days / 7);
   const rest = days - weeks * 7;

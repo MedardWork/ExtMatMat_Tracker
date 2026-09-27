@@ -120,3 +120,11 @@
 .sub-count{display:inline-flex;align-items:center;gap:5px;margin-right:8px;font-size:11px;color:var(--ink-soft)}
 .note-prev.nl1{border-left-color:var(--l1)} .note-prev.nl2{border-left-color:var(--l2)}
 .note-prev.nl3{border-left-color:var(--l3)} .note-prev.nl4{border-left-color:var(--l4)}
+
+.rel-btn{
+  appearance:none;cursor:pointer;font:500 13px/1 var(--sans);color:var(--blank);
+  background:none;border:1px solid transparent;border-radius:5px;padding:7px 8px;
+}
+.rel-btn:hover{color:var(--flag);border-color:var(--rule);background:var(--panel)}
+.rel-btn.back{color:var(--dk);font-size:12px;border-color:var(--rule);background:var(--panel)}
+.rel-btn.back:hover{color:var(--ink)}
