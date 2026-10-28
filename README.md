@@ -10,9 +10,7 @@ Three ways to run it:
 
 ## Desktop app
 
-Download the installer for your system from the
-[Releases](https://github.com/MedardWork/ExtMatMat_Tracker/releases) page (or from the latest run of the
-*Desktop app* workflow on the Actions tab):
+Download the installer for your system (step by step below), then install it:
 
 - **Windows** — `Maturita-…-Windows.exe`. Installs for your user only and adds a desktop and Start menu
   shortcut. The installer isn't signed, so Windows may show "Windows protected your PC": click
@@ -46,6 +44,39 @@ copy anywhere you like, e.g. to a USB stick or cloud folder.
   (`maturita-YYYY-MM-DD.db`, the last 30 days are kept). To go back to one, close the app and copy it
   over `data/maturita.db`.
 
+### Downloading the installer — step by step
+
+GitHub builds the installers itself (`.github/workflows/desktop.yml`). There are two places to get them.
+
+**A. From a release** — the easy way, no sign-in needed:
+
+1. Open the [Releases](https://github.com/MedardWork/ExtMatMat_Tracker/releases) page (on the
+   repository's main page, *Releases* in the right-hand column).
+2. Click the newest release, scroll down to **Assets**.
+3. Click the file for your system: `…-Windows.exe`, `…-macOS.dmg` or `…-Linux.AppImage`.
+
+If there's no release yet, make one (the workflow file has to be on `main` first):
+
+1. On the repository page, click *Releases → Draft a new release* (or *Create a new release*).
+2. *Choose a tag* → type a new version, e.g. `v1.0.0` → *Create new tag*. Target: `main`.
+3. Give it a title (e.g. the same `v1.0.0`) and click **Publish release**.
+4. Creating the tag starts the build. After about 3–5 minutes the three installers appear under
+   **Assets** of that release (refresh the page). Progress is visible on the *Actions* tab.
+
+For a later version, bump `version` in `package.json` and repeat with the next tag (`v1.0.1`, …).
+
+**B. From a build on the Actions tab** — every push that changes the app builds it too. You have to be
+signed in to GitHub, and builds are deleted after 90 days:
+
+1. Open the repository's **Actions** tab (top bar, between *Pull requests* and *Projects*).
+2. On the left, click **Desktop app**.
+3. Click the newest run with a green ✓ (its title is the commit message).
+4. Scroll to the very bottom of the run page, to the box **Artifacts**.
+5. Click **Maturita-Windows**, **Maturita-macOS** or **Maturita-Linux** — a `.zip` downloads.
+6. Unzip it (Windows: right-click → *Extract All*; macOS: double-click). Inside is the installer.
+
+To start a build without pushing anything: *Actions → Desktop app → Run workflow* (button on the right).
+
 ### Building it yourself
 
 ```
@@ -54,8 +85,8 @@ npm run desktop     # run the app from the source
 npm run dist        # build the installer for this system into dist/
 ```
 
-Pushing a tag such as `v1.0.1` builds Windows, macOS and Linux installers on GitHub Actions and
-publishes them as a release (`.github/workflows/desktop.yml`).
+Pushing a tag such as `v1.0.1` (or creating a release with a new tag, as above) builds Windows, macOS
+and Linux installers on GitHub Actions and attaches them to the release.
 
 ## Docker
 
