@@ -27,6 +27,7 @@ VIEWS.info = {
           <button class="btn ghost" data-act="export">Skopírovať postup</button>
           <button class="btn ghost" data-act="download">Stiahnuť ako súbor</button>
           <button class="btn ghost" data-act="import-toggle">Vložiť postup</button>
+          <button class="btn ghost" data-act="import-file">Načítať zo súboru</button>
           <button class="btn ghost danger" data-act="reset">Vymazať všetko</button>
         </div>
         <div id="importBox" hidden>
@@ -34,6 +35,12 @@ VIEWS.info = {
           <button class="btn" data-act="import">Načítať</button>
         </div>
       </section>
+
+      ${store === "server" ? `<section class="card">
+        <h2>História</h2>
+        <p class="muted">Staršie verzie postupu, ktoré si databáza odkladá sama: počas práce každých 10 minút a vždy pred načítaním zálohy alebo vymazaním. Posledné dva dni zostávajú všetky, staršie po jednej za deň. Obnovením sa terajší stav nestratí — pribudne do histórie.</p>
+        <div id="history" class="history"><p class="muted">Načítavam…</p></div>
+      </section>` : ""}
 
       <section class="card">
         <h2>Klávesové skratky</h2>
@@ -51,8 +58,50 @@ VIEWS.info = {
       </section>
     </div>`;
     renderStoreNote();
+    if(store === "server") renderHistory();
+    if(ui.openImport){ ui.openImport = false; $("#importBox").hidden = false; $("#importArea").focus(); }
   }
 };
+
+/* ---------- history: earlier saves kept by the app's database ---------- */
+async function renderHistory(){
+  const host = $("#history");
+  let list;
+  try{ list = (await (await fetch("api/snapshots", {cache:"no-store"})).json()).snapshots; }
+  catch(err){ if(host) host.innerHTML = `<p class="muted">Históriu sa nepodarilo načítať.</p>`; return; }
+  if(!host) return;
+  if(!list.length){ host.innerHTML = `<p class="muted">Zatiaľ prázdna — prvá staršia verzia sa odloží po pár minútach práce.</p>`; return; }
+  host.innerHTML = `<ul>${list.map(x => `<li>
+    <span class="h-when">${fmtStamp(x.saved)}</span>
+    <span class="h-what muted">hodnotené podtémy ${x.rated} · ${x.notes} ${skNotes(x.notes)} · ${x.entries} ${skEntries(x.entries)}</span>
+    <span class="h-acts">
+      <button class="btn ghost small" data-act="snap-download" data-id="${x.id}">Stiahnuť</button>
+      <button class="btn ghost small" data-act="snap-restore" data-id="${x.id}">Obnoviť</button>
+    </span>
+  </li>`).join("")}</ul>`;
+}
+async function fetchSnapshot(id){
+  const r = await fetch(`api/snapshots/${id}`, {cache:"no-store"});
+  if(!r.ok) throw new Error(r.status);
+  return r.json();
+}
+action("snap-restore", async el => {
+  let snap;
+  try{ snap = await fetchSnapshot(el.dataset.id); }catch(err){ toast("Túto verziu sa nepodarilo načítať."); return; }
+  if(!confirm(`Obnoviť postup z ${fmtStamp(snap.saved)}? Terajší stav sa odloží do histórie.`)) return;
+  state = migrate(snap.state);
+  newEpoch();
+  ui.editing = null;
+  await save();
+  toast("Obnovené.");
+  render();
+});
+action("snap-download", async el => {
+  try{
+    const snap = await fetchSnapshot(el.dataset.id);
+    downloadJson(snap.state, `maturita-postup-${isoOf(snap.saved)}.json`);
+  }catch(err){ toast("Túto verziu sa nepodarilo načítať."); }
+});
 
 action("export", async () => {
   const txt = JSON.stringify(state);
@@ -63,22 +112,34 @@ action("export", async () => {
     toast("Skopíruj text z poľa nižšie.");
   }
 });
-action("download", () => {
-  const blob = new Blob([JSON.stringify(state, null, 1)], {type:"application/json"});
+function downloadJson(data, name){
+  const blob = new Blob([JSON.stringify(data, null, 1)], {type:"application/json"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = `maturita-postup-${todayIso()}.json`;
+  a.download = name;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-});
+}
+action("download", () => downloadJson(state, `maturita-postup-${todayIso()}.json`));
 action("import-toggle", () => { const b = $("#importBox"); b.hidden = !b.hidden; });
-action("import", () => {
-  try{
-    state = migrate(JSON.parse($("#importArea").value.trim()));
-    newEpoch();   /* the import replaces what other open tabs hold */
-    save(); toast("Načítané.");
-  }catch(err){ toast("Text sa nedal prečítať — skontroluj, či je celý."); }
+action("import", () => importText($("#importArea").value));
+/* the .json from "Stiahnuť ako súbor" */
+action("import-file", () => {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".json,.txt,application/json,text/plain";
+  input.onchange = async () => { if(input.files[0]) importText(await input.files[0].text()); };
+  input.click();
 });
+function importText(txt){
+  try{
+    state = migrate(JSON.parse(txt.trim()));
+    newEpoch();   /* the import replaces what other open tabs hold */
+    ui.editing = null;
+    save(); toast("Načítané.");
+    render();
+  }catch(err){ toast("Text sa nedal prečítať — skontroluj, či je celý."); }
+}
 action("reset", () => {
   if(!confirm("Naozaj vymazať všetky hodnotenia, poznámky aj denník?")) return;
   state = emptyState(); newEpoch(); ui.editing = null; save(); toast("Vymazané.");

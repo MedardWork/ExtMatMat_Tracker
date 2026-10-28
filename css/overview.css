@@ -99,3 +99,8 @@
   .gauge{padding:14px 12px 12px}
   .clock .big{font-size:27px}
 }
+
+/* first start of the desktop app / Docker: bring the old save over */
+.welcome{margin:0 0 18px;border-left:3px solid var(--dk)}
+.welcome p{font-size:14px;margin:0 0 12px;max-width:70ch}
+.welcome .tools{display:flex;gap:8px;flex-wrap:wrap}

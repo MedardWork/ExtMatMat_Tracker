@@ -1,6 +1,76 @@
 # Maturita z matematiky — tracker
 
-Open `maturita-matematika-tracker.html` in a browser. No build step, no server, works offline.
+Three ways to run it:
+
+| | How | Where your progress is saved |
+|---|---|---|
+| **Desktop app** (recommended) | Install it once, then open it like any other app | Its own database on your computer, saved automatically |
+| **Docker** | `docker compose up -d`, then open <http://localhost:8080> | The same database, in `./data` next to `docker-compose.yml` |
+| **Plain file** | Open `maturita-matematika-tracker.html` in a browser | The browser's `localStorage` — back it up by hand from *Info* |
+
+## Desktop app
+
+Download the installer for your system from the
+[Releases](https://github.com/MedardWork/ExtMatMat_Tracker/releases) page (or from the latest run of the
+*Desktop app* workflow on the Actions tab):
+
+- **Windows** — `Maturita-…-Windows.exe`. Installs for your user only and adds a desktop and Start menu
+  shortcut. The installer isn't signed, so Windows may show "Windows protected your PC": click
+  *More info → Run anyway*.
+- **macOS** — `Maturita-…-macOS.dmg`, drag the app to Applications. It isn't signed by Apple: the first
+  time, open it, then go to *System Settings → Privacy & Security* and click *Open Anyway*. If macOS
+  says the app "is damaged", run `xattr -cr "/Applications/Maturita z matematiky.app"` in Terminal.
+- **Linux** — `Maturita-…-Linux.AppImage`: make it executable (`chmod +x`) and run it.
+
+Every change is saved by itself a moment after you make it — there's nothing to copy or paste, and
+closing the window waits for the last save. Opening the app a second time just brings the running
+window forward.
+
+**First start:** the database starts empty. To bring over progress from the browser version, use
+*Stiahnuť ako súbor* there, then *Načítať zo súboru* in the app (the overview offers it on first
+start). Pasting the copied text works too.
+
+**Where the data is:** *Súbor → Otvoriť priečinok s dátami* in the menu. It's
+`data/maturita.db` inside the app's folder (`%APPDATA%\Maturita z matematiky` on Windows,
+`~/Library/Application Support/Maturita z matematiky` on macOS, `~/.config/Maturita z matematiky` on
+Linux). Updating or uninstalling the app leaves it alone. *Súbor → Uložiť kópiu databázy…* saves a
+copy anywhere you like, e.g. to a USB stick or cloud folder.
+
+### Nothing gets lost
+
+- **History** (*Info → História*): while you work, the database keeps the earlier version every 10
+  minutes, and always before an import, a restore or *Vymazať všetko*. Everything from the last two
+  days stays; older versions thin out to one per day. Any of them can be restored or downloaded —
+  restoring keeps the current state in the history too.
+- **Daily backups:** once a day the whole database file is copied to `data/backups/`
+  (`maturita-YYYY-MM-DD.db`, the last 30 days are kept). To go back to one, close the app and copy it
+  over `data/maturita.db`.
+
+### Building it yourself
+
+```
+npm install
+npm run desktop     # run the app from the source
+npm run dist        # build the installer for this system into dist/
+```
+
+Pushing a tag such as `v1.0.1` builds Windows, macOS and Linux installers on GitHub Actions and
+publishes them as a release (`.github/workflows/desktop.yml`).
+
+## Docker
+
+```
+docker compose up -d
+```
+
+Then open <http://localhost:8080> (bookmark it). The container starts again by itself whenever Docker
+does, and everything is saved in `./data` — the same database, history and daily backups as the desktop
+app. `docker compose up -d --build` after pulling changes updates it.
+
+The port is only reachable from this computer. To reach it from other devices, change the port line in
+`docker-compose.yml` to `"8080:8080"` — but anyone on your network can then read and change your
+progress. Without Docker, `npm start` runs the same server (Node 22.13 or newer; set `DATA_DIR` to
+choose the folder).
 
 ## What's in it
 
@@ -15,7 +85,8 @@ Open `maturita-matematika-tracker.html` in a browser. No build step, no server, 
   diary entries that mention it, with a quick "zapísať do denníka" box.
 - **Denník** — study diary with an activity calendar, entries linked to topics or specific notes,
   suggestions from what you changed today, search, and editing.
-- **Info** — data sources, backup (copy / download / paste), keyboard shortcuts.
+- **Info** — data sources, backup (copy / download / paste / load a file), history of earlier versions
+  (desktop app and Docker), keyboard shortcuts.
 
 Press `/` (or Ctrl+K) anywhere to jump to a topic or note. On a topic page: `←` `→` previous /
 next topic, `↑` `↓` pick a subtopic, `0`–`4` set its level, `N` new note, `Esc` back to the list.
@@ -75,6 +146,13 @@ js/views/topic.js                  #/tema/<id>
 js/views/journal.js                #/dennik
 js/views/info.js                   #/info
 js/main.js                         theme, global keys, startup
+
+server/store.js                    the SQLite database: current save, history, daily backups
+server/app.js                      serves the files above + the save API (web-standard Request → Response)
+server/main.js                     runs it as a web server (npm start, Docker)
+desktop/main.js                    the desktop app: Electron window serving the same handler over app://
+build/icon.png                     app icon
+Dockerfile, docker-compose.yml     the Docker setup
 ```
 
 The scripts are plain `<script src>` tags, not ES modules, because modules don't load from
@@ -94,7 +172,13 @@ vendor → data → helpers → state → core → components → views → boot
 
 ### Saved data
 
-Everything lives in `localStorage` under `maturita-mat-v2` (the data inside is version 4). Older saves
+In the desktop app and Docker, the page finds the server's `api/state` and saves there: one SQLite file
+(`maturita.db`) holding the current save as JSON, with a revision number. Each save names the revision
+it builds on; if another tab or window saved in between, the server answers with its copy, the two are
+merged (as below) and the save is retried. Coming back to a tab picks up what others saved meanwhile.
+The same JSON is what *Skopírovať / Stiahnuť / Vložiť postup* move around.
+
+Opened as a plain file, everything lives in `localStorage` under `maturita-mat-v2` (the data inside is version 4). Older saves
 are upgraded automatically on first load — a topic's old level is copied to each of its subtopics, so
 the estimate doesn't change — and the untouched original is kept under `maturita-mat-v<version>-backup`.
 

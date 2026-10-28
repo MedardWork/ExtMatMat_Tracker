@@ -9,6 +9,14 @@ VIEWS.prehlad = {
         <h1>Maturita z matematiky — externá časť</h1>
         <p class="sub">Externá časť je <b>30 úloh za 150 minút</b>. Po každom sedení: ohodnoť témy, ktoré si riešil, zapíš si k nim poznámky a pridaj krátky záznam do denníka.</p>
       </header>
+      ${store === "server" && isEmptyState() ? `<section class="card welcome">
+        <h2>Prvé spustenie</h2>
+        <p>Postup sa odteraz ukladá sám do databázy aplikácie — nič už nemusíš kopírovať. Ak máš postup zo starej verzie, prenes si ho sem jedenkrát: súbor zo „Stiahnuť ako súbor“ alebo skopírovaný text.</p>
+        <div class="tools">
+          <button class="btn" data-act="import-file">Načítať zo súboru</button>
+          <a class="btn ghost" href="#/info" data-act="open-import">Vložiť skopírovaný text</a>
+        </div>
+      </section>` : ""}
       <div class="ov-grid">
         <div class="ov-main">
           <section class="gauge">
@@ -71,5 +79,6 @@ function renderResume(){
   host.innerHTML = html;
 }
 
+action("open-import", () => { ui.openImport = true; });
 action("filter-today", () => { ui.filter = "today"; });
 action("focus-compose", () => { ui.focusCompose = true; });
