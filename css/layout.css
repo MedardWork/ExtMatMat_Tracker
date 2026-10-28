@@ -54,6 +54,12 @@
 .info .card{margin-bottom:14px}
 .info .card p{font-size:14px;margin:0 0 10px;max-width:70ch}
 .info .tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.info code{font:12px/1.4 var(--mono);word-break:break-all}
+.history ul{list-style:none;margin:0;padding:0;max-height:360px;overflow-y:auto;border-top:1px solid var(--rule)}
+.history li{display:flex;align-items:center;gap:6px 12px;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid var(--rule);font-size:14px}
+.history .h-when{font-weight:600;min-width:150px}
+.history .h-what{flex:1;font-size:13px}
+.history .h-acts{display:flex;gap:6px}
 #importArea{
   width:100%;height:100px;margin:12px 0 8px;font:11px/1.4 var(--mono);
   border:1px solid var(--rule);border-radius:5px;padding:8px;color:var(--ink-soft);background:var(--input);

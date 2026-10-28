@@ -1,0 +1,15 @@
+# docker compose up -d   → then open http://localhost:8080
+# Starts again by itself after a restart (as long as Docker runs). Everything is saved in ./data.
+services:
+  maturita:
+    build: .
+    image: maturita-tracker
+    container_name: maturita-tracker
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ./data:/data
+    environment:
+      TZ: Europe/Bratislava
+      DATA_LABEL: priečinok data vedľa docker-compose.yml

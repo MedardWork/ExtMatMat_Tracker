@@ -17,10 +17,11 @@
      recent: [ topicId ],                       last opened topics, newest first
      prefs:  { noteOrder: "new" | "old" }
    }
-   Two places progress can live:
+   Three places progress can live:
      1. window.storage — exists when this page runs inside Claude
-     2. localStorage   — exists when the file is opened from disk
-   If neither works, the Copy / Paste buttons are the backup.
+     2. the app's own database — when the desktop app or the Docker server serves the page (api/state)
+     3. localStorage   — exists when the file is opened from disk
+   If none works, the Copy / Paste buttons are the backup.
    ============================================================ */
 const KEY = "maturita-mat-v2";              /* storage slot name; the data inside carries its own version */
 const OLD_KEY = "maturita-mat-progress";
@@ -144,6 +145,18 @@ async function writeKey(k, txt){
 }
 
 async function load(){
+  if(!hasClaudeStore){
+    const srv = await connectServer();
+    if(srv){
+      store = "server";
+      server.rev = srv.rev; server.saved = srv.saved; server.where = srv.where || "";
+      if(srv.state){
+        state = migrate(srv.state);
+        if(srv.state.v !== STATE_V) await save();   /* the server keeps the old version as a snapshot */
+      }
+      return;
+    }
+  }
   let raw = await readKey(KEY);
   if(raw){
     try{
@@ -162,6 +175,8 @@ async function load(){
 
 async function save(){
   clearTimeout(saveTimer);
+  saveTimer = null;
+  if(store === "server") return saveToServer();
   /* another tab may have saved since we loaded — fold its changes in instead of overwriting them */
   if(hasLocal){
     try{
@@ -179,7 +194,90 @@ async function save(){
 let saveTimer = null;
 function saveSoon(){ clearTimeout(saveTimer); saveTimer = setTimeout(save, 400); }
 /* a pending save must not be lost when the tab closes */
-window.addEventListener("pagehide", () => { if(saveTimer) save(); });
+window.addEventListener("pagehide", () => { if(saveTimer || server.dirty) save(); });
+
+/* ---------- the app's own database (desktop app, Docker) ----------
+   The page was served by server/app.js: every save goes to its SQLite file.
+   Each write names the revision it builds on; if another tab or window wrote in between,
+   the server answers 409 with its copy, we merge the two and try again. */
+const server = {rev:0, saved:0, where:"", dirty:false, busy:0, failing:false, retry:null, chain:Promise.resolve()};
+const IN_DESKTOP = location.protocol === "app:";
+
+async function connectServer(){
+  if(!/^(https?|app):$/.test(location.protocol)) return null;
+  try{
+    const r = await fetch("api/state", {cache:"no-store"});
+    const j = r.ok && await r.json();
+    return j && j.app === "maturita-tracker" ? j : null;
+  }catch(e){ return null; }
+}
+
+async function pushToServer(){
+  for(let tries = 0; tries < 5; tries++){
+    const r = await fetch("api/state", {
+      method:"PUT", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({base:server.rev, state})
+    });
+    const j = await r.json().catch(() => null);
+    if(r.ok && j){ server.rev = j.rev; server.saved = j.saved; return true; }
+    if(r.status !== 409 || !j) return false;
+    server.rev = j.rev;
+    if(j.state && j.state.v === STATE_V) takeRemote(migrate(j.state));
+  }
+  return false;
+}
+
+/* saves run one after another; one that finds nothing new to send is skipped */
+function saveToServer(){
+  server.dirty = true;
+  server.busy++;
+  const run = async () => {
+    if(!server.dirty) return true;
+    server.dirty = false;
+    let ok = false;
+    try{ ok = await pushToServer(); }catch(e){}
+    if(ok){
+      if(server.failing) toast("Uložené.");
+      server.failing = false;
+    } else {
+      server.dirty = true;
+      if(!server.failing) toast("Postup sa nepodarilo uložiť — skúšam znova…");
+      server.failing = true;
+      clearTimeout(server.retry);
+      server.retry = setTimeout(saveToServer, 5000);
+    }
+    renderStoreNote();
+    return ok;
+  };
+  return server.chain = server.chain.then(run).finally(() => { server.busy--; });
+}
+const unsaved = () => !!saveTimer || server.dirty || server.busy > 0;
+
+/* the desktop app asks for this before closing its window */
+window.flushSave = async () => {
+  if(store !== "server") return true;
+  if(saveTimer || server.dirty) save();
+  await server.chain;
+  return !server.dirty;
+};
+/* in a browser tab, ask before leaving while a save is still on its way */
+window.addEventListener("beforeunload", e => {
+  if(store !== "server" || IN_DESKTOP || !unsaved()) return;
+  save();
+  e.preventDefault();
+  e.returnValue = "";
+});
+/* coming back to a tab: pick up what other tabs saved meanwhile */
+document.addEventListener("visibilitychange", async () => {
+  if(store !== "server" || document.visibilityState !== "visible") return;
+  try{
+    const r = await fetch("api/state", {cache:"no-store"});
+    const j = r.ok && await r.json();
+    if(!j || j.rev === server.rev || !j.state || j.state.v !== STATE_V) return;
+    server.rev = j.rev; server.saved = j.saved;
+    takeRemote(migrate(j.state));
+  }catch(e){}
+});
 
 /* ---------- several tabs at once ----------
    Every level, note and diary entry carries the time it last changed; deletions leave a tombstone.
@@ -224,13 +322,20 @@ function newest(list){
   for(const x of list){ const y = m.get(x.id); if(!y || x.u >= y.u) m.set(x.id, x); }
   return [...m.values()];
 }
+/* nothing rated, written or opened yet */
+const isEmptyState = () => !Object.keys(state.slv).length && !Object.keys(state.notes).length && !state.log.length;
 const bury = id => { state.del[id] = Date.now(); };
 function newEpoch(){ state.epoch = Date.now(); }
 
 function renderStoreNote(){
   const el = document.getElementById("storeNote");
   if(!el) return;
-  if(store === "claude"){
+  if(store === "server"){
+    el.innerHTML = `Postup sa ukladá automaticky do databázy aplikácie — nič nemusíš kopírovať. Každý deň sa robí aj záloha celej databázy a staršie verzie nájdeš nižšie v Histórii.`
+      + (server.where ? `<br><span class="muted">Dáta sú v: <code>${esc(server.where)}</code>${IN_DESKTOP ? " — otvoríš ich cez Súbor → Otvoriť priečinok s dátami." : ""}</span>` : "")
+      + (server.failing ? `<br><b class="warn">Posledná zmena sa zatiaľ neuložila — skúšam znova.</b>`
+         : server.saved ? `<br><span class="muted">Naposledy uložené ${fmtStamp(server.saved)}.</span>` : "");
+  } else if(store === "claude"){
     el.textContent = "Postup sa ukladá sem do Claude a nájdeš ho tu aj nabudúce. Ak si súbor stiahneš a otvoríš v prehliadači, ukladá sa doň zvlášť.";
   } else if(store === "local"){
     el.textContent = "Postup sa ukladá priamo v tomto prehliadači. Zostane tam, kým nevymažeš dáta stránok — priečinok si nechaj na jednom mieste a otváraj ten istý súbor.";

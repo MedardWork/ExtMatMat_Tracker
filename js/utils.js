@@ -43,6 +43,14 @@ function fmtAgo(iso){
   return fmtIso(iso);
 }
 
+/* a moment: "dnes o 14:05", "včera o 9:12", otherwise "28. 10. 2026 o 14:05" */
+function fmtStamp(ts){
+  const d = new Date(ts), iso = isoOf(ts);
+  const time = `${d.getHours()}:${String(d.getMinutes()).padStart(2,"0")}`;
+  const n = dayDiff(iso, todayIso());
+  return `${n === 0 ? "dnes" : n === 1 ? "včera" : fmtIso(iso)} o ${time}`;
+}
+
 /* ---------- Slovak plurals ---------- */
 const plural = (n, one, few, many) => n === 1 ? one : (n >= 2 && n <= 4 ? few : many);
 const skWeeks  = n => plural(n, "týždeň", "týždne", "týždňov");

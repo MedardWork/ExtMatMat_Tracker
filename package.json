@@ -1,0 +1,64 @@
+{
+  "name": "maturita-tracker",
+  "productName": "Maturita z matematiky",
+  "version": "1.0.0",
+  "description": "Tracker prípravy na maturitu z matematiky — s vlastnou databázou, ktorá sa ukladá sama.",
+  "private": true,
+  "main": "desktop/main.js",
+  "desktopName": "maturita-tracker.desktop",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server/main.js",
+    "desktop": "electron .",
+    "dist": "electron-builder --publish never"
+  },
+  "devDependencies": {
+    "electron": "44.9.3",
+    "electron-builder": "26.17.0"
+  },
+  "build": {
+    "appId": "io.github.medardwork.maturita",
+    "productName": "Maturita z matematiky",
+    "files": [
+      "package.json",
+      "index.html",
+      "maturita-matematika-tracker.html",
+      "css/**",
+      "js/**",
+      "vendor/**",
+      "server/**",
+      "desktop/**"
+    ],
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "win": {
+      "target": "nsis",
+      "artifactName": "Maturita-${version}-Windows.${ext}"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "mac": {
+      "target": {
+        "target": "dmg",
+        "arch": ["universal"]
+      },
+      "category": "public.app-category.education",
+      "artifactName": "Maturita-${version}-macOS.${ext}"
+    },
+    "linux": {
+      "target": "AppImage",
+      "category": "Education",
+      "executableName": "maturita-tracker",
+      "syncDesktopName": true,
+      "artifactName": "Maturita-${version}-Linux.${ext}"
+    }
+  }
+}
