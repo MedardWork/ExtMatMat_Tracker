@@ -75,7 +75,8 @@ signed in to GitHub, and builds are deleted after 90 days:
 5. Click **Maturita-Windows**, **Maturita-macOS** or **Maturita-Linux** — a `.zip` downloads.
 6. Unzip it (Windows: right-click → *Extract All*; macOS: double-click). Inside is the installer.
 
-To start a build without pushing anything: *Actions → Desktop app → Run workflow* (button on the right).
+*Actions → Desktop app → Run workflow* (button on the right) builds the installers and publishes them
+as a release `v<version>` from `package.json` — so bump the version first if that release already exists.
 
 ### Building it yourself
 
