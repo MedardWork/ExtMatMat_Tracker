@@ -5,6 +5,7 @@
      typ      "operacie"   vyraz:"A ∩ B'"     the shaded set (typed as  A n B', A u B, A - B, (A u B)' …)
                            klikaj:true        the reader colours regions by clicking instead
                            hladaj:"A - B"     with klikaj: the set to find — st.ok turns true (goal:(P, st) => st.ok)
+                           skry:true          do not print which set hladaj wants (the task text says it)
               "pocty"      numbers of elements: a, b, ab (both), u (everything); with n:3 also c, ac, bc, abc
      n        2 | 3        how many sets
      a, b, ab, u, …        a number or {v, min, max, lock};  free / lock / hide as in toolParams
@@ -170,7 +171,7 @@ defTool("mnoziny", {
           o += h.p(`Mimo všetkých množín: $${P.u} - ${r.union} = ${r[0]}$.`);
           o += bad ? h.pill("záporný počet: takéto zadanie nemôže nastať", "down") : h.p("Začni vždy od prieniku všetkých a postupuj von: z každého čísla odčítaj to, čo je už zapísané vnútri.");
         } else {
-          if(want) o += h.p(`Vyfarbi množinu $${want.tex}$.`) + (v.ok ? h.pill("správne", "ok") : "");
+          if(want) o += h.p(cfg.skry ? "Vyfarbi časť podľa zadania." : `Vyfarbi množinu $${want.tex}$.`) + (v.ok ? h.pill("správne", "ok") : "");
           else if(v.tex != null && (shade || v.atoms.length || n === 2)) o += h.big(`\\vd{${v.tex || "\\emptyset"}}`);
           if(shade || click) o += h.p(v.atoms.length || click ? `Vyfarbené časti: ${v.atoms.length} z ${1 << n}.` : "Táto množina je prázdna, nič sa nevyfarbí.");
         }
