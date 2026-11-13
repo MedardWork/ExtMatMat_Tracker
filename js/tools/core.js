@@ -762,6 +762,133 @@ function toolDestroy(st){
   if(st.board && window.JXG){ try{ JXG.JSXGraph.freeBoard(st.board); }catch(e){} st.board = null; }
 }
 
+/* ============================================================
+   PLAIN-SVG KIT — what the tools drawn without a board share
+   toolParams(defs, cfg, env)   lays the config over a tool's default sliders and switches:
+       cfg.<id>      a number / true / false, or {v, min, max, step, lock, hide, name, note}
+       cfg.free      ["n"]  only these sliders stay unlocked        cfg.lock  ["a"]  these are locked
+       cfg.hide      ["k"]  locked and not listed at all
+       cfg.on        {sum:true}  switches set from the start        cfg.toggles ["sum"]  switches the reader may flip
+   SV.*                         short writers for SVG elements; classes: s (stroke) f (fill) bg (pale fill) t (text)
+                                plus a colour ca cb cc cd cok cno csoft cgrid — see "plain-SVG kit" in css/theory.css
+   svgDrag(el, st, move)        elements carrying data-drag="id" can be pulled: move(id, x, y, st) in viewBox units
+   toolTextIn / toolTextOut     "key: value" lines of a note ↔ config, for tools whose state is their sliders
+   ============================================================ */
+const toolOver = (def, o) => o == null ? def : Object.assign(def, typeof o === "object" ? o : {v:o});
+function toolParams(defs, cfg, env){
+  const out = {}, has = (list, id) => !!list && list.includes(id);
+  for(const id in defs){
+    if(!defs[id]) continue;
+    const p = toolOver(Object.assign({}, defs[id]), cfg[id]);
+    if(p.type === "check"){
+      if(cfg.on && id in cfg.on) p.v = !!cfg.on[id];
+      p.lock = !(env.full || cfg.note || has(cfg.toggles, id));
+    } else {
+      if(cfg.free) p.lock = !cfg.free.includes(id);
+      if(has(cfg.lock, id)) p.lock = true;
+      if(has(cfg.hide, id)){ p.lock = true; p.hide = true; }
+    }
+    out[id] = p;
+  }
+  return out;
+}
+
+const SV = {
+  n:x => String(Math.round(x * 10) / 10),
+  line:(x1, y1, x2, y2, c, at = "") => `<line class="${c}" x1="${SV.n(x1)}" y1="${SV.n(y1)}" x2="${SV.n(x2)}" y2="${SV.n(y2)}"${at}/>`,
+  circle:(x, y, r, c, at = "") => `<circle class="${c}" cx="${SV.n(x)}" cy="${SV.n(y)}" r="${SV.n(r)}"${at}/>`,
+  rect:(x, y, w, h, c, at = "") => `<rect class="${c}" x="${SV.n(x)}" y="${SV.n(y)}" width="${SV.n(Math.max(0, w))}" height="${SV.n(Math.max(0, h))}"${at}/>`,
+  path:(d, c, at = "") => `<path class="${c}" d="${d}"${at}/>`,
+  /* "M x y L x y …" through points; a point that is not finite lifts the pen */
+  d(pts, close){
+    let d = "", pen = false;
+    pts.forEach(p => {
+      if(!p || !isFinite(p[0]) || !isFinite(p[1])){ pen = false; return; }
+      d += (pen ? "L" : "M") + SV.n(p[0]) + " " + SV.n(p[1]);
+      pen = true;
+    });
+    return d + (close ? "Z" : "");
+  },
+  poly:(pts, c, at = "") => SV.path(SV.d(pts, true), c, at),
+  text:(x, y, s, c = "", at = "") => `<text class="t ${c}" x="${SV.n(x)}" y="${SV.n(y)}"${at}>${esc(String(s))}</text>`,
+  /* an arc of a circle from angle a0 to a1 (degrees, anticlockwise, y pointing up) */
+  arc(cx, cy, r, a0, a1){
+    const n = Math.max(2, Math.ceil(Math.abs(a1 - a0) / 6)), pts = [];
+    for(let i = 0; i <= n; i++){
+      const a = (a0 + (a1 - a0) * i / n) * Math.PI / 180;
+      pts.push([cx + r * Math.cos(a), cy - r * Math.sin(a)]);
+    }
+    return SV.d(pts);
+  },
+  /* an arrow head at (x, y) pointing along (dx, dy) */
+  head(x, y, dx, dy, c, size = 8){
+    const l = Math.hypot(dx, dy) || 1, ux = dx / l * size, uy = dy / l * size;
+    return SV.poly([[x, y], [x - ux - uy * .45, y - uy + ux * .45], [x - ux + uy * .45, y - uy - ux * .45]], c);
+  },
+  wrap:(W, H, body, cls = "") => `<svg viewBox="0 0 ${W} ${H}" class="sv ${cls}" xmlns="http://www.w3.org/2000/svg">${body}</svg>`
+};
+
+/* the sliders and switches follow values changed from the picture */
+function toolCtlSync(st){
+  if(!st.ctl) return;
+  $$("[data-p]", st.ctl).forEach(el => {
+    const v = st.P[el.dataset.p];
+    if(el.type === "checkbox") el.checked = !!v;
+    else { el.value = v; const o = document.getElementById(el.id + "-n"); if(o && o !== document.activeElement) o.value = fmtN(v, 4); }
+  });
+}
+
+function svgDrag(el, st, move){
+  let active = null;
+  const fire = e => {
+    const svg = $("svg", el), m = svg && svg.getScreenCTM();
+    if(!m) return;
+    const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(m.inverse());
+    if(move(active, p.x, p.y, st) === false) return;
+    toolCtlSync(st);
+    toolUpdate(st);
+  };
+  el.addEventListener("pointerdown", e => {
+    const d = e.target.closest("[data-drag]");
+    if(!d) return;
+    active = d.dataset.drag;
+    if(document.activeElement && document.activeElement.matches("input")) document.activeElement.blur();
+    el.setPointerCapture(e.pointerId);
+    el.classList.add("dragging");
+    e.preventDefault();
+    fire(e);
+  });
+  el.addEventListener("pointermove", e => { if(active != null) fire(e); });
+  const end = () => { active = null; el.classList.remove("dragging"); };
+  el.addEventListener("pointerup", end);
+  el.addEventListener("pointercancel", end);
+  el.addEventListener("touchstart", e => { if(e.target.closest("[data-drag]")) e.preventDefault(); }, {passive:false});
+}
+
+/* a note's lines → config: numbers become slider values, áno/nie switches, typ the scene; a tool lists
+   the keys it wants as text (a formula) in textKeys */
+function toolTextIn(kv){
+  const cfg = {note:true, on:{}}, text = this.textKeys || [];
+  kv.forEach(([k, v]) => {
+    const key = norm(k).trim(), val = String(v).trim(), n = toolNums(val);
+    if(!key || !val) return;
+    if(key === "typ" || text.includes(key)) cfg[key] = key === "typ" ? norm(val) : val;
+    else if(/^(ano|nie)$/.test(norm(val))) cfg.on[key] = norm(val) === "ano";
+    else if(n.length) cfg[key] = n[0];
+  });
+  return cfg;
+}
+function toolTextOut(st){
+  const out = [];
+  if(st.cfg.typ) out.push(`typ: ${st.cfg.typ}`);
+  (st.tool.textKeys || []).forEach(k => { if(st.cfg[k] != null) out.push(`${k}: ${st.cfg[k]}`); });
+  for(const id in st.w.params){
+    const p = st.w.params[id];
+    out.push(`${id}: ${p.type === "check" ? (st.P[id] ? "áno" : "nie") : toolNum(st.P[id])}`);
+  }
+  return out.join("\n");
+}
+
 /* ---------- mount whatever appears in the page, drop whatever left it ---------- */
 (() => {
   let queued = false;

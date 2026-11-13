@@ -266,6 +266,41 @@
 .ps-svg.pick .ps-hit{cursor:pointer}
 .ps-svg.pick .ps-hit:hover{fill:var(--ink);fill-opacity:.05}
 
+/* ---------- plain-SVG kit (SV.* in js/tools/core.js) ----------
+   s = line, f = filled, bg = pale fill, t = text, h = handle; the colour comes from ca cb cc cd cok cno csoft cgrid cblank */
+.sv{--c:var(--ink);--cbg:var(--track)}
+.sv .ca{--c:var(--va);--cbg:var(--va-bg)} .sv .cb{--c:var(--vb);--cbg:var(--vb-bg)} .sv .cc{--c:var(--dk);--cbg:var(--dk-bg)} .sv .cd{--c:var(--vd);--cbg:var(--vd-bg)}
+.sv .cok{--c:var(--l4);--cbg:var(--l4-bg)} .sv .cno{--c:var(--l1);--cbg:var(--l1-bg)} .sv .cink{--c:var(--ink);--cbg:var(--track)}
+.sv .csoft{--c:var(--ink-soft)} .sv .cgrid{--c:var(--rule)} .sv .cblank{--c:var(--blank)} .sv .cpanel{--c:var(--panel);--cbg:var(--panel)}
+.sv .s{fill:none;stroke:var(--c);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sv .w1{stroke-width:1.2} .sv .w3{stroke-width:3.4} .sv .w5{stroke-width:5.5}
+.sv .dash{stroke-dasharray:6 5} .sv .dots{stroke-dasharray:1.5 4.5}
+.sv .f{fill:var(--c);stroke:none}
+.sv .bg{fill:var(--cbg);stroke:none}
+.sv .s.f, .sv .s.bg{stroke:var(--c)}
+.sv .t{font:600 13px var(--sans);fill:var(--c);stroke:none}
+.sv .t.mid{text-anchor:middle} .sv .t.end{text-anchor:end}
+.sv .t.sm{font-size:11px} .sv .t.lg{font-size:16px} .sv .t.xl{font-size:21px} .sv .t.thin{font-weight:500} .sv .t.it{font-style:italic;font-family:KaTeX_Math,"Times New Roman",serif;font-size:16px}
+.sv .t.halo{paint-order:stroke;stroke:var(--panel);stroke-width:4px;stroke-linejoin:round}
+.sv .h{fill:var(--c);stroke:var(--panel);stroke-width:2.5}
+.sv .hit{fill:transparent;stroke:transparent}
+.sv [data-drag]{cursor:grab;touch-action:none}
+.sv [data-drag].h:hover{stroke:var(--ink)}
+.dragging .sv [data-drag]{cursor:grabbing}
+.sv [data-pick]{cursor:pointer}
+.tw-thumb .tw-svg{overflow:hidden}
+/* tables a tool draws instead of a picture */
+.tw-tab{overflow-x:auto;font-size:14.5px}
+.tw-tab table{border-collapse:collapse;margin:0 auto;font-variant-numeric:tabular-nums}
+.tw-tab th, .tw-tab td{padding:6px 11px;text-align:right;border-bottom:1px solid var(--rule);white-space:nowrap}
+.tw-tab th{font:600 12.5px/1.3 var(--sans);color:var(--ink-soft)}
+.tw-tab td.l, .tw-tab th.l{text-align:left} .tw-tab td.m, .tw-tab th.m{text-align:center}
+.tw-tab tr.sel td{background:var(--vd-bg);font-weight:650}
+.tw-tab tr.sum td{border-top:2px solid var(--ink-soft);border-bottom:0;font-weight:650}
+.tw-tab .ca{color:var(--va)} .tw-tab .cb{color:var(--vb)} .tw-tab .cc{color:var(--dk)} .tw-tab .cd{color:var(--vd)} .tw-tab .cok{color:var(--l4)} .tw-tab .cno{color:var(--l1)}
+.tw-tab td.hl{background:var(--dk-bg)} .tw-tab td.yes{background:var(--l4-bg);color:var(--l4);font-weight:650} .tw-tab td.no{background:var(--l1-bg);color:var(--l1)}
+.tw-thumb .tw-tab{font-size:11px} .tw-thumb .tw-tab th, .tw-thumb .tw-tab td{padding:3px 7px}
+
 /* ============================================================
    NÁSTROJE PAGES
    ============================================================ */

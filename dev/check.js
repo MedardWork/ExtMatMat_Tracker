@@ -1,12 +1,14 @@
 // Opens theory pages in a real browser and reports what is broken.
 //   node dev/check.js a21 a22          check these topics (a tool's name, e.g. graf, checks its Nástroje page)
 //   node dev/check.js                  check every topic in THEORY_LIST, plus the Nástroje pages
-//   SHOTS=/some/dir node dev/check.js a21     also save a picture of every tool there
+//   SHOTS=/some/dir node dev/check.js a21     also save a picture of every tool there (SHOTW=400: at the narrow width)
+//   A tool's own page is checked with every prepared example; SHOTS saves them as <tool>-p<i>.png
 // Needs Playwright (preinstalled in Claude cloud sessions; elsewhere: npm i -D playwright).
 const { chromium } = require("playwright");
 const path = require("path");
 const fs = require("fs");
-const BASE = "file://" + path.resolve(__dirname, "..", "maturita-matematika-tracker.html");
+const SHOTW = Number(process.env.SHOTW) || 1280;
+const BASE ="file://" + path.resolve(__dirname, "..", "maturita-matematika-tracker.html");
 
 (async () => {
   let ids = process.argv.slice(2);
@@ -44,7 +46,29 @@ const BASE = "file://" + path.resolve(__dirname, "..", "maturita-matematika-trac
       if (errs.length) problems.push("console: " + errs.slice(0, 3).join(" || "));
       bad += problems.length;
       console.log(`${problems.length ? "FAIL" : "ok  "} ${name.padEnd(12)} ${String(width).padStart(4)}px  ${r.tools} tools${problems.length ? "\n     " + problems.join("\n     ") : ""}`);
-      if (process.env.SHOTS && width === 1280) {
+      // on a tool's own page: walk through every prepared example as well
+      const chips = hash.startsWith("#/nastroje/") ? await page.$$(".tool-presets .chip[data-i]") : [];
+      for (let i = 1; i < chips.length; i++) {
+        errs.length = 0;
+        await (await page.$$(".tool-presets .chip[data-i]"))[i].click();
+        await page.waitForTimeout(350);
+        const q = await page.evaluate(() => ({
+          failed: document.querySelectorAll(".tw-fail").length,
+          tex: [...document.querySelectorAll(".katex-error, .tex-raw")].map(e => (e.getAttribute("title") || "") + " | " + e.textContent.slice(0, 120)),
+          nan: [...document.querySelectorAll(".tw-out, .tw-svg")].filter(e => /NaN|undefined/.test(e.innerHTML)).length,
+          overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth
+        }));
+        const pp = [];
+        if (q.failed) pp.push("failed to mount");
+        if (q.tex.length) pp.push("formula error(s): " + q.tex.join(" ;; "));
+        if (q.nan) pp.push("NaN/undefined in the output");
+        if (q.overflow > 0) pp.push("scrolls sideways by " + q.overflow + "px");
+        if (errs.length) pp.push("console: " + errs.slice(0, 2).join(" || "));
+        if (pp.length) { bad += pp.length; console.log("FAIL " + name + " preset " + i + "  " + width + "px\n     " + pp.join("\n     ")); }
+        if (process.env.SHOTS && width === SHOTW) await (await page.$(".tw-full")).screenshot({ path: path.join(process.env.SHOTS, name + "-p" + i + ".png") });
+      }
+      if (chips.length > 1) { await (await page.$$(".tool-presets .chip[data-i]"))[0].click(); await page.waitForTimeout(250); }
+      if (process.env.SHOTS && width === SHOTW) {
         const els = await page.$$(".tw:not(.tw-thumb):not(.tw-bare)");
         for (let i = 0; i < els.length; i++) {
           await els[i].scrollIntoViewIfNeeded();
