@@ -24,6 +24,24 @@ A tracker for preparing for the Slovak external maths maturita (plus Danish Mate
 - Before finishing: move the topics from *Next* to *Done* here, add anything new that bit, commit, push
   the working branch. Merge to `main` only when asked (a fast-forward: `git push origin HEAD:main`).
 
+### Which model does what
+
+Agreed with the person on 2026-11-13, to save usage. `get_session` (no arguments) tells a session which
+model it runs on; it cannot switch itself, the person picks the model when starting the session.
+
+- **Strongest model (Fable):** a batch that needs a **new tool**. It writes the tool and the first topic
+  that uses it, as the pattern for the rest.
+- **Opus:** theory for topics whose tools already exist. Adding a small option to an existing tool is
+  fine; writing a new tool is not — if a topic turns out to need one, skip that visual, note the topic
+  and the tool under *Next*, and carry on with the rest of the batch.
+- Each batch under *Next* is marked with the model it is meant for. If the session runs on the other
+  one, say so in one line at the start and wait for the person's answer before spending usage.
+- With any model, the page check does not catch wrong maths. Recompute every number of every worked
+  example with `node -e` before committing, and read the Slovak once more as a reader would.
+
+**Trial running:** b12–b15 is the first batch written by Opus. The person compares one of its topics with
+a24 / a25. Write the verdict here once they give it (keep the split, or go back to one model).
+
 ## Ongoing job: theory + tools for all 126 topics
 
 Decided with the person, don't reopen:
@@ -50,9 +68,12 @@ task), 2–4 worked examples per subtopic, about 150 lines per theory file.
 
 ### Next, in this order
 
-1. Funkcie: b8, b9, b10, b11 (new tool `kruznica`: unit circle, angle in degrees and radians, sin/cos/tg
-   as segments, the sine graph unrolling beside it) → b12, b13, b14, b15 (the `graf` tool is enough).
-2. Základy (a1–a17, b1–b7), then Planimetria, Stereometria, KPŠ, then the Danish part (c1–c42).
+1. Funkcie, **Opus**: b12, b13, b14, b15 (the `graf` tool is enough; none of them needs b8–b11. b13 builds
+   on b1, which has no theory yet: recall the logarithm in two sentences and link `[[b1]]`).
+2. Funkcie, **Fable**: b8 + the new tool `kruznica` (unit circle, angle in degrees and radians, sin/cos/tg
+   as segments, the sine graph unrolling beside it) → **Opus**: b9, b10, b11 with that tool and `graf`.
+3. Základy (a1–a17, b1–b7), then Planimetria, Stereometria, KPŠ, then the Danish part (c1–c42). Split
+   each area the same way: first a Fable batch per new tool with one topic, then Opus batches for the rest.
    Likely tools: number line (intervals, inequalities, absolute value), percent/ratio bar, interest and
    repayment table, number-base converter, prime factorisation, Venn diagram, truth table, area model for
    (a+b)², geometry scenes (Pythagoras, Thales, similarity, circle parts, transformations), analytic
