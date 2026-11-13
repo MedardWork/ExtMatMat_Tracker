@@ -771,6 +771,7 @@ function toolDestroy(st){
        cfg.on        {sum:true}  switches set from the start        cfg.toggles ["sum"]  switches the reader may flip
    SV.*                         short writers for SVG elements; classes: s (stroke) f (fill) bg (pale fill) t (text)
                                 plus a colour ca cb cc cd cok cno csoft cgrid — see "plain-SVG kit" in css/theory.css
+   svgPoint(el, e)              a click or pointer event → [x, y] in viewBox units
    svgDrag(el, st, move)        elements carrying data-drag="id" can be pulled: move(id, x, y, st) in viewBox units
    toolTextIn / toolTextOut     "key: value" lines of a note ↔ config, for tools whose state is their sliders
    ============================================================ */
@@ -838,13 +839,18 @@ function toolCtlSync(st){
   });
 }
 
+/* where a pointer event landed, in the picture's own (viewBox) units */
+function svgPoint(el, e){
+  const svg = $("svg", el), m = svg && svg.getScreenCTM();
+  if(!m) return null;
+  const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(m.inverse());
+  return [p.x, p.y];
+}
 function svgDrag(el, st, move){
   let active = null;
   const fire = e => {
-    const svg = $("svg", el), m = svg && svg.getScreenCTM();
-    if(!m) return;
-    const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(m.inverse());
-    if(move(active, p.x, p.y, st) === false) return;
+    const p = svgPoint(el, e);
+    if(!p || move(active, p[0], p[1], st) === false) return;
     toolCtlSync(st);
     toolUpdate(st);
   };
