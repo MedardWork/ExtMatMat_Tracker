@@ -15,12 +15,18 @@ VIEWS.tema = {
     markRecent(id); saveSoon();
     ui.lastTopic = id;
     if(!ui.seq || !ui.seq.includes(id)){ ui.seq = itemsOf(tabOf(x)).map(y => y.id); ui.seqLabel = ""; }
-    if(ui.pendingNew === id){ ui.pendingNew = null; startNote(id); }
+    if(ui.route.tab === "teoria"){ renderTheory(host); return; }
+    if(ui.pendingNew === id){
+      ui.pendingNew = null;
+      startNote(id, ui.pendingSub != null ? ui.pendingSub : undefined);
+      ui.pendingSub = null;
+    }
     if(nf.t !== id){ nf.t = id; nf.sub = null; nf.lv = null; ui.subSel = null; }
 
     host.innerHTML = `<article class="page topic${ui.editing ? " editing" : ""}" id="topicPage">
       <div class="t-nav" id="tNav"></div>
       <header class="t-head" id="tHead"></header>
+      ${topicTabs(id, "notes")}
       <div class="t-grid">
         <div class="t-main">
           <section class="card t-subs" id="tSubs" aria-label="Podtémy"></section>
@@ -30,6 +36,10 @@ VIEWS.tema = {
       </div>
     </article>`;
     drawTNav(); drawTHead(); drawTSubs(); drawTNotes(); drawTSide();
+    /* the "Teória" links beside subtopics need to know which of them the theory covers */
+    if(hasTheory(id) && !THEORY[id]) loadTheory(id).then(() => {
+      if(ui.route.view === "tema" && ui.route.id === id && !ui.route.tab && $("#tSubs")) drawTSubs();
+    });
 
     if(ui.editing) focusEditor();
     else if(ui.route.note){
@@ -38,12 +48,20 @@ VIEWS.tema = {
     }
   },
   refresh(what){
+    if(ui.route.tab === "teoria"){ refreshTheory(); return; }
     if(what === "level"){ drawTNav(); drawTHead(); drawTSubs(); drawTSide(); }
     else { drawTNav(); drawTHead(); drawTSubs(); drawTNotes(); drawTSide(); }
   },
   key(e){
     const id = ui.route.id;
     const [prev, next] = neighbours(id);
+    if(ui.route.tab === "teoria"){
+      /* reading: arrows still walk the topics (staying in theory), Esc goes back to the notes side */
+      if(e.key === "ArrowLeft" && prev){ e.preventDefault(); go(`#/tema/${prev}/teoria`); }
+      else if(e.key === "ArrowRight" && next){ e.preventDefault(); go(`#/tema/${next}/teoria`); }
+      else if(e.key === "Escape"){ go(`#/tema/${id}`); }
+      return;
+    }
     const subs = subsOf(id);
     const i = subs.findIndex(x => x.k === ui.subSel);
     if(e.key === "ArrowLeft" && prev){ e.preventDefault(); go(`#/tema/${prev}`); }
@@ -76,8 +94,9 @@ function drawTNav(){
   const id = ui.route.id, x = BY_ID[id];
   const [prev, next] = neighbours(id);
   const pos = ui.seq.indexOf(id);
+  const tab = ui.route.tab === "teoria" ? "/teoria" : "";
   const arrow = (to, cls, label, key) => to
-    ? `<a class="t-step ${cls}" href="#/tema/${to}" title="${esc(BY_ID[to].n)} (${key})"><span>${label}</span><b>${esc(shortName(BY_ID[to]))}</b></a>`
+    ? `<a class="t-step ${cls}" href="#/tema/${to}${tab}" title="${esc(BY_ID[to].n)} (${key})"><span>${label}</span><b>${esc(shortName(BY_ID[to]))}</b></a>`
     : `<span class="t-step ${cls} off"><span>${label}</span></span>`;
   $("#tNav").innerHTML = `
     <a class="t-back" href="#/temy/${tabOf(x)}" title="Späť na zoznam (Esc)">← ${TAB_LABEL[tabOf(x)]}</a>
@@ -113,6 +132,7 @@ function drawTHead(){
 function drawTSubs(){
   const id = ui.route.id;
   const subs = subsOf(id);
+  const inTheory = new Set(THEORY[id] ? theorySections(id).map(s => s.k) : []);
   const counts = {};
   notesOf(id).forEach(n => { if(n.sub) counts[n.sub] = (counts[n.sub] || 0) + 1; });
   const rows = subs.map(x => {
@@ -122,6 +142,7 @@ function drawTSubs(){
       <div class="sub-main">
         <span class="sub-name">${esc(x.n)}${x.own ? ` <em class="sub-own">vlastná</em>` : ""}</span>
         <span class="sub-tools">
+          ${inTheory.has(x.k) ? `<a class="sub-th" href="#/tema/${id}/teoria/${x.k}" title="Teória k tejto podtéme">Teória</a>` : ""}
           ${n ? `<button class="sub-notes${nf.sub === x.k ? " on" : ""}" data-act="sub-filter" data-k="${x.k}" title="Zobraziť len poznámky k tejto podtéme">✎ ${n}</button>` : ""}
           <button class="sub-new" data-act="note-new" data-sub="${x.k}" title="Nová poznámka k tejto podtéme">+ poznámka</button>
           ${x.own ? `<button class="sub-del" data-act="sub-del" data-k="${x.k}" title="Odstrániť vlastnú podtému">×</button>` : ""}

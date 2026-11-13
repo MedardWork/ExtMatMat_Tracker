@@ -115,6 +115,10 @@ choose the folder).
   subtopics), named notes (sorted by creation date, each with its own "rozumiem" level and optionally
   tied to a subtopic, filterable by both), description, prerequisites / what builds on it, and the
   diary entries that mention it, with a quick "zapísať do denníka" box.
+- **Teória** (`#/tema/a21/teoria`) — the topic explained in short pieces, each followed by an
+  interactive example with only the relevant values unlocked. See *Theory and tools* below.
+- **Nástroje** — the same interactive tools on their own, fully unlocked: function graphs, a triangle
+  with its lines and circles, mean / median / mode.
 - **Denník** — study diary with an activity calendar, entries linked to topics or specific notes,
   suggestions from what you changed today, search, and editing.
 - **Info** — data sources, backup (copy / download / paste / load a file), history of earlier versions
@@ -151,6 +155,60 @@ x <= 3, a != 0       become ≤ and ≠
 
 The editor toolbar inserts all of these, including a panel of math symbols, and shows a live preview.
 
+An interactive tool can sit in a note too. *Nástroje → Skopírovať do poznámky* gives you the block for
+whatever is on screen; by hand it looks like this:
+
+```
+:::nastroj graf            :::nastroj trojuholnik        :::nastroj statistika
+f: a*x^2 + c               A: 1 1                        data: 2 3 3 4 5 6 8
+a: 1 [-3, 3]               B: 9 1                        os: 0 10
+c: -4                      C: 4 7                        ukaz: priemer, median
+ukaz: nulove body          ukaz: taznice, vysky          :::
+:::                        :::
+```
+
+## Theory and tools
+
+Every topic page has two faces: **Podtémy a poznámky** (your own work) and **Teória**. Theory is split
+into short pieces of text, each followed by an interactive tool that shows what was just said. Inside
+theory a tool is pre-filled for that one point and only the values that matter there can be changed —
+*Odomknúť všetko* frees the rest, *Otvoriť v Nástrojoch* opens it on its own page with the same values.
+Each subtopic ends with its level buttons, so you can rate it right after reading.
+
+**Nástroje** in the top bar lists the same tools for free experimenting.
+
+Theory is written topic by topic; the Teória tab says *pripravuje sa* where it isn't there yet.
+
+### Writing theory for a topic
+
+1. Create `js/data/theory/<id>.js` that sets `THEORY.<id> = {mins, brief:[…], subs:{…}}`. The keys of
+   `subs` are the subtopic names from `js/data/subtopics.js`; each value is a list of blocks.
+2. Add the id to `THEORY_LIST` in `js/data/theory/index.js`.
+
+A block is a string of Markdown or an object — a formula box (`def`), a tool (`tool`), cards, steps,
+a worked example (`ex`), a words-to-symbols table (`map`), a warning or a tip. The full list with
+examples is at the top of `js/theory.js`. Write formulas with ``R`…` `` so backslashes survive, and
+colour a quantity with `\va{…}` `\vb{…}` `\vc{…}` `\vd{…}` — the same four colours the tools use, so
+*k* looks the same in the sentence, the formula, the slider and the graph.
+
+```js
+{tool:"graf", ask:R`Meň $\va{k}$ a sleduj schodík.`, take:"znamienko $k$ rozhoduje, či funkcia rastie.",
+ cfg:{fns:["k*x+q"], view:[-4, 5, 4, -3],
+      params:{k:{v:2, min:-3, max:3, step:.5, color:"a"}, q:{v:1, lock:true, color:"b"}},
+      show:[{step:0, color:"a"}, {pt:[0, "q"], color:"b"}]}}
+```
+
+`lock:true` is what keeps a value fixed in that example. `kind:"uloha"` with a `goal` turns the tool
+into a small task that marks itself done.
+
+### Adding a tool
+
+Create `js/tools/<id>.js` with `defTool("<id>", {name, area, desc, presets, make(cfg, env)})` and add
+its `<script>` tag. `make` returns what to draw and which values exist — see the header of
+`js/tools/core.js` and the three existing tools: `graf` (drawn on a JSXGraph board), `trojuholnik`
+(draggable points) and `statistika` (plain SVG). The engine supplies sliders, locking, the three sizes
+(in theory, on its own page, as a miniature), theme changes and clean-up.
+
 ## Layout
 
 ```
@@ -160,21 +218,30 @@ css/layout.css                     top bar, bottom nav on phones, pages, toast
 css/{overview,topics,topic,journal}.css   one stylesheet per page
 css/markdown.css                   how rendered notes look
 css/editor.css, css/palette.css    note editor, quick search
+css/theory.css                     Teória tab, tool widgets, Nástroje pages
 vendor/katex/                      KaTeX 0.16 (MIT) — formula rendering, bundled for offline use
+vendor/jsxgraph/                   JSXGraph 1.13 (MIT) — graphs and geometry; loaded when first needed
 js/data/levels.js                  test areas (with item counts), levels, tab labels
 js/data/topics.js                  topic list T, plus BY_ID / EC_ITEMS lookups
 js/data/subtopics.js               SUBS: the subtopics of every topic
 js/data/descriptions.js            "O čom to je" text and a typical task per topic
+js/data/theory/index.js            which topics have theory
+js/data/theory/<id>.js             one topic's theory; loaded when its Teória tab opens
 js/utils.js                        escaping, dates, Slovak plurals, plain-text snippets
 js/markdown.js                     Markdown + math → HTML (escapes everything first)
 js/state.js                        saved data (v4), migration, load/save, levels, notes + diary helpers
 js/core.js                         UI state, routing (#/…), data-act click handling, toast
+js/theory.js                       theory blocks → HTML, loading theory files
+js/tools/core.js                   tool engine: expressions, sliders and locking, mounting, drawing helpers
+js/tools/{graf,trojuholnik,statistika}.js   the tools themselves
 js/components/editor.js            note editor: toolbar, symbols, live preview, list keys
 js/components/palette.js           quick search / topic picker
 js/components/{countdown,gauge,next}.js   pieces of the overview
 js/views/overview.js               #/
 js/views/topics.js                 #/temy/a|c
 js/views/topic.js                  #/tema/<id>
+js/views/theory.js                 #/tema/<id>/teoria
+js/views/tools.js                  #/nastroje, #/nastroje/<tool>
 js/views/journal.js                #/dennik
 js/views/info.js                   #/info
 js/main.js                         theme, global keys, startup
@@ -189,7 +256,9 @@ Dockerfile, docker-compose.yml     the Docker setup
 
 The scripts are plain `<script src>` tags, not ES modules, because modules don't load from
 `file://`. They share one global scope, so load order in the HTML matters:
-vendor → data → helpers → state → core → components → views → boot.
+vendor → data → helpers → state → core → theory + tools → components → views → boot.
+Two things load later with a `<script>` tag added on demand, which also works from `file://`:
+JSXGraph (about 1 MB) and each topic's theory.
 
 ### Extending
 

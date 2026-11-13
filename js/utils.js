@@ -66,6 +66,7 @@ const shortName = x => x.n.split(/[:—,]/)[0].trim();
 /* strip markdown down to a one-line snippet */
 function plainText(md, max = 160){
   const s = String(md)
+    .replace(/^\s*:::\s*n[aá]stroj[\s\S]*?^\s*:::\s*$/gim, "")
     .replace(/\[\[([a-c]\d+)\]\]/g, (_, id) => BY_ID[id] ? shortName(BY_ID[id]) : id)
     .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
     .replace(/^\s*>\s*\[![^\]]+\]\s*/gm, "")

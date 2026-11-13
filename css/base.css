@@ -30,6 +30,11 @@
   --l3:#5E8F3E; --l3-bg:#ECF4E4;   /* ide to */
   --l4:#1D7A6B; --l4-bg:#E4F0ED;   /* perfektne */
 
+  /* one colour per quantity in theory and tools — the same in a sentence, a formula, a slider and a graph */
+  --va:#A12C8C; --va-bg:#F8E9F5;
+  --vb:#0B7594; --vb-bg:#E2F1F6;
+  --vd:#946200; --vd-bg:#F7EDD3;
+
   --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
   --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
@@ -45,6 +50,7 @@
     --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25); --shadow-lg:0 12px 48px rgba(0,0,0,.6);
     --l0:#5B6778; --l1:#E6806F; --l1-bg:#352120; --l2:#E2AE4E; --l2-bg:#342A17; --l3:#94C574; --l3-bg:#1F2C19;
     --l4:#52C4B0; --l4-bg:#152C27;
+    --va:#E891D8; --va-bg:#33203A; --vb:#5FC6E2; --vb-bg:#16303A; --vd:#E2B64C; --vd-bg:#33290F;
     color-scheme:dark;
   }
 }
@@ -55,6 +61,7 @@
   --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25); --shadow-lg:0 12px 48px rgba(0,0,0,.6);
   --l0:#5B6778; --l1:#E6806F; --l1-bg:#352120; --l2:#E2AE4E; --l2-bg:#342A17; --l3:#94C574; --l3-bg:#1F2C19;
   --l4:#52C4B0; --l4-bg:#152C27;
+  --va:#E891D8; --va-bg:#33203A; --vb:#5FC6E2; --vb-bg:#16303A; --vd:#E2B64C; --vd-bg:#33290F;
   color-scheme:dark;
 }
 

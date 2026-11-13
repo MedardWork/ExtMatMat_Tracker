@@ -7,11 +7,14 @@
      $x^2$     inline formula    $$ … $$   formula on its own line (KaTeX)
      | a | b | tables            `kód`, ``` blocks ```, ---, [text](https://…)
      [[a5]]    link to a topic   <= >= != -> => <=>  become ≤ ≥ ≠ → ⇒ ⇔
+     :::nastroj graf … :::       an interactive tool with the values given on the lines between
+     \va{k} \vb{q} \vc{…} \vd{…}  inside a formula colour a quantity (the colours the tools use)
    Everything is escaped first; only the tags produced here reach the page.
    ============================================================ */
 const TEX_MACROS = {
   "\\tg":"\\operatorname{tg}", "\\cotg":"\\operatorname{cotg}",
-  "\\R":"\\mathbb{R}", "\\N":"\\mathbb{N}", "\\Z":"\\mathbb{Z}", "\\Q":"\\mathbb{Q}", "\\C":"\\mathbb{C}"
+  "\\R":"\\mathbb{R}", "\\N":"\\mathbb{N}", "\\Z":"\\mathbb{Z}", "\\Q":"\\mathbb{Q}", "\\C":"\\mathbb{C}",
+  "\\va":"\\htmlClass{va}{#1}", "\\vb":"\\htmlClass{vb}{#1}", "\\vc":"\\htmlClass{vc}{#1}", "\\vd":"\\htmlClass{vd}{#1}"
 };
 
 const texCache = new Map();
@@ -21,7 +24,8 @@ function tex(src, display){
   let html = null;
   if(window.katex){
     try{
-      html = katex.renderToString(src, {displayMode:display, throwOnError:false, strict:"ignore", macros:{...TEX_MACROS}});
+      html = katex.renderToString(src, {displayMode:display, throwOnError:false, strict:"ignore", macros:{...TEX_MACROS},
+        trust:c => c.command === "\\htmlClass"});   /* only what \va…\vd need — a class name, nothing more */
     }catch(e){}
   }
   if(!html) html = `<code class="tex-raw">${esc(src)}</code>`;
@@ -93,13 +97,15 @@ const RE = {
   list:  /^(\s*)([-*+]|\d+[.)])\s+(.*)$/,
   quote: /^\s*>\s?(.*)$/,
   fence: /^\s*```/,
+  tool:  /^\s*:::\s*n[aá]stroj\s+([\w-]+)\s*$/i,
+  tend:  /^\s*:::\s*$/,
   tsep:  /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/,
   task:  /^\[( |x|X)\](?:\s+(.*))?$/
 };
 const isBlank = l => !l || !l.trim();
 const isTableStart = (l, next) => l.trim().startsWith("|") && next != null && RE.tsep.test(next);
 const startsBlock = (l, next) => RE.hr.test(l) || RE.head.test(l) || RE.list.test(l) || RE.quote.test(l)
-  || RE.fence.test(l) || l.trim().startsWith("$$") || isTableStart(l, next);
+  || RE.fence.test(l) || RE.tool.test(l) || l.trim().startsWith("$$") || isTableStart(l, next);
 
 function md(src, opts = {}){
   const ctr = opts.ctr || (opts.ctr = {n:0});
@@ -116,6 +122,15 @@ function md(src, opts = {}){
       while(i < lines.length && !RE.fence.test(lines[i])) buf.push(lines[i++]);
       i++;
       out += `<pre><code>${esc(buf.join("\n"))}</code></pre>`;
+      continue;
+    }
+
+    const tm = l.match(RE.tool);
+    if(tm){
+      const buf = []; i++;
+      while(i < lines.length && !RE.tend.test(lines[i])) buf.push(lines[i++]);
+      i++;
+      out += toolEmbed(tm[1].toLowerCase(), buf);
       continue;
     }
 
@@ -204,6 +219,16 @@ function md(src, opts = {}){
     out += `<p>${buf.map(inline).join("<br>")}</p>`;
   }
   return out;
+}
+
+/* :::nastroj <id> with "key: value" lines → a tool placeholder that js/tools/core.js mounts */
+function toolEmbed(id, lines){
+  const tool = typeof TOOLS !== "undefined" && TOOLS[id];
+  if(!tool || !tool.fromText) return `<pre><code>${esc(`:::nastroj ${id}\n${lines.join("\n")}\n:::`)}</code></pre>`;
+  const kv = lines.map(l => l.match(/^\s*([^:]+?)\s*:\s*(.*)$/)).filter(Boolean).map(m => [m[1].trim(), m[2].trim()]);
+  let cfg;
+  try{ cfg = tool.fromText(kv); }catch(e){ cfg = {}; }
+  return `<figure class="tw tw-note" data-tool="${id}" data-cfg="${esc(JSON.stringify(cfg))}"><div class="tw-body"></div></figure>`;
 }
 
 /* flip the k-th "- [ ]" in the source — same order md() numbers them */

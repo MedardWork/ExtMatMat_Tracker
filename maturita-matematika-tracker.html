@@ -15,6 +15,7 @@
 <link rel="stylesheet" href="css/markdown.css">
 <link rel="stylesheet" href="css/editor.css">
 <link rel="stylesheet" href="css/palette.css">
+<link rel="stylesheet" href="css/theory.css">
 </head>
 <body>
 
@@ -31,6 +32,9 @@
       <a href="#/dennik" data-nav="dennik">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h11a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6z"/><path d="M6 3v18"/><path d="M10 8h5M10 12h5"/></svg>
         <span>Denník</span></a>
+      <a href="#/nastroje" data-nav="nastroje">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V5M4 20h16"/><path d="M6 17c3-9 5-9 7-2s4 3 6-9"/></svg>
+        <span>Nástroje</span></a>
       <a href="#/info" data-nav="info">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5"/><circle cx="12" cy="7.8" r=".6"/></svg>
         <span>Info</span></a>
@@ -56,16 +60,24 @@
 
 <!-- Plain scripts (not modules) so the page still works when opened straight from disk.
      They share one global scope, so order matters:
-     vendor → data → helpers → state → core → components → views → boot. -->
+     vendor → data → helpers → state → core → theory + tools → components → views → boot.
+     Loaded later, on demand: vendor/jsxgraph (first graph on screen) and js/data/theory/<id>.js
+     (when a topic's Teória tab is opened). -->
 <script src="vendor/katex/katex.min.js"></script>
 <script src="js/data/levels.js"></script>
 <script src="js/data/topics.js"></script>
 <script src="js/data/subtopics.js"></script>
 <script src="js/data/descriptions.js"></script>
+<script src="js/data/theory/index.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/markdown.js"></script>
 <script src="js/state.js"></script>
 <script src="js/core.js"></script>
+<script src="js/theory.js"></script>
+<script src="js/tools/core.js"></script>
+<script src="js/tools/graf.js"></script>
+<script src="js/tools/trojuholnik.js"></script>
+<script src="js/tools/statistika.js"></script>
 <script src="js/components/editor.js"></script>
 <script src="js/components/palette.js"></script>
 <script src="js/components/countdown.js"></script>
@@ -74,6 +86,8 @@
 <script src="js/views/overview.js"></script>
 <script src="js/views/topics.js"></script>
 <script src="js/views/topic.js"></script>
+<script src="js/views/theory.js"></script>
+<script src="js/views/tools.js"></script>
 <script src="js/views/journal.js"></script>
 <script src="js/views/info.js"></script>
 <script src="js/main.js"></script>
