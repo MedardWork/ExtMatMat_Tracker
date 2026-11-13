@@ -27,7 +27,7 @@ THEORY.b12 = {
      show:[{pt:[1, 1], color:"axis", size:3.5}, {seg:[[1, 1], [1, "1+a"]], color:"d", dash:2}, {pt:[1, "1+a"], color:"d", label:"[1; {1+a}]", at:"r"}],
      out:(P, h) => h.big(P.a === 0 ? "y = x^2" : `y = x^2 ${pm(P.a, h).replace(/[\d,{}]+$/, m => `\\vd{${m}}`)}`)
        + (P.a > 0 ? h.pill(`posun o ${h.n(P.a)} hore`, "up") : P.a < 0 ? h.pill(`posun o ${h.n(-P.a)} dole`, "down") : h.pill("bez posunu", "flat"))
-       + h.p("Sivá čiarkovaná je pôvodná $y = x^2$.")}},
+       + h.p("Sivá čiarkovaná krivka $y = x^2$ je pôvodný graf.")}},
   R`S grafom sa posunie všetko, čo k nemu patrí: vrchol, priesečník s osou $y$, asymptota aj obor hodnôt. Definičný obor sa nemení, lebo $x$ si nikto nevšimol.`,
   {tool:"graf", ask:R`Posúvaj $\vd{a}$ vo funkcii $y = 2^x + a$. Kam ide asymptota a čo sa deje s oborom hodnôt?`,
    take:R`asymptota je priamka $y = a$ a obor hodnôt $(a;\ \infty)$. Posunuli sa spolu s grafom.`,
@@ -164,7 +164,7 @@ THEORY.b12 = {
      show:[{pt:[1, "abs(q-1)"], color:"d", label:"[1; {abs(q-1)}]", at:"t"}],
      out:(P, h) => h.big(R`y = |x^2 - 2x ${P.q ? pm(P.q, h).replace(/[\d,{}]+$/, m => `\\vd{${m}}`) : ""}|`)
        + (P.q < 1 ? h.pill("časť pod osou x sa preklopila", "up") : h.pill("nič sa nepreklápa", "flat"))
-       + h.p(R`Vrchol $[1;\ ${h.tn(P.q - 1)}]$ sa zobrazí na $[1;\ ${h.tn(Math.abs(P.q - 1))}]$.`)}},
+       + (P.q < 1 ? h.p(R`Vrchol $[1;\ ${h.tn(P.q - 1)}]$ sa preklopí na $[1;\ ${h.tn(1 - P.q)}]$ nad osou.`) : h.p(R`Vrchol $[1;\ ${h.tn(P.q - 1)}]$ zostáva na mieste.`))}},
   {ex:R`Načrtni graf funkcie $y = |x^2 - 4|$.`,
    steps:[
      [R`Najprv graf $y = x^2 - 4$: parabola s vrcholom $[0;\ -4]$ a nulovými bodmi $\pm 2$.`, R`x^2 - 4 = 0 \;\Rightarrow\; x = \pm 2`],

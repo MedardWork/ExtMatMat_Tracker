@@ -39,8 +39,8 @@ model it runs on; it cannot switch itself, the person picks the model when start
 - With any model, the page check does not catch wrong maths. Recompute every number of every worked
   example with `node -e` before committing, and read the Slovak once more as a reader would.
 
-**Trial running:** b12–b15 is the first batch written by Opus. The person compares one of its topics with
-a24 / a25. Write the verdict here once they give it (keep the split, or go back to one model).
+**Trial running:** b12–b15 (done 2026-11-13) is the first batch written by Opus. The person compares one of its
+topics with a24 / a25. Write the verdict here once they give it (keep the split, or go back to one model).
 
 ## Ongoing job: theory + tools for all 126 topics
 
@@ -60,7 +60,7 @@ Decided with the person, don't reopen:
 
 ### Done
 
-Theory, 11 of 126 topics: a18 a19 a20 a21 a22 a23 a24 a25 a26 (Funkcie), a28 (Planimetria), b40 (KPŠ).
+Theory, 15 of 126 topics: a18 a19 a20 a21 a22 a23 a24 a25 a26 b12 b13 b14 b15 (Funkcie), a28 (Planimetria), b40 (KPŠ).
 Tools: `graf`, `trojuholnik`, `statistika`, `postupnost` (bars/dots per term; options at the top of its file).
 
 Size to aim for, from the last batch: 3–4 subtopics per topic, 3–4 tools per subtopic (one of them a
@@ -68,11 +68,9 @@ task), 2–4 worked examples per subtopic, about 150 lines per theory file.
 
 ### Next, in this order
 
-1. Funkcie, **Opus**: b12, b13, b14, b15 (the `graf` tool is enough; none of them needs b8–b11. b13 builds
-   on b1, which has no theory yet: recall the logarithm in two sentences and link `[[b1]]`).
-2. Funkcie, **Fable**: b8 + the new tool `kruznica` (unit circle, angle in degrees and radians, sin/cos/tg
+1. Funkcie, **Fable**: b8 + the new tool `kruznica` (unit circle, angle in degrees and radians, sin/cos/tg
    as segments, the sine graph unrolling beside it) → **Opus**: b9, b10, b11 with that tool and `graf`.
-3. Základy (a1–a17, b1–b7), then Planimetria, Stereometria, KPŠ, then the Danish part (c1–c42). Split
+2. Základy (a1–a17, b1–b7), then Planimetria, Stereometria, KPŠ, then the Danish part (c1–c42). Split
    each area the same way: first a Fable batch per new tool with one topic, then Opus batches for the rest.
    Likely tools: number line (intervals, inequalities, absolute value), percent/ratio bar, interest and
    repayment table, number-base converter, prime factorisation, Venn diagram, truth table, area model for
@@ -105,6 +103,11 @@ Things that bite:
 - A plain-SVG tool (`statistika`, `postupnost`) is the quicker kind to write: `svg(P, st)` returns the
   whole picture on every change, `bind(el, st)` adds clicks once. Hand theory its computed values through
   `h` in `out` (`h.stat`, `h.seq`) so a theory file's own `out` can print them.
+- Inside `${…}` in an `R`…`` string, a nested plain template is not raw: write `\\vb{…}` there, or `\v` becomes a
+  vertical tab and KaTeX fails. `dev/check.js` prints the failing formula.
+- `if:` on a `show` item: use a number, a param name or `P => …`; a comparison string like `"abs(a-1) > 0.01"`
+  silently hides the item.
+- `findRoots(f, lo, hi)` from `core.js` is global; a theory `out` can use it to count roots.
 - Labels of `inputs` are plain text: `$…$` inside them renders spaced out.
 - A hint or caption that ends with a formula followed by a full stop wraps the stop onto its own line;
   put the formula mid-sentence.
