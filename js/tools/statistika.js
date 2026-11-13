@@ -75,7 +75,8 @@ defTool("statistika", {
     const computed = typeof cfg.dataFn === "function";
     const canDrag = (i, st) => !computed && !env.thumb && (st.open || cfg.drag === undefined || cfg.drag === true || (Array.isArray(cfg.drag) && cfg.drag.includes(i)));
     const values = (P, st) => computed ? cfg.dataFn(P, st) : st.data;
-    const W = 640, H = 300, L = 34, Rt = 34, AX = 214;
+    const W = 520, H = 262, L = 30, Rt = 30, AX = 184;
+    const some = Array.isArray(cfg.drag);   /* only some dots move here — make them stand out */
     const sx = v => L + (v - lo) / (hi - lo) * (W - L - Rt);
 
     return {
@@ -98,7 +99,7 @@ defTool("statistika", {
           const k = seen[v] = (seen[v] || 0) + 1;
           const drag = canDrag(i, st), mode = P.mode && s.modes.includes(v);
           return `<circle cx="${sx(v).toFixed(1)}" cy="${(AX - 7 - r - (k - 1) * r * 2.1).toFixed(1)}" r="${r.toFixed(1)}" data-i="${i}"
-            class="st-dot${drag ? " drag" : ""}${mode ? " mode" : ""}"${drag ? ` tabindex="0" role="slider" aria-valuenow="${v}" aria-valuemin="${lo}" aria-valuemax="${hi}" aria-label="Hodnota ${fmtN(v)}"` : ""}/>`;
+            class="st-dot${drag ? " drag" : ""}${drag && some && !st.open ? " hot" : ""}${mode ? " mode" : ""}"${drag ? ` tabindex="0" role="slider" aria-valuenow="${v}" aria-valuemin="${lo}" aria-valuemax="${hi}" aria-label="Hodnota ${fmtN(v)}"` : ""}/>`;
         }).join("");
         let ticks = "";
         const every = (hi - lo) / step > 24 ? Math.ceil((hi - lo) / step / 12) * step : step;

@@ -216,6 +216,8 @@
 .st-dot.drag:hover, .st-dot.drag:focus-visible{stroke:var(--dk);stroke-width:3;outline:none}
 .dragging .st-dot.drag{cursor:grabbing}
 .st-dot.mode{fill:var(--vd)}
+.st-dot.hot{fill:var(--dk);stroke:var(--dk);stroke-width:1;paint-order:stroke;filter:drop-shadow(0 0 0 var(--dk))}
+.st-dot.hot:hover, .st-dot.hot:focus-visible{stroke:var(--ink);stroke-width:3}
 .st-med{stroke:var(--vb);stroke-width:2.2;stroke-dasharray:6 5}
 .st-mean{fill:var(--va)}
 .st-lab{font:700 14px var(--sans);text-anchor:middle}

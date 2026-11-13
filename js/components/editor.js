@@ -258,6 +258,7 @@ function boxPanel(){
   ).join("")}
     <button type="button" class="box-pick" data-act="ed-snip" data-s="| x | y |\\n|---|---|\\n|  |  |\\n"><b>Tabuľka</b><span>napr. hodnoty funkcie</span></button>
     <button type="button" class="box-pick" data-act="ed-snip" data-s="---\\n"><b>Čiara</b><span>oddelí časti poznámky</span></button>
+    <button type="button" class="box-pick" data-act="ed-snip" data-s=":::nastroj graf\\nf: x^2 - 4\\n:::\\n"><b>Nástroj</b><span>interaktívny graf; iné skopíruješ zo stránky Nástroje</span></button>
   </div>`;
 }
 function helpPanel(){
