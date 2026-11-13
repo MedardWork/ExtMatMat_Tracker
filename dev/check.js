@@ -30,7 +30,7 @@ const BASE = "file://" + path.resolve(__dirname, "..", "maturita-matematika-trac
       const r = await page.evaluate(() => ({
         tools: document.querySelectorAll(".tw[data-on]").length,
         failed: document.querySelectorAll(".tw-fail").length,
-        tex: document.querySelectorAll(".katex-error, .tex-raw").length,
+        tex: document.querySelectorAll(".katex-error, .tex-raw").length, texs: [...document.querySelectorAll(".katex-error, .tex-raw")].map(e => (e.getAttribute("title") || "") + " | " + e.textContent.slice(0, 120)),
         nan: [...document.querySelectorAll(".tw-out")].filter(e => /NaN|undefined|—/.test(e.innerText)).length,
         overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
         empty: !!document.querySelector(".th-empty")
@@ -38,7 +38,7 @@ const BASE = "file://" + path.resolve(__dirname, "..", "maturita-matematika-trac
       const problems = [];
       if (r.empty) problems.push("no theory rendered");
       if (r.failed) problems.push(r.failed + " tool(s) failed to mount");
-      if (r.tex) problems.push(r.tex + " formula error(s)");
+      if (r.tex) problems.push(r.tex + " formula error(s): " + r.texs.join(" ;; "));
       if (r.nan) problems.push(r.nan + " readout(s) show NaN/undefined/—");
       if (r.overflow > 0) problems.push("page scrolls sideways by " + r.overflow + "px");
       if (errs.length) problems.push("console: " + errs.slice(0, 3).join(" || "));
