@@ -283,6 +283,7 @@
 .sv .t.sm{font-size:11px} .sv .t.lg{font-size:16px} .sv .t.xl{font-size:21px} .sv .t.thin{font-weight:500} .sv .t.it{font-style:italic;font-family:KaTeX_Math,"Times New Roman",serif;font-size:16px}
 .sv .t.halo{paint-order:stroke;stroke:var(--panel);stroke-width:4px;stroke-linejoin:round}
 .sv .h{fill:var(--c);stroke:var(--panel);stroke-width:2.5}
+.sv .o{fill:var(--panel);stroke:var(--c);stroke-width:2.5}
 .sv .hit{fill:transparent;stroke:transparent}
 .sv [data-drag]{cursor:grab;touch-action:none}
 .sv [data-drag].h:hover{stroke:var(--ink)}
