@@ -1,5 +1,5 @@
 // Opens theory pages in a real browser and reports what is broken.
-//   node dev/check.js a21 a22          check these topics
+//   node dev/check.js a21 a22          check these topics (a tool's name, e.g. graf, checks its Nástroje page)
 //   node dev/check.js                  check every topic in THEORY_LIST, plus the Nástroje pages
 //   SHOTS=/some/dir node dev/check.js a21     also save a picture of every tool there
 // Needs Playwright (preinstalled in Claude cloud sessions; elsewhere: npm i -D playwright).
@@ -13,7 +13,9 @@ const BASE = "file://" + path.resolve(__dirname, "..", "maturita-matematika-trac
   const all = !ids.length;
   if (all) ids = eval(fs.readFileSync(path.resolve(__dirname, "../js/data/theory/index.js"), "utf8") + ";THEORY_LIST");
   const pages = ids.map(id => [id, `#/tema/${id}/teoria`]);
-  if (all) pages.push(["nastroje", "#/nastroje"], ["graf", "#/nastroje/graf"], ["trojuholnik", "#/nastroje/trojuholnik"], ["statistika", "#/nastroje/statistika"]);
+  const tools = fs.readdirSync(path.resolve(__dirname, "../js/tools")).map(f => f.replace(".js", "")).filter(t => t !== "core");
+  for (const t of ids.filter(id => tools.includes(id))) pages[ids.indexOf(t)] = [t, `#/nastroje/${t}`];   // a tool's name checks its own page
+  if (all) pages.push(["nastroje", "#/nastroje"], ...tools.map(t => [t, `#/nastroje/${t}`]));
   const browser = await chromium.launch();
   let bad = 0;
   for (const width of [1280, 400]) {

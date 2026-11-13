@@ -30,13 +30,12 @@ Decided with the person, don't reopen:
 
 ### Done
 
-Theory: a18 a19 a20 a21 a22 a23 a24 (Funkcie), a28 (Planimetria), b40 (KPŠ).
-Tools: `graf`, `trojuholnik`, `statistika`.
+Theory: a18 a19 a20 a21 a22 a23 a24 a25 a26 (Funkcie), a28 (Planimetria), b40 (KPŠ).
+Tools: `graf`, `trojuholnik`, `statistika`, `postupnost` (bars/dots per term; options at the top of its file).
 
 ### Next, in this order
 
-1. Funkcie: a25, a26 (need a new tool `postupnost`: terms as points/bars, sliders a₁, d or q, n; n-th term
-   and sum) → b8, b9, b10, b11 (new tool `kruznica`: unit circle, angle in degrees and radians, sin/cos/tg
+1. Funkcie: b8, b9, b10, b11 (new tool `kruznica`: unit circle, angle in degrees and radians, sin/cos/tg
    as segments, the sine graph unrolling beside it) → b12, b13, b14, b15 (the `graf` tool is enough).
 2. Základy (a1–a17, b1–b7), then Planimetria, Stereometria, KPŠ, then the Danish part (c1–c42).
    Likely tools: number line (intervals, inequalities, absolute value), percent/ratio bar, interest and
@@ -48,11 +47,11 @@ Tools: `graf`, `trojuholnik`, `statistika`.
 ## How to add theory for a topic
 
 1. Copy the shape of an existing file: `js/data/theory/a22.js` (graph tool), `a28.js` (triangle),
-   `b40.js` (statistics). Block types are listed at the top of `js/theory.js`; the graph tool's options at
+   `b40.js` (statistics), `a25.js` (sequences). Block types are listed at the top of `js/theory.js`; the graph tool's options at
    the top of `js/tools/graf.js`; the engine at the top of `js/tools/core.js`.
 2. Keys of `subs` must equal the subtopic names in `js/data/subtopics.js` character for character.
 3. Add the id to `THEORY_LIST` in `js/data/theory/index.js`.
-4. `node dev/check.js <id>` must print `ok` at both widths. `SHOTS=<dir>` saves a picture of each tool
+4. `node dev/check.js <id>` must print `ok` at both widths (a tool's name checks its Nástroje page). `SHOTS=<dir>` saves a picture of each tool
    when something needs a look.
 
 Things that bite:
@@ -67,5 +66,8 @@ Things that bite:
   function i with current values, coloured.
 - `shortName()` cuts topic names at the first comma/colon/dash; that is existing app behaviour.
 - `.gitignore` ignores `/data/` at the root only. `js/data/` is tracked.
+- A new tool needs its `<script>` tag in `maturita-matematika-tracker.html` and its styles in
+  `css/theory.css`; `dev/check.js` picks it up from `js/tools/` by itself.
+- `rm` with a shell variable in the path is refused by the safety check; write screenshots to a fresh folder.
 - Long shell heredocs containing backticks or `${}` trip the command safety check. Put patch scripts
   in a file (Write tool) and run the file.

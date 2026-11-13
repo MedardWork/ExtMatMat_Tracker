@@ -117,7 +117,7 @@ choose the folder).
   diary entries that mention it, with a quick "zapísať do denníka" box.
 - **Teória** (`#/tema/a21/teoria`) — the topic explained in short pieces, each followed by an
   interactive example with only the relevant values unlocked. See *Theory and tools* below.
-- **Nástroje** — the same interactive tools on their own, fully unlocked: function graphs, a triangle
+- **Nástroje** — the same interactive tools on their own, fully unlocked: function graphs, sequences, a triangle
   with its lines and circles, mean / median / mode.
 - **Denník** — study diary with an activity calendar, entries linked to topics or specific notes,
   suggestions from what you changed today, search, and editing.
@@ -165,6 +165,15 @@ a: 1 [-3, 3]               B: 9 1                        os: 0 10
 c: -4                      C: 4 7                        ukaz: priemer, median
 ukaz: nulove body          ukaz: taznice, vysky          :::
 :::                        :::
+
+:::nastroj postupnost
+typ: geometricka           (or aritmeticka with d, or vzorec: n^2 - 2n)
+a1: 3
+q: 2
+n: 4
+clenov: 6
+ukaz: hodnoty, kroky, sucet
+:::
 ```
 
 ## Theory and tools
@@ -208,8 +217,8 @@ into a small task that marks itself done.
 
 Create `js/tools/<id>.js` with `defTool("<id>", {name, area, desc, presets, make(cfg, env)})` and add
 its `<script>` tag. `make` returns what to draw and which values exist — see the header of
-`js/tools/core.js` and the three existing tools: `graf` (drawn on a JSXGraph board), `trojuholnik`
-(draggable points) and `statistika` (plain SVG). The engine supplies sliders, locking, the three sizes
+`js/tools/core.js` and the existing tools: `graf` (drawn on a JSXGraph board), `trojuholnik`
+(draggable points), `statistika` and `postupnost` (plain SVG). The engine supplies sliders, locking, the three sizes
 (in theory, on its own page, as a miniature), theme changes and clean-up.
 
 ## Layout
@@ -236,7 +245,7 @@ js/state.js                        saved data (v4), migration, load/save, levels
 js/core.js                         UI state, routing (#/…), data-act click handling, toast
 js/theory.js                       theory blocks → HTML, loading theory files
 js/tools/core.js                   tool engine: expressions, sliders and locking, mounting, drawing helpers
-js/tools/{graf,trojuholnik,statistika}.js   the tools themselves
+js/tools/{graf,trojuholnik,statistika,postupnost}.js   the tools themselves
 js/components/editor.js            note editor: toolbar, symbols, live preview, list keys
 js/components/palette.js           quick search / topic picker
 js/components/{countdown,gauge,next}.js   pieces of the overview
