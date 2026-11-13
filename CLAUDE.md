@@ -157,5 +157,7 @@ Things that bite:
   theory `out` runs (sin, cos, tg, rad, sols). `b11.js` has an `out` for sin/cos inequalities.
 - `R"…"` (raw tag on a plain string) is a syntax error and the whole theory file renders nothing; always ``R`…` ``.
 - `percenta` with `typ:"zmena"`: the second change `q` is an unlocked slider even when `druha` is off; add `hide:["q"]`.
+- `graf` `meet` (and `roots`) between functions with a vertical asymptote can give NaN at 400px ("ellipse cy NaN"); draw the known intersections as `pt` instead. `pt` takes `open:true` for a hole.
+- `mnoziny` `hladaj` prints the wanted set; add `skry:true` when the task text must not give it away.
 - Long shell heredocs containing backticks or `${}` trip the command safety check. Put patch scripts
   in a file (Write tool) and run the file.
