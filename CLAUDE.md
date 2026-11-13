@@ -39,8 +39,8 @@ model it runs on; it cannot switch itself, the person picks the model when start
 - With any model, the page check does not catch wrong maths. Recompute every number of every worked
   example with `node -e` before committing, and read the Slovak once more as a reader would.
 
-**Trial running:** b12–b15 (done 2026-11-13) is the first batch written by Opus. The person compares one of its
-topics with a24 / a25. Write the verdict here once they give it (keep the split, or go back to one model).
+**Trial verdict (2026-11-13):** the person checked b12–b15, the first batch written by Opus, and was happy with it.
+The split stays: theory by Opus, new tools by Fable.
 
 ## Ongoing job: theory + tools for all 126 topics
 
