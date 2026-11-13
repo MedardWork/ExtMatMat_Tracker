@@ -60,7 +60,7 @@ Decided with the person, don't reopen:
 
 ### Done
 
-Theory, 56 of 126 topics: a1–a17, b1–b7 (Základy), a18 a19 a20 a21 a22 a23 a24 a25 a26 b8 b9 b10 b11 b12 b13 b14 b15 (Funkcie), a27–a35, b16–b20 (Planimetria), b40 (KPŠ).
+Theory, 57 of 126 topics: a1–a17, b1–b7 (Základy), a18 a19 a20 a21 a22 a23 a24 a25 a26 b8 b9 b10 b11 b12 b13 b14 b15 (Funkcie), a27–a35, b16–b21 (Planimetria), b40 (KPŠ).
 Tools (each file starts with its options and its `presets`; `topics` in each says where it belongs):
 
 | Tool | For | What it does |
@@ -97,7 +97,7 @@ task), 2–4 worked examples per subtopic, about 150 lines per theory file.
 ### Next, in this order
 
 1. **Opus**, theory with existing tools, 2–4 topics per batch, in this order:
-   Planimetria b21–b28 →
+   Planimetria b22–b28 →
    Stereometria a36 a37, b29–b35. b28 (constructions) has no fitting tool;
    skip what does not fit.
 2. **Fable**, tools still missing, then Opus for their topics:
