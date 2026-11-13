@@ -5,6 +5,8 @@
    Routes:  #/            overview
             #/temy/a|c|x  topic list for a tab (x = Nerelevantné; old #/temy/b links land on a)
             #/tema/<id>[/n/<noteId>]   one topic, optionally a note
+            #/tema/<id>/teoria[/<sub>] the topic's theory, optionally scrolled to a subtopic
+            #/nastroje[/<toolId>]      interactive tools, all of them or one
             #/dennik[/<entryId>]       study diary (#/dennik/t/<id>: only entries about a topic)
             #/info        sources, backup, shortcuts
    ============================================================ */
@@ -19,6 +21,7 @@ const ui = {
   lastTopic: null,    /* highlighted in the list when coming back */
   editing: null,      /* {t, n} note open in the editor */
   pendingNew: null,   /* topic id that should open with a fresh note */
+  pendingSub: null,   /* …filed under this subtopic (set from the theory tab) */
   collapsed: new Set()
 };
 
@@ -44,8 +47,10 @@ function parseRoute(){
   const p = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean).map(decodeURIComponent);
   switch(p[0]){
     case "temy":   return {view:"temy", tab:p[1] === "c" || p[1] === "x" ? p[1] : p[1] ? "a" : ui.tab};
-    case "tema":   return BY_ID[p[1]] ? {view:"tema", id:p[1], note:p[2] === "n" ? p[3] || null : null}
+    case "tema":   return BY_ID[p[1]] ? {view:"tema", id:p[1], note:p[2] === "n" ? p[3] || null : null,
+                                         tab:p[2] === "teoria" ? "teoria" : null, sub:p[2] === "teoria" ? p[3] || null : null}
                                       : {view:"temy", tab:ui.tab};
+    case "nastroje": return {view:"nastroje", tool:TOOLS[p[1]] ? p[1] : null};
     case "dennik": return p[1] === "t" && BY_ID[p[2]] ? {view:"dennik", topic:p[2]} : {view:"dennik", entry:p[1] || null};
     case "info":   return {view:"info"};
     default:       return {view:"prehlad"};
