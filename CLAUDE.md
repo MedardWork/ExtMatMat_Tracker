@@ -160,5 +160,6 @@ Things that bite:
 - `graf` `meet` (and `roots`) between functions with a vertical asymptote can give NaN at 400px ("ellipse cy NaN"); draw the known intersections as `pt` instead. `pt` takes `open:true` for a hole.
 - `mnoziny` `hladaj` prints the wanted set; add `skry:true` when the task text must not give it away.
 - A half-plane in `graf`: `show:[{poly:[[-6, "k*(-6)+q"], [7, "k*7+q"], [7, 9], [-6, 9]], color:"c"}]` (see `b7.js`); poly corners take expressions.
+- Labels and `text` in `graf` show "—" for `round(…)`; write the number in `out` instead.
 - Long shell heredocs containing backticks or `${}` trip the command safety check. Put patch scripts
   in a file (Write tool) and run the file.
