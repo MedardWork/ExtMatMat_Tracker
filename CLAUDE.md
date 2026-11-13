@@ -12,6 +12,18 @@ A tracker for preparing for the Slovak external maths maturita (plus Danish Mate
 - Commit and push to the working branch after every finished topic or batch (the container is
   ephemeral and sessions get cut off). Merge to `main` only when they say so.
 
+## Starting a session
+
+- "Pokračuj ďalšou dávkou teórie" means: take the next batch from *Next, in this order* below, do it, check
+  it, update this file, commit, push. No questions needed.
+- **A batch** is one stretch between two arrows in that list (usually 2–4 topics, plus the new tool they
+  need). Finish and push one batch before starting the next.
+- `main` holds everything listed under *Done* (merged 2026-11-13). Start from `main`. If this file or a
+  theory file listed under *Done* is missing on the session's branch, the branch is behind: fast-forward
+  it to `origin/main` first.
+- Before finishing: move the topics from *Next* to *Done* here, add anything new that bit, commit, push
+  the working branch. Merge to `main` only when asked (a fast-forward: `git push origin HEAD:main`).
+
 ## Ongoing job: theory + tools for all 126 topics
 
 Decided with the person, don't reopen:
@@ -30,8 +42,11 @@ Decided with the person, don't reopen:
 
 ### Done
 
-Theory: a18 a19 a20 a21 a22 a23 a24 a25 a26 (Funkcie), a28 (Planimetria), b40 (KPŠ).
+Theory, 11 of 126 topics: a18 a19 a20 a21 a22 a23 a24 a25 a26 (Funkcie), a28 (Planimetria), b40 (KPŠ).
 Tools: `graf`, `trojuholnik`, `statistika`, `postupnost` (bars/dots per term; options at the top of its file).
+
+Size to aim for, from the last batch: 3–4 subtopics per topic, 3–4 tools per subtopic (one of them a
+task), 2–4 worked examples per subtopic, about 150 lines per theory file.
 
 ### Next, in this order
 
@@ -66,6 +81,15 @@ Things that bite:
   function i with current values, coloured.
 - `shortName()` cuts topic names at the first comma/colon/dash; that is existing app behaviour.
 - `.gitignore` ignores `/data/` at the root only. `js/data/` is tracked.
+- A plain-SVG tool (`statistika`, `postupnost`) is the quicker kind to write: `svg(P, st)` returns the
+  whole picture on every change, `bind(el, st)` adds clicks once. Hand theory its computed values through
+  `h` in `out` (`h.stat`, `h.seq`) so a theory file's own `out` can print them.
+- Labels of `inputs` are plain text: `$…$` inside them renders spaced out.
+- A hint or caption that ends with a formula followed by a full stop wraps the stop onto its own line;
+  put the formula mid-sentence.
+- In theory give a tool a fixed vertical range (`y:` / `view:`); with a fitted range the picture rescales
+  and moving a slider seems to change nothing.
+- To look at many tool pictures at once, tile the `SHOTS` files into one image and read that.
 - A new tool needs its `<script>` tag in `maturita-matematika-tracker.html` and its styles in
   `css/theory.css`; `dev/check.js` picks it up from `js/tools/` by itself.
 - `rm` with a shell variable in the path is refused by the safety check; write screenshots to a fresh folder.
