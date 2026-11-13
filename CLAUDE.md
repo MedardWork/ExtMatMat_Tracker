@@ -60,7 +60,7 @@ Decided with the person, don't reopen:
 
 ### Done
 
-Theory, 43 of 126 topics: a1–a17, b1–b7 (Základy), a18 a19 a20 a21 a22 a23 a24 a25 a26 b8 b9 b10 b11 b12 b13 b14 b15 (Funkcie),a27–a35 (Planimetria), b40 (KPŠ).
+Theory, 51 of 126 topics: a1–a17, b1–b7 (Základy), a18 a19 a20 a21 a22 a23 a24 a25 a26 b8 b9 b10 b11 b12 b13 b14 b15 (Funkcie), a27–a35 (Planimetria), b40 (KPŠ).
 Tools (each file starts with its options and its `presets`; `topics` in each says where it belongs):
 
 | Tool | For | What it does |
