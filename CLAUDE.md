@@ -60,7 +60,7 @@ Decided with the person, don't reopen:
 
 ### Done
 
-Theory, 19 of 126 topics: a18 a19 a20 a21 a22 a23 a24 a25 a26 b8 b9 b10 b11 b12 b13 b14 b15 (Funkcie), a28 (Planimetria), b40 (KPŠ).
+Theory, 21 of 126 topics: a1 a2 (Základy), a18 a19 a20 a21 a22 a23 a24 a25 a26 b8 b9 b10 b11 b12 b13 b14 b15 (Funkcie), a28 (Planimetria), b40 (KPŠ).
 Tools (each file starts with its options and its `presets`; `topics` in each says where it belongs):
 
 | Tool | For | What it does |
@@ -89,7 +89,7 @@ Tools (each file starts with its options and its `presets`; `topics` in each say
 | `telesa` | a36 a37 b35 | volume, surface, nets of solids |
 
 The tools from `kruznica` on were written by Fable on 2026-11-13 and checked by `dev/check.js` and by eye
-(every preset), and only `kruznica` is used by theory so far (b8–b11). Opus writes the theory; if a tool lacks a small option, add it.
+(every preset), and theory uses `kruznica` (b8–b11), `percenta` (a1) and `urok` (a2) so far. Opus writes the theory; if a tool lacks a small option, add it.
 
 Size to aim for, from the last batch: 3–4 subtopics per topic, 3–4 tools per subtopic (one of them a
 task), 2–4 worked examples per subtopic, about 150 lines per theory file.
@@ -97,7 +97,7 @@ task), 2–4 worked examples per subtopic, about 150 lines per theory file.
 ### Next, in this order
 
 1. **Opus**, theory with existing tools, 2–4 topics per batch, in this order:
-   Základy a1–a17, b1–b7 → Planimetria a27 a29–a35, b16–b28 →
+   Základy a3–a17, b1–b7 → Planimetria a27 a29–a35, b16–b28 →
    Stereometria a36 a37, b29–b35. b7 (inequality in two variables) and b28 (constructions) have no
    fitting tool: `graf` with `fns` and `show` polygons can shade a half-plane; skip what does not fit.
 2. **Fable**, tools still missing, then Opus for their topics:
@@ -155,5 +155,7 @@ Things that bite:
   aspect:"2.2"` (see `b9.js`). Don't name the axis `"x (°)"`, the label covers the 360.
 - `kruznica` in theory: `uhol:{v, min, max, step, lock:true}` fixes the angle for `eq` tools; `h.kr` is filled before a
   theory `out` runs (sin, cos, tg, rad, sols). `b11.js` has an `out` for sin/cos inequalities.
+- `R"…"` (raw tag on a plain string) is a syntax error and the whole theory file renders nothing; always ``R`…` ``.
+- `percenta` with `typ:"zmena"`: the second change `q` is an unlocked slider even when `druha` is off; add `hide:["q"]`.
 - Long shell heredocs containing backticks or `${}` trip the command safety check. Put patch scripts
   in a file (Write tool) and run the file.
