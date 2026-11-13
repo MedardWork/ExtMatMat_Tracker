@@ -811,7 +811,8 @@ const SV = {
     return d + (close ? "Z" : "");
   },
   poly:(pts, c, at = "") => SV.path(SV.d(pts, true), c, at),
-  text:(x, y, s, c = "", at = "") => `<text class="t ${c}" x="${SV.n(x)}" y="${SV.n(y)}"${at}>${esc(String(s))}</text>`,
+  /* "c_a" writes the a as a subscript */
+  text:(x, y, s, c = "", at = "") => `<text class="t ${c}" x="${SV.n(x)}" y="${SV.n(y)}"${at}>${esc(String(s)).replace(/_(\w)/g, '<tspan dy="3.5" font-size="78%">$1</tspan><tspan dy="-3.5">\u200B</tspan>')}</text>`,
   /* an arc of a circle from angle a0 to a1 (degrees, anticlockwise, y pointing up) */
   arc(cx, cy, r, a0, a1){
     const n = Math.max(2, Math.ceil(Math.abs(a1 - a0) / 6)), pts = [];
@@ -827,6 +828,44 @@ const SV = {
     return SV.poly([[x, y], [x - ux - uy * .45, y - uy + ux * .45], [x - ux + uy * .45, y - uy - ux * .45]], c);
   },
   wrap:(W, H, body, cls = "") => `<svg viewBox="0 0 ${W} ${H}" class="sv ${cls}" xmlns="http://www.w3.org/2000/svg">${body}</svg>`
+};
+
+/* fit the rectangle box = [x0, y0, x1, y1] of a plane with y pointing up into W×H; returns pixel mappers:
+   f.p([x, y]) → [px, py], f.X(x), f.Y(y), f.u (pixels per unit), f.inv(px, py) → [x, y] */
+function svFit(W, H, box, pad = 24){
+  const u = Math.min((W - 2 * pad) / (box[2] - box[0]), (H - 2 * pad) / (box[3] - box[1]));
+  const ox = (W - (box[2] - box[0]) * u) / 2 - box[0] * u, oy = (H + (box[3] - box[1]) * u) / 2 + box[1] * u;
+  return {u, X:x => ox + x * u, Y:y => oy - y * u, p:q => [ox + q[0] * u, oy - q[1] * u], inv:(px, py) => [(px - ox) / u, (oy - py) / u]};
+}
+/* small things every geometry picture needs, on points already in pixels */
+const SG = {
+  seg:(p, q, c) => SV.line(p[0], p[1], q[0], q[1], c),
+  dot:(p, c, r = 4) => SV.circle(p[0], p[1], r, c),
+  /* a label pushed away from `from` (a pixel point, e.g. the centre of the figure) */
+  label(p, s, c, from, d = 14){
+    const v = from ? [p[0] - from[0], p[1] - from[1]] : [0, -1], l = Math.hypot(v[0], v[1]) || 1;
+    return SV.text(p[0] + v[0] / l * d, p[1] + v[1] / l * d + 5, s, `mid ${c}`);
+  },
+  mid:(p, q) => [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2],
+  /* the little square of a right angle at p between the directions towards a and b */
+  right(p, a, b, c = "s csoft w1", s = 11){
+    const un = q => { const v = [q[0] - p[0], q[1] - p[1]], l = Math.hypot(v[0], v[1]) || 1; return [v[0] / l * s, v[1] / l * s]; };
+    const u = un(a), v = un(b);
+    return SV.path(SV.d([[p[0] + u[0], p[1] + u[1]], [p[0] + u[0] + v[0], p[1] + u[1] + v[1]], [p[0] + v[0], p[1] + v[1]]]), c);
+  },
+  /* the arc of the angle at p from the direction towards a to the direction towards b (the shorter way) */
+  angle(p, a, b, r, c){
+    const dir = q => Math.atan2(p[1] - q[1], q[0] - p[0]) * 180 / Math.PI;
+    let a0 = dir(a), a1 = dir(b);
+    if(a1 - a0 > 180) a1 -= 360; else if(a1 - a0 < -180) a1 += 360;
+    return SV.path(SV.arc(p[0], p[1], r, a0, a1), c);
+  },
+  /* a point r pixels from p inside the angle a-p-b: where its label goes */
+  inAngle(p, a, b, r){
+    const un = q => { const v = [q[0] - p[0], q[1] - p[1]], l = Math.hypot(v[0], v[1]) || 1; return [v[0] / l, v[1] / l]; };
+    const u = un(a), v = un(b), w = [u[0] + v[0], u[1] + v[1]], l = Math.hypot(w[0], w[1]) || 1;
+    return [p[0] + w[0] / l * r, p[1] + w[1] / l * r];
+  }
 };
 
 /* the sliders and switches follow values changed from the picture */
