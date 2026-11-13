@@ -300,6 +300,13 @@
 .tw-tab tr.sum td{border-top:2px solid var(--ink-soft);border-bottom:0;font-weight:650}
 .tw-tab .ca{color:var(--va)} .tw-tab .cb{color:var(--vb)} .tw-tab .cc{color:var(--dk)} .tw-tab .cd{color:var(--vd)} .tw-tab .cok{color:var(--l4)} .tw-tab .cno{color:var(--l1)}
 .tw-tab td.hl{background:var(--dk-bg)} .tw-tab td.yes{background:var(--l4-bg);color:var(--l4);font-weight:650} .tw-tab td.no{background:var(--l1-bg);color:var(--l1)}
+.tw-tab table{margin-bottom:12px}
+.tw-bar{position:relative;height:14px;background:var(--track);border-radius:3px;overflow:hidden}
+.tw-bar i{position:absolute;left:0;top:0;bottom:0;background:var(--vd);border-radius:3px}
+.tw-bar i.cb{background:var(--vb)} .tw-bar i.alt{background:none;border-right:3px solid var(--dk);border-radius:0}
+.tw-bignum{font:600 22px/1.4 var(--sans);text-align:center;padding:8px 0 12px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.tw-bignum sub{font-size:12px;color:var(--ink-soft)} .tw-bignum small, .tw-tab small{font-size:11px;color:var(--ink-soft);font-weight:500}
+.tw-thumb .tw-bignum{font-size:15px;padding:4px 0}
 .tw-thumb .tw-tab{font-size:11px} .tw-thumb .tw-tab th, .tw-thumb .tw-tab td{padding:3px 7px}
 
 /* ============================================================
