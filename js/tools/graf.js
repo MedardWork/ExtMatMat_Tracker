@@ -10,7 +10,9 @@
      show    things drawn on top, coordinates are numbers or expressions:
                {pt:[x, y], color, label:"[0; {q}]", at:"tr", if:"k != 0"…}
                {seg:[[x1,y1],[x2,y2]], color, dash, w}      {poly:[[x,y],…], color}
-               {text:[x, y], s:"Δx = {Bx-Ax}", color, at}   {vline:x, color}   {drop:[x, y], color}
+               {text:[x, y], s:"Δx = {Bx-Ax}", color, at}   {vline:x, color}   {hline:y}   {drop:[x, y], color}
+               {curve:["3cos(t)", "3sin(t)"], t:[0, "2pi"], color, dash}   a curve given by x(t), y(t)
+               pt takes open:true for a point that is left out (drawn hollow)
                {step:0, at:0, color:"a"}        the slope stair on function 0: one right, k up
                {target:[2, 5], fn:0, label:"A [2; 5]"}     turns green when the graph passes through
                {roots:0}  {yint:0}  {turns:0}  {meet:[0, 1]}      found numerically, redrawn as you move
@@ -88,7 +90,7 @@ defTool("graf", {
   },
 
   make(cfg, env){
-    const fns = (cfg.fns && cfg.fns.length ? cfg.fns : ["x"]).map(f => typeof f === "object" ? Object.assign({}, f) : {f});
+    const fns = (cfg.fns || ["x"]).map(f => typeof f === "object" ? Object.assign({}, f) : {f});
     const points = cfg.points || null;
     const ptNames = Object.keys(points || {}).flatMap(n => [n + "x", n + "y"]);
     const PICK = ["a", "b", "d", "c"];
@@ -157,6 +159,11 @@ defTool("graf", {
         const x = V(s.vline);
         return g.line([x, 0], [x, 1], s.color || "soft", {dash:2});
       }
+      if(s.hline != null){
+        const y = V(s.hline);
+        return g.line([0, y], [1, y], s.color || "soft", {dash:2});
+      }
+      if(s.curve) return g.curve(s.curve[0], s.curve[1], s.t[0], s.t[1], s.color || "c", {dash:s.dash ? 2 : 0, strokeWidth:s.thin ? 1.4 : 2.6});
       if(s.drop){
         const x = V(s.drop[0]), y = V(s.drop[1]);
         g.seg([x, y], [x, 0], s.color || "ok", {dash:2, strokeWidth:1.6});

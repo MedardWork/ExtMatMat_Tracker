@@ -357,7 +357,7 @@ function toolG(b, C, st){
   const col = c => C[c] || c || C.ink;
   const when = o => o && o.if != null ? V(o.if) : null;
   /* what is left of a feature's options once our own keys are taken out is passed on to JSXGraph */
-  const strip = o => { const r = Object.assign({}, o); ["if", "label", "at", "pt", "color", "labelColor", "w"].forEach(k => delete r[k]); return r; };
+  const strip = o => { const r = Object.assign({}, o); ["if", "label", "at", "pt", "color", "labelColor", "w", "open"].forEach(k => delete r[k]); return r; };
   const g = {
     b, C, V, col,
     fn(f, color, o, dom){
@@ -370,7 +370,8 @@ function toolG(b, C, st){
       const c = when(o), fx = V(x), fy = V(y);
       const X = c ? () => c() ? fx() : NaN : fx;
       const p = b.create("point", [X, fy], Object.assign({}, base,
-        {withLabel:false, size:4.5, fillColor:col(color), strokeColor:C.panel, strokeWidth:2, showInfobox:false}, strip(o)));
+        {withLabel:false, size:4.5, fillColor:col(color), strokeColor:C.panel, strokeWidth:2, showInfobox:false},
+        o.open ? {fillColor:C.panel, strokeColor:col(color), strokeWidth:2.2} : null, strip(o)));   /* open: a point that is left out */
       if(o.label != null) g.txt(X, fy, o.label, o.labelColor || color, {at:o.at || "tr"});
       return p;
     },
@@ -382,6 +383,13 @@ function toolG(b, C, st){
     line(p1, p2, color, o = {}){
       const mk = p => Array.isArray(p) ? g.hid(p[0], p[1]) : p;
       return b.create("line", [mk(p1), mk(p2)], Object.assign({}, base, {strokeColor:col(color), strokeWidth:1.4}, strip(o)));
+    },
+    /* a curve given by x(t), y(t) — for things that are not graphs of functions, and for mirrored graphs */
+    curve(x, y, from, to, color, o = {}){
+      const ex = mathExpr(x, [...st.names, "t"]), ey = mathExpr(y, [...st.names, "t"]);
+      const at = (e, t) => { const s = Object.create(st.P); s.t = t; return e.f(s); };
+      return b.create("curve", [t => at(ex, t), t => at(ey, t), V(from), V(to)],
+        Object.assign({}, base, {strokeColor:col(color), strokeWidth:2.6}, strip(o)));
     },
     circle(cx, cy, r, color, o = {}){
       return b.create("circle", [g.hid(cx, cy), V(r)], Object.assign({}, base, {strokeColor:col(color), strokeWidth:2, fillColor:"none"}, strip(o)));
@@ -483,14 +491,15 @@ function toolBoard(st){
     st.board = null;
   }
   st.boardEl.innerHTML = "";
-  const full = st.env.full, thumb = st.env.thumb, t = bd.tick || 1;
-  const axis = (name, vert) => ({
+  const full = st.env.full, thumb = st.env.thumb;
+  const tk = Array.isArray(bd.tick) ? bd.tick : [bd.tick || 1, bd.tick || 1];   /* [x, y] when the axes are scaled apart */
+  const axis = (name, vert) => { const t = tk[vert ? 1 : 0]; return {
     strokeColor:C.axis, strokeWidth:1.4, highlight:false, fixed:true, name:thumb ? "" : name, withLabel:!thumb,
     label:{position:"rt", offset:vert ? [12, -12] : [name.length > 1 ? -22 : -14, 14], strokeColor:C.soft, fontSize:13, highlight:false, cssStyle:"font-weight:600"},
     ticks:Object.assign({majorHeight:-1, minorHeight:-1, strokeColor:C.grid, strokeOpacity:1, minorStrokeColor:C.grid, highlight:false, drawZero:false,
       drawLabels:!thumb, label:{strokeColor:C.soft, fontSize:11, highlight:false}},
       full ? {insertTicks:true, minorTicks:0} : {insertTicks:false, ticksDistance:t, minorTicks:t > 1 && t < 5 ? t - 1 : 0})
-  });
+  }; };
   const b = JXG.JSXGraph.initBoard(st.boardEl, {
     boundingbox:st.view || bd.bbox, keepAspectRatio:!bd.free, axis:bd.axis !== false,
     showNavigation:!!full, showCopyright:false, showInfobox:false,
