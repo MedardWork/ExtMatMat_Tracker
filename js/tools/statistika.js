@@ -88,6 +88,18 @@ defTool("statistika", {
         {label:"− Odobrať poslednú", run(st){ if(st.data.length > 1) st.data.pop(); }}
       ],
       actionsAlways:!!cfg.edit || env.full,
+      /* on its own page the values can simply be typed */
+      inputs:computed ? null : [{
+        label:"Hodnoty (oddelené medzerou)", wide:true, value:"",
+        read:st => (st.data || []).map(v => fmtN(v, 4)).join(" "),
+        apply(text){
+          const parts = /[\s;]/.test(text.trim()) ? text.split(/[\s;]+/) : text.split(",");
+          const data = parts.map(t => toolParse(t.replace(/,$/, ""))).filter(v => !isNaN(v)).slice(0, 40);
+          if(!data.length) return {error:"Napíš aspoň jednu hodnotu, napríklad 2 3 3 5"};
+          /* the axis stretches to hold whatever was typed */
+          return Object.assign({}, cfg, {data, min:Math.min(lo, Math.floor(Math.min(...data))), max:Math.max(hi, Math.ceil(Math.max(...data)))});
+        }
+      }],
 
       svg(P, st){
         const data = values(P, st), s = statOf(data);
@@ -142,6 +154,8 @@ defTool("statistika", {
           const d = e.target.closest(".st-dot.drag");
           if(!d) return;
           active = Number(d.dataset.i);
+          /* leave the data field, so it can follow the dot being dragged */
+          if(document.activeElement && document.activeElement.matches("input")) document.activeElement.blur();
           el.setPointerCapture(e.pointerId);
           el.classList.add("dragging");
           e.preventDefault();

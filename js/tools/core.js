@@ -267,6 +267,14 @@ function toolTpl(s, scope, names){
   return String(s).replace(/\{([^{}|]+)(?:\|(\d))?\}/g, (_, ex, d) => fmtN(mathExpr(ex, names).f(scope), d ? Number(d) : 2));
 }
 
+/* a value typed by hand: "2,5", "−1/3", "sqrt(2)", "pi/2" all work */
+function toolParse(text){
+  const t = String(text).trim();
+  if(!t) return NaN;
+  const v = mathExpr(t).f({});
+  return isFinite(v) ? Math.round(v * 1e4) / 1e4 : NaN;
+}
+
 /* ---------- tools written into a note as "key: value" lines ---------- */
 const toolNums = s => (String(s).match(/[-−]?\d+(?:[.,]\d+)?/g) || []).map(x => Number(x.replace("−", "-").replace(",", ".")));
 const toolWords = s => norm(s).split(/[,;]+/).map(x => x.trim()).filter(Boolean);
@@ -465,6 +473,7 @@ function toolDefaults(st){
       get:() => st.jp[n] ? (i ? st.jp[n].Y() : st.jp[n].X()) : st.pts[n][i]
     }));
   }
+  st.lim = {};   /* slider ranges widened by typed values */
   st.names = [...Object.keys(w.params), ...Object.keys(w.points || {}).flatMap(n => [n + "x", n + "y"])];
   st.scope = Object.create(st.P);
   st.memo = {};
@@ -530,8 +539,20 @@ function toolSvg(st){
   st.boardEl.innerHTML = st.w.svg(st.P, st);
 }
 
+/* the typed fields follow whatever was dragged — except the one being typed into */
+function toolSync(st){
+  if(!st.ctl) return;
+  const busy = document.activeElement;
+  $$("[data-px]", st.ctl).forEach(el => { if(el !== busy) el.value = fmtN(st.P[el.dataset.px + (el.dataset.ax === "1" ? "y" : "x")], 4); });
+  $$("[data-wi]", st.inputsEl).forEach(el => {
+    const x = (st.w.inputs || [])[Number(el.dataset.wi)];
+    if(x && x.read && el !== busy) el.value = x.read(st);
+  });
+}
+
 function toolOut(st){
   st.shown = toolSig(st);
+  toolSync(st);
   if(st.outEl) st.outEl.innerHTML = st.w.out ? st.w.out(st.P, st.h, st) : "";
   const goal = st.blk.goal;
   if(goal){
@@ -565,9 +586,18 @@ function toolCtl(st){
       if(p.hide) continue;
       h += `<div class="tw-pm lock${cls}" title="V tejto ukážke zamknuté">${name}${TW_LOCK}<output>${fmtN(st.P[id])}</output></div>`;
     } else {
-      h += `<label class="tw-pm${cls}" for="${fid}">${name}<output id="${fid}-o">${fmtN(st.P[id])}</output>
-        <input type="range" id="${fid}" data-p="${id}" min="${p.min}" max="${p.max}" step="${p.step || 1}" value="${st.P[id]}"></label>`;
+      const lim = st.lim[id] || p;
+      h += `<div class="tw-pm${cls}"><label class="tw-pl" for="${fid}">${name}</label>
+        <input type="text" inputmode="decimal" class="tw-num" id="${fid}-n" data-pn="${id}" value="${fmtN(st.P[id], 4)}" autocomplete="off" aria-label="Hodnota ${esc(p.name || id)}, môžeš ju prepísať" title="Klikni a napíš vlastnú hodnotu">
+        <input type="range" id="${fid}" data-p="${id}" min="${lim.min}" max="${lim.max}" step="${p.step || 1}" value="${st.P[id]}"></div>`;
     }
+  }
+  /* draggable points can be placed by typing their coordinates too */
+  if(!st.env.thumb) for(const n in (w.points || {})){
+    const o = w.points[n][2] || {};
+    if(o.fixed && !st.open) continue;
+    const f = ax => `<label>${ax ? "y" : "x"}<input type="text" inputmode="decimal" class="tw-num" id="tw-${st.n}-${n}${ax}" data-px="${n}" data-ax="${ax}" value="${fmtN(st.P[n + (ax ? "y" : "x")], 4)}" autocomplete="off" aria-label="Bod ${esc(o.name || n)}, súradnica ${ax ? "y" : "x"}"></label>`;
+    h += `<div class="tw-pm xy"><span class="tw-pn plain"><b>${esc(o.name || n)}</b></span>${f(0)}${f(1)}</div>`;
   }
   if(w.actions && (st.open || w.actionsAlways)) h += `<div class="tw-acts">${w.actions.map((a, i) => `<button type="button" class="btn ghost small" data-wa="${i}">${esc(a.label)}</button>`).join("")}</div>`;
   st.ctl.innerHTML = h;
@@ -576,7 +606,7 @@ function toolCtl(st){
 function toolInputs(st){
   const ins = st.env.full && st.w.inputs || [];
   st.inputsEl.innerHTML = ins.map((x, i) =>
-    `<label class="tw-in"><span>${inline(x.label)}</span><input type="text" data-wi="${i}" id="tw-${st.n}-in${i}" value="${esc(x.value)}" spellcheck="false" autocomplete="off" autocapitalize="off"></label>`
+    `<label class="tw-in${x.wide ? " wide" : ""}"><span>${inline(x.label)}</span><input type="text" data-wi="${i}" id="tw-${st.n}-in${i}" value="${esc(x.read ? x.read(st) : x.value)}" spellcheck="false" autocomplete="off" autocapitalize="off"></label>`
     + `<div class="tw-err" data-we="${i}">${x.error ? esc(x.error) : ""}</div>`).join("");
 }
 
@@ -661,10 +691,47 @@ function mountTool(el){
       const id = t.dataset.p;
       if(!id) return;
       st.P[id] = t.type === "checkbox" ? t.checked : round2(Number(t.value));
-      const o = document.getElementById(t.id + "-o");
-      if(o) o.textContent = fmtN(st.P[id]);
+      const o = document.getElementById(t.id + "-n");
+      if(o) o.value = fmtN(st.P[id], 4);
       toolUpdate(st);
     });
+    /* a value typed into a slider's number or a point's coordinate; on its own page the range grows to fit */
+    const roomy = env.full || el.classList.contains("tw-note");
+    const commit = t => {
+      if(t.dataset.pn){
+        const id = t.dataset.pn, p = st.w.params[id];
+        let v = toolParse(t.value);
+        if(isNaN(v)){ t.value = fmtN(st.P[id], 4); return; }
+        const lim = st.lim[id] || (st.lim[id] = {min:p.min, max:p.max});
+        if(roomy){ lim.min = Math.min(lim.min, v); lim.max = Math.max(lim.max, v); }
+        else v = Math.max(lim.min, Math.min(lim.max, v));
+        st.P[id] = v;
+        t.value = fmtN(v, 4);
+        const r = document.getElementById(t.id.slice(0, -2));
+        if(r){ r.min = lim.min; r.max = lim.max; r.value = v; }
+        toolUpdate(st);
+      } else if(t.dataset.px){
+        const n = t.dataset.px, ax = t.dataset.ax === "1" ? 1 : 0;
+        let v = toolParse(t.value);
+        if(isNaN(v)){ toolSync(st); return; }
+        const bb = st.w.board && st.w.board.bbox;
+        if(!roomy && bb) v = ax ? Math.max(bb[3], Math.min(bb[1], v)) : Math.max(bb[0], Math.min(bb[2], v));
+        const xy = [st.P[n + "x"], st.P[n + "y"]];
+        xy[ax] = v;
+        if(st.jp[n]){
+          /* typed coordinates are taken as they are, not pulled to the grid the way a drag is */
+          st.jp[n].setAttribute({snapToGrid:false});
+          st.jp[n].setPosition(JXG.COORDS_BY_USER, xy);
+          st.board.update();
+          st.jp[n].setAttribute({snapToGrid:true});
+        } else st.pts[n] = xy;
+        t.value = fmtN(v, 4);
+        toolOut(st);
+      }
+    };
+    body.addEventListener("change", e => { if(e.target.classList.contains("tw-num")) commit(e.target); });
+    body.addEventListener("keydown", e => { if(e.key === "Enter" && e.target.classList.contains("tw-num")){ e.preventDefault(); commit(e.target); e.target.select(); } });
+    body.addEventListener("focusin", e => { if(e.target.classList.contains("tw-num")) e.target.select(); });
     body.addEventListener("click", e => {
       const act = e.target.closest("[data-wa]");
       if(act){ st.w.actions[Number(act.dataset.wa)].run(st); toolUpdate(st); return; }

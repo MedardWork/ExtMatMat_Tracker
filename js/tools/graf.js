@@ -78,7 +78,8 @@ defTool("graf", {
     (w.inputs || []).forEach((x, i) => { if(x.value) out.push(`${"fgh"[i]}: ${x.value}`); });
     for(const k in w.params){
       const p = w.params[k];
-      if(p.type !== "check") out.push(`${k}: ${toolNum(st.P[k])} [${toolNum(p.min)}, ${toolNum(p.max)}, ${toolNum(p.step || 1)}]`);
+      const lim = st.lim[k] || p;
+      if(p.type !== "check") out.push(`${k}: ${toolNum(st.P[k])} [${toolNum(lim.min)}, ${toolNum(lim.max)}, ${toolNum(p.step || 1)}]`);
     }
     if(st.board){
       const b = st.board.getBoundingBox();
@@ -206,7 +207,7 @@ defTool("graf", {
 
     return {
       params, points, snap:cfg.snap,
-      hint:points ? cfg.dragHint || `Body ${Object.keys(points).map(n => `**${n}**`).join(" a ")} sa dajú ťahať po mriežke.` : null,
+      hint:points ? cfg.dragHint || `Body ${Object.keys(points).map(n => `**${n}**`).join(" a ")} ťahaj po mriežke alebo im vpíš súradnice.` : null,
       board:{bbox:cfg.view || [-6, 6, 6, -6], tick:cfg.tick || 1, free:cfg.free, axes:cfg.axes, aspect:cfg.aspect},
       inputs:[0, 1, 2].filter(i => i <= fns.length && (i < fns.length ? typeof fns[i].f === "string" && !fns[i].ghost : true)).map(i => ({
         label:`$${"fgh"[i]}(x) =$`,

@@ -175,7 +175,10 @@ theory a tool is pre-filled for that one point and only the values that matter t
 *Odomknúť všetko* frees the rest, *Otvoriť v Nástrojoch* opens it on its own page with the same values.
 Each subtopic ends with its level buttons, so you can rate it right after reading.
 
-**Nástroje** in the top bar lists the same tools for free experimenting.
+**Nástroje** in the top bar lists the same tools for free experimenting. Every value can be dragged or
+typed: the number beside a slider is a field (it takes `2,5`, `-1/3`, `sqrt(2)`; on a tool's own page
+the slider's range grows to fit), draggable points have coordinate fields, and the statistics tool
+has a field for the whole data set.
 
 Theory is written topic by topic; the Teória tab says *pripravuje sa* where it isn't there yet.
 
@@ -245,6 +248,9 @@ js/views/tools.js                  #/nastroje, #/nastroje/<tool>
 js/views/journal.js                #/dennik
 js/views/info.js                   #/info
 js/main.js                         theme, global keys, startup
+
+dev/check.js                       opens theory and tool pages in a browser and reports errors
+CLAUDE.md                          notes for continuing the theory work with Claude Code
 
 server/store.js                    the SQLite database: current save, history, daily backups
 server/app.js                      serves the files above + the save API (web-standard Request → Response)

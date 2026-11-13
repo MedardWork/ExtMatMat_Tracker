@@ -110,7 +110,7 @@ defTool("trojuholnik", {
 
     return {
       params, points, snap:cfg.snap || .5,
-      hint:fixed.length === 3 ? null : fixed.length ? `Vrchol ${["A", "B", "C"].filter(n => !fixed.includes(n)).map(n => `**${n}**`).join(" a ")} sa dá ťahať.` : "Vrcholy **A**, **B**, **C** sa dajú ťahať.",
+      hint:fixed.length === 3 ? null : fixed.length ? `Vrchol ${["A", "B", "C"].filter(n => !fixed.includes(n)).map(n => `**${n}**`).join(" a ")} sa dá ťahať.` : "Vrcholy **A**, **B**, **C** ťahaj alebo im vpíš súradnice.",
       board:{bbox:cfg.view || [-1.5, 8.5, 11.5, -1.5], axis:false, aspect:"13/10"},
       draw(g, P, st){
         const G = () => geo(st);
