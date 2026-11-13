@@ -18,7 +18,7 @@ A tracker for preparing for the Slovak external maths maturita (plus Danish Mate
   it, update this file, commit, push. No questions needed.
 - **A batch** is one stretch between two arrows in that list (usually 2–4 topics, plus the new tool they
   need). Finish and push one batch before starting the next.
-- `main` holds everything listed under *Done* (merged 2026-11-13). Start from `main`. If this file or a
+- `main` holds everything listed under *Done* (last merged 2026-11-13, with the tools). Start from `main`. If this file or a
   theory file listed under *Done* is missing on the session's branch, the branch is behind: fast-forward
   it to `origin/main` first.
 - Before finishing: move the topics from *Next* to *Done* here, add anything new that bit, commit, push
@@ -61,22 +61,49 @@ Decided with the person, don't reopen:
 ### Done
 
 Theory, 15 of 126 topics: a18 a19 a20 a21 a22 a23 a24 a25 a26 b12 b13 b14 b15 (Funkcie), a28 (Planimetria), b40 (KPŠ).
-Tools: `graf`, `trojuholnik`, `statistika`, `postupnost` (bars/dots per term; options at the top of its file).
+Tools (each file starts with its options and its `presets`; `topics` in each says where it belongs):
+
+| Tool | For | What it does |
+|---|---|---|
+| `graf` | functions, b1–b3, b4, a14–a17 | graphs with parameters (JSXGraph) |
+| `trojuholnik` | a28 | triangle with its lines and circles |
+| `statistika` | b40 | dots on a line: mean, median, mode |
+| `postupnost` | a25 a26 | terms as bars/dots, sums |
+| `kruznica` | b8–b11 | unit circle, sin/cos/tg segments, graph unrolling, `eq` = sin x = c |
+| `os` | a6 a12–a14 a16 b4 b5 | number line: interval, two sets (∩ ∪ − ′), \|x − s\| < r, sign chart |
+| `percenta` | a1 | percent of a base, change by %, ratio parts, direct/inverse proportion |
+| `urok` | a2 | deposit, regular saving, loan plan (table with bars) |
+| `sustavy` | a4 | bases 2–16, place values, division ladder, Roman numerals |
+| `rozklad` | a5 | prime factorisation, gcd/lcm table, Euclid |
+| `mnoziny` | a6 a41 | Venn 2/3 sets: shade an expression, click regions (`hladaj` = task), counts |
+| `vyroky` | a7–a9 | truth table, several statements compared (equivalence, tautology) |
+| `plochy` | a10 a15 | (a±b)², a²−b², (a+b)(c+d), completing the square as areas |
+| `pytagoras` | a29 a30 b16 | squares on sides, Euclid's theorems, kind of triangle from sides |
+| `kruh` | a31 a34 b18 | arc/sector/segment, chord, tangents, central and inscribed angle, Thales |
+| `podobnost` | a32 b27 | triangle and its k-copy, shadow problem |
+| `zobrazenia` | b26 b27 | reflections, translation, rotation, homothety on a grid |
+| `uhly` | a27 | vertical/adjacent/corresponding/alternate angles |
+| `utvary` | a33 a35 | perimeter and area of plane figures, regular polygons |
+| `analyticka` | b19–b25 | points, vectors, line forms, two lines, circle + line, area (JSXGraph) |
+| `kocka` | b29–b34 | cube/cuboid: section through 3 points, distance, angle |
+| `telesa` | a36 a37 b35 | volume, surface, nets of solids |
+
+The tools from `kruznica` on were written by Fable on 2026-11-13 and checked by `dev/check.js` and by eye
+(every preset), but **no theory uses them yet**. Opus writes the theory; if a tool lacks a small option, add it.
 
 Size to aim for, from the last batch: 3–4 subtopics per topic, 3–4 tools per subtopic (one of them a
 task), 2–4 worked examples per subtopic, about 150 lines per theory file.
 
 ### Next, in this order
 
-1. Funkcie, **Fable**: b8 + the new tool `kruznica` (unit circle, angle in degrees and radians, sin/cos/tg
-   as segments, the sine graph unrolling beside it) → **Opus**: b9, b10, b11 with that tool and `graf`.
-2. Základy (a1–a17, b1–b7), then Planimetria, Stereometria, KPŠ, then the Danish part (c1–c42). Split
-   each area the same way: first a Fable batch per new tool with one topic, then Opus batches for the rest.
-   Likely tools: number line (intervals, inequalities, absolute value), percent/ratio bar, interest and
-   repayment table, number-base converter, prime factorisation, Venn diagram, truth table, area model for
-   (a+b)², geometry scenes (Pythagoras, Thales, similarity, circle parts, transformations), analytic
-   geometry (points, vectors, line, circle), 3D solids and cube sections, combinatorics, Pascal's triangle,
-   probability simulator, tangent/secant, area under a curve, slope field, distributions, regression.
+1. **Opus**, theory with existing tools, 2–4 topics per batch, in this order:
+   Funkcie b8 b9 b10 b11 → Základy a1–a17, b1–b7 → Planimetria a27 a29–a35, b16–b28 →
+   Stereometria a36 a37, b29–b35. b7 (inequality in two variables) and b28 (constructions) have no
+   fitting tool: `graf` with `fns` and `show` polygons can shade a half-plane; skip what does not fit.
+2. **Fable**, tools still missing, then Opus for their topics:
+   KPŠ (a38–a42, b36–b42): tree of choices / counting, Pascal's triangle, probability simulator,
+   histogram and pie chart, variance. Danish part (c1–c42): tangent/secant (derivative), area under a
+   curve, slope field + Euler, distributions (binomial, normal), box plot, regression, 3D vectors.
 
 ## How to add theory for a topic
 
@@ -114,6 +141,13 @@ Things that bite:
 - In theory give a tool a fixed vertical range (`y:` / `view:`); with a fitted range the picture rescales
   and moving a slider seems to change nothing.
 - To look at many tool pictures at once, tile the `SHOTS` files into one image and read that.
+- Writing a plain-SVG tool: use the kit in `core.js` (comment block "PLAIN-SVG KIT"): `toolParams` (cfg
+  numbers/objects over default sliders, `free`/`lock`/`hide`/`on`/`toggles`), `SV.*` and `SG.*` writers with
+  colour classes (`s ca`, `bg cb`, `t mid` …, CSS in theory.css "plain-SVG kit"), `svFit` for a plane in the
+  picture, `svgDrag` / `svgPoint` for dragging and clicks, `toolTextIn` / `toolTextOut` for notes. A tool
+  that shows a table returns `<div class="tw-tab">…` from `svg()`. `"c_a"` in `SV.text` writes a subscript.
+- `node dev/check.js <tool>` clicks through every preset of the tool. `node dev/tile.js <dir> [prefix]`
+  tiles `SHOTS` pictures into `<dir>/_all.png`. A full `node dev/check.js` takes over 2 minutes.
 - A new tool needs its `<script>` tag in `maturita-matematika-tracker.html` and its styles in
   `css/theory.css`; `dev/check.js` picks it up from `js/tools/` by itself.
 - `rm` with a shell variable in the path is refused by the safety check; write screenshots to a fresh folder.
