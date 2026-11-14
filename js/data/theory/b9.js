@@ -64,7 +64,7 @@ THEORY.b9 = {
 | $\cos$ | $+$ | $-$ | $-$ | $+$ |
 | $\tg$ | $+$ | $-$ | $+$ | $-$ |`,
   R`Bod pri $150^\circ$ je zrkadlovým obrazom bodu pri $30^\circ$ podľa osi $y$. Má rovnakú výšku, len je vľavo. Preto sa hodnota každého uhla dá vypočítať z ostrého uhla, ktorý jeho rameno zviera s osou $x$. Zmení sa nanajvýš znamienko.`,
-  {def:"Prevod do I. kvadrantu", tex:R`\begin{aligned}\sin(180^\circ - \alpha) &= \sin \alpha & \cos(180^\circ - \alpha) &= -\cos \alpha\\ \sin(180^\circ + \alpha) &= -\sin \alpha & \cos(180^\circ + \alpha) &= -\cos \alpha\\ \sin(360^\circ - \alpha) &= -\sin \alpha & \cos(360^\circ - \alpha) &= \cos \alpha\end{aligned}`},
+  {def:"Prevod do I. kvadrantu", tex:R`\begin{aligned}\sin(180^\circ - \alpha) &= \sin \alpha\\ \sin(180^\circ + \alpha) &= -\sin \alpha\\ \sin(360^\circ - \alpha) &= -\sin \alpha\end{aligned} \qquad \begin{aligned}\cos(180^\circ - \alpha) &= -\cos \alpha\\ \cos(180^\circ + \alpha) &= -\cos \alpha\\ \cos(360^\circ - \alpha) &= \cos \alpha\end{aligned}`},
   {tool:"kruznica", ask:R`Porovnaj uhly $30^\circ$, $150^\circ$, $210^\circ$ a $330^\circ$. Čo majú hodnoty spoločné?`,
    take:R`všade je $|\sin \alpha| = \frac{1}{2}$ a $|\cos \alpha| = \frac{\sqrt{3}}{2}$. Mení sa len znamienko podľa kvadrantu.`,
    cfg:{uhol:{v:150, step:30}, on:{sin:true, cos:true, body:true}}},
@@ -139,7 +139,7 @@ THEORY.b9 = {
 
 "Perióda":[
   R`Funkcia je **periodická** s periódou $p > 0$, ak sa jej hodnoty opakujú po každom posune o $p$: $f(x + p) = f(x)$. Na kružnici je to jasné: po celej otočke je bod na tom istom mieste. Za periódu sa berie najmenšie také $p$.`,
-  {def:"Perióda goniometrických funkcií", tex:R`\sin(x + 2k\pi) = \sin x,\quad \cos(x + 2k\pi) = \cos x,\quad \tg(x + k\pi) = \tg x`, note:R`Tangens má periódu polovičnú, $\pi = 180^\circ$, lebo protiľahlé body kružnice dajú ten istý priesečník s dotyčnicou.`},
+  {def:"Perióda goniometrických funkcií", tex:R`\sin(x + 2k\pi) = \sin x \qquad \cos(x + 2k\pi) = \cos x \qquad \tg(x + k\pi) = \tg x`, note:R`Tangens má periódu polovičnú, $\pi = 180^\circ$, lebo protiľahlé body kružnice dajú ten istý priesečník s dotyčnicou.`},
   {tool:"kruznica", ask:R`Posúvaj uhol cez viac otočiek, od $-360^\circ$ do $720^\circ$. Čo sa deje s grafom po každých $360^\circ$?`,
    take:R`graf sa opakuje: úsek od $0^\circ$ do $360^\circ$ sa kopíruje doľava aj doprava.`,
    cfg:{uhol:{v:30, min:-360, max:720, step:15}, on:{sin:true, graf:true}}},

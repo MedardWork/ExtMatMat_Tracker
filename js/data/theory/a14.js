@@ -15,7 +15,7 @@ THEORY.a14 = {
 
 "Lineárne rovnice":[
   R`Lineárna rovnica obsahuje neznámu len v prvej mocnine. Rieši sa **ekvivalentnými úpravami**: kroky, ktoré nezmenia množinu riešení. Cieľ je dostať neznámu osamote na jednu stranu.`,
-  {def:"Ekvivalentné úpravy", tex:R`A = B \;\Leftrightarrow\; A + C = B + C \;\Leftrightarrow\; k \cdot A = k \cdot B\quad (k \neq 0)`},
+  {def:"Ekvivalentné úpravy", tex:R`A = B \;\Leftrightarrow\; A + C = B + C \qquad A = B \;\Leftrightarrow\; k \cdot A = k \cdot B\ \ (k \neq 0)`},
   {tool:"graf", ask:R`Riešenie rovnice $\va{a}x + \vb{b} = 0$ je priesečník priamky $y = ax + b$ s osou $x$. Meň $\va{a}$ a $\vb{b}$. Čo sa stane pre $a = 0$?`,
    take:R`pre $a \neq 0$ je priesečník práve jeden, $x = -\frac{b}{a}$. Pre $a = 0$ je priamka vodorovná: buď os $x$ nepretne (žiadne riešenie), alebo s ňou splýva ($b = 0$, nekonečne veľa).`,
    cfg:{view:[-6, 5, 6, -5], tick:1, fns:[{f:"a*x+b", lhs:"y"}],

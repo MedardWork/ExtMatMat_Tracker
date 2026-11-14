@@ -180,5 +180,6 @@ Things that bite:
 - A half-plane in `graf`: `show:[{poly:[[-6, "k*(-6)+q"], [7, "k*7+q"], [7, 9], [-6, 9]], color:"c"}]` (see `b7.js`); poly corners take expressions.
 - Labels and `text` in `graf` show "—" for `round(…)`; write the number in `out` instead.
 - `kocka`: a task goal can read the section through `(P, st) => st.h.cube.n` (goal runs after `out`). With `kvader:true` lock a, b, c unless they matter.
+- A formula box (`def`) is split at top-level `\qquad` into relations that wrap as wholes and shrink to fit (`defParts`, `fitDefs` in js/theory.js). Separate independent relations with `\qquad` (no comma), use one-column `aligned` blocks, put long words into `note`. `node dev/defwrap.js [ids]` lists boxes still too wide at 1280/900/400 px.
 - Long shell heredocs containing backticks or `${}` trip the command safety check. Put patch scripts
   in a file (Write tool) and run the file.

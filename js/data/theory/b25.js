@@ -39,7 +39,7 @@ THEORY.b25 = {
 
 "Kružnica a Tálesova kružnica ako množiny":[
   R`**Kružnica** je množina bodov, ktoré majú od stredu $S$ vzdialenosť $r$. **Tálesova kružnica** nad úsečkou $AB$ je množina vrcholov pravých uhlov nad $AB$ ([[a31]]). Obe sa používajú pri konštrukciách: hľadaný bod leží v prieniku dvoch množín.`,
-  {def:"Kružnica a Tálesova kružnica", tex:R`k(S, r) = \{X;\ |SX| = r\},\qquad \{X;\ |\angle AXB| = 90^\circ\} = k\left(S_{AB}, \tfrac{|AB|}{2}\right) - \{A, B\}`},
+  {def:"Kružnica a Tálesova kružnica", tex:R`k(S, r) = \{X;\ |SX| = r\} \qquad \{X;\ |\angle AXB| = 90^\circ\} \qquad = k\left(S_{AB}, \tfrac{|AB|}{2}\right) - \{A, B\}`},
   {tool:"kruh", ask:R`Ťahaj vrchol $V$ po kružnici nad priemerom. Je uhol pri $V$ stále pravý?`,
    take:R`áno. Všetky vrcholy pravých uhlov nad $AB$ tvoria kružnicu s priemerom $AB$.`,
    cfg:{typ:"uhly", omega:{v:180, lock:true}}},

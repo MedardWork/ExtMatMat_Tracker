@@ -65,7 +65,7 @@ THEORY.b11 = {
    take:R`každé riešenie sa opakuje po $360^\circ$. Stačí poznať dve riešenia v jednej perióde.`,
    cfg:{eq:"sin", uhol:{v:30, min:-360, max:720, lock:true}, on:{sin:true, graf:true}}},
   R`Pri niektorých hodnotách sa dve riešenia zlejú do jedného alebo sa dajú zapísať kratšie:`,
-  {def:"Špeciálne prípady", tex:R`\begin{aligned}\sin x = 0 &: x = k\pi & \cos x = 0 &: x = \tfrac{\pi}{2} + k\pi\\ \sin x = 1 &: x = \tfrac{\pi}{2} + 2k\pi & \cos x = 1 &: x = 2k\pi\\ \sin x = -1 &: x = \tfrac{3\pi}{2} + 2k\pi & \cos x = -1 &: x = \pi + 2k\pi\end{aligned}`},
+  {def:"Špeciálne prípady", tex:R`\begin{aligned}\sin x = 0 &: x = k\pi\\ \sin x = 1 &: x = \tfrac{\pi}{2} + 2k\pi\\ \sin x = -1 &: x = \tfrac{3\pi}{2} + 2k\pi\end{aligned} \qquad \begin{aligned}\cos x = 0 &: x = \tfrac{\pi}{2} + k\pi\\ \cos x = 1 &: x = 2k\pi\\ \cos x = -1 &: x = \pi + 2k\pi\end{aligned}`},
   {ex:R`Vyrieš v $\mathbb{R}$: $\cos x = \dfrac{1}{2}$.`,
    steps:[
      [R`V jednej perióde: $\frac{\pi}{3}$ a $2\pi - \frac{\pi}{3} = \frac{5\pi}{3}$, čo je to isté ako $-\frac{\pi}{3}$.`, R`x_1 = \frac{\pi}{3},\quad x_2 = -\frac{\pi}{3}`],

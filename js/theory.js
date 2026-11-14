@@ -18,6 +18,51 @@ const THEORY = {};
 const R = String.raw;
 const hasTheory = id => THEORY_LIST.includes(id);
 
+/* a formula box holds one or more relations separated by \qquad (at the top level, outside braces and
+   environments); each relation is set unbroken and the relations wrap as wholes, never inside one */
+function defParts(src){
+  const parts = [];
+  let depth = 0, env = 0, start = 0;
+  for(let i = 0; i < src.length; i++){
+    const c = src[i];
+    if(c === "\\"){
+      if(src.startsWith("\\begin", i)) env++;
+      else if(src.startsWith("\\end", i)) env--;
+      else if(!depth && !env && src.startsWith("\\qquad", i) && !/[a-zA-Z]/.test(src[i + 6] || "")){
+        parts.push(src.slice(start, i).replace(/,\s*$/, ""));
+        start = i + 6; i += 5; continue;
+      }
+      i++; continue;
+    }
+    if(c === "{") depth++;
+    else if(c === "}") depth--;
+  }
+  parts.push(src.slice(start));
+  return parts.map(t => t.trim()).filter(Boolean);
+}
+
+/* a relation wider than its formula box is set smaller until it fits (not below 55 %):
+   new boxes are fitted when they enter the page, all of them again when the window changes size */
+function fitDefs(all){
+  document.querySelectorAll(all ? ".th-def-p" : ".th-def-p:not([data-fit])").forEach(p => {
+    p.style.fontSize = "";
+    const w = p.parentElement.clientWidth;
+    if(!w){ delete p.dataset.fit; return; }
+    p.dataset.fit = "1";
+    const need = p.scrollWidth;
+    if(need > w + 3) p.style.fontSize = Math.max(.55, (w - 8) / need).toFixed(3) + "em";
+  });
+}
+(() => {
+  let queued = 0;
+  const run = () => { const all = queued === 2; queued = 0; fitDefs(all); };
+  const ask = all => { if(!queued) requestAnimationFrame(run); queued = Math.max(queued, all ? 2 : 1); };
+  const view = document.getElementById("view");
+  if(view) new MutationObserver(() => ask(false)).observe(view, {childList:true, subtree:true});
+  addEventListener("resize", () => ask(true));
+  try{ document.fonts.ready.then(() => ask(true)); document.fonts.addEventListener("loadingdone", () => ask(true)); }catch(e){}
+})();
+
 const theoryWait = {};
 function loadTheory(id){
   if(THEORY[id]) return Promise.resolve(true);
@@ -73,7 +118,7 @@ function theoryBlock(b, key){
 
   if(b.def != null) return `<div class="th-def">
     <div class="th-label">${inline(b.def)}</div>
-    <div class="th-def-f${b.mid ? " mid" : ""}">${tex(b.tex, false)}</div>
+    <div class="th-def-f${b.mid ? " mid" : ""}">${defParts(b.tex).map(t => `<span class="th-def-p">${tex(t, false)}</span>`).join("")}</div>
     ${b.note ? `<div class="th-def-note">${inline(b.note)}</div>` : ""}
     ${b.legend ? `<div class="th-legend">${b.legend.map(l =>
       `<div><span class="th-sym c-${l[1]}">${tex(l[0], false)}</span><div><b>${inline(l[2])}</b><span>${inline(l[3])}</span></div></div>`).join("")}</div>` : ""}

@@ -12,7 +12,7 @@ THEORY.b22 = {
 
 "Rovnobežné, totožné, rôznobežné":[
   R`Dve priamky v rovine môžu byť **rôznobežné** (majú jeden spoločný bod), **rovnobežné rôzne** (žiadny) alebo **totožné** (všetky). Rozhodnú o tom smerové vektory a jeden bod.`,
-  {def:"Vzájomná poloha", tex:R`p: a_1x + b_1y + c_1 = 0,\quad q: a_2x + b_2y + c_2 = 0\\[4pt] \frac{a_1}{a_2} = \frac{b_1}{b_2}:\ \text{rovnobežné (pri rovnakom pomere aj } c\text{: totožné)}`},
+  {def:"Vzájomná poloha", tex:R`p: a_1x + b_1y + c_1 = 0 \qquad q: a_2x + b_2y + c_2 = 0 \qquad \frac{a_1}{a_2} = \frac{b_1}{b_2}:\ \text{rovnobežné}`, note:R`Ak je v rovnakom pomere aj $c_1 : c_2$, priamky sú totožné.`},
   {tool:"analyticka", ask:R`Ťahaj body $A$, $B$, $C$, $D$. Kedy sú priamky $AB$ a $CD$ rovnobežné? Kedy kolmé?`,
    take:R`rovnobežné, keď sú vektory $\vec{AB}$ a $\vec{CD}$ násobkami. Kolmé, keď je ich skalárny súčin nula.`,
    cfg:{typ:"priamky"}},

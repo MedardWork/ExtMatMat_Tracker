@@ -37,7 +37,7 @@ THEORY.b24 = {
 
 "Doplnenie na štvorec v rovnici kružnice":[
   R`Rovnica môže byť zadaná roznásobená. Stred a polomer sa z nej dostanú doplnením na štvorec ([[a10]]) zvlášť pre $x$ a pre $y$.`,
-  {def:"Všeobecný tvar", tex:R`x^2 + y^2 + ax + by + c = 0 \;\Rightarrow\; S = \left[-\frac{a}{2};\ -\frac{b}{2}\right],\quad r^2 = \frac{a^2}{4} + \frac{b^2}{4} - c`},
+  {def:"Všeobecný tvar", tex:R`x^2 + y^2 + ax + by + c = 0 \qquad S = \left[-\frac{a}{2};\ -\frac{b}{2}\right] \qquad r^2 = \frac{a^2}{4} + \frac{b^2}{4} - c`},
   {ex:R`Urči stred a polomer kružnice $x^2 + y^2 - 6x + 4y - 12 = 0$.`,
    steps:[
      ["Zoskup a doplň.", R`(x^2 - 6x + 9) + (y^2 + 4y + 4) = 12 + 9 + 4`],
@@ -77,7 +77,7 @@ THEORY.b24 = {
 
 "Dve kružnice":[
   R`Poloha dvoch kružníc závisí od vzdialenosti stredov $d$ a od polomerov. Môžu sa pretínať, dotýkať (zvonku alebo zvnútra) alebo nemať spoločný bod.`,
-  {def:"Poloha dvoch kružníc", tex:R`\begin{aligned}d > r_1 + r_2 &:\ \text{ležia mimo seba} & d = r_1 + r_2 &:\ \text{vonkajší dotyk}\\ |r_1 - r_2| < d < r_1 + r_2 &:\ \text{pretínajú sa} & d = |r_1 - r_2| &:\ \text{vnútorný dotyk}\end{aligned}`},
+  {def:"Poloha dvoch kružníc", tex:R`\begin{aligned}d > r_1 + r_2 &:\ \text{ležia mimo seba}\\ d = r_1 + r_2 &:\ \text{vonkajší dotyk}\\ |r_1 - r_2| < d < r_1 + r_2 &:\ \text{pretínajú sa}\\ d = |r_1 - r_2| &:\ \text{vnútorný dotyk}\end{aligned}`},
   {tool:"graf", ask:R`Prvá kružnica má polomer 4. Meň vzdialenosť stredov $\vd{d}$ a polomer druhej $\vb{r}$. Kedy sa kružnice dotýkajú?`,
    take:R`pri $d = 4 + r$ zvonku a pri $d = |4 - r|$ zvnútra. Medzi tým sa pretínajú v dvoch bodoch.`,
    cfg:Object.assign({}, two, {params:{d:{v:6, min:0, max:9, step:.5, color:"d"}, r:{v:3, min:.5, max:5, step:.5, color:"b"}},

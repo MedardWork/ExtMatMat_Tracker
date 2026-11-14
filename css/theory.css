@@ -55,7 +55,8 @@
 /* the rule to remember */
 .th-def{background:var(--dk-bg);border-radius:12px;padding:20px 22px 22px;display:flex;flex-direction:column;gap:14px}
 .th-def .th-label{color:var(--dk)}
-.th-def-f{font-size:clamp(24px,5vw,34px);line-height:1.3;text-align:center;padding:6px 0 4px;overflow-x:auto;overflow-y:hidden}
+.th-def-f{font-size:clamp(24px,5vw,34px);line-height:1.3;text-align:center;padding:6px 0 4px;display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;column-gap:1.7em;row-gap:.35em}
+.th-def-p{white-space:nowrap;max-width:100%;overflow-x:auto;overflow-y:hidden;padding:0 3px}
 .th-def-f.mid{font-size:clamp(19px,4vw,24px)}
 .th-def-note{font-size:14.5px;color:var(--ink-soft);text-align:center;margin-top:-6px}
 .th-legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}

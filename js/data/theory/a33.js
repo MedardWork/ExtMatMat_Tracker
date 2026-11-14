@@ -41,7 +41,7 @@ THEORY.a33 = {
 
 "Štvoruholníky":[
   R`Každý rovnobežník sa dá odrezaním trojuholníka a jeho presunutím premeniť na obdĺžnik s rovnakou základňou a výškou. Lichobežník sa dá doplniť na rovnobežník dvojnásobnej plochy.`,
-  {def:"Obsahy štvoruholníkov", tex:R`\begin{aligned}\text{obdĺžnik: } S &= ab & \text{rovnobežník: } S &= a \cdot v_a\\ \text{lichobežník: } S &= \frac{(a + c)\,v}{2} & \text{kosoštvorec: } S &= \frac{e \cdot f}{2}\end{aligned}`},
+  {def:"Obsahy štvoruholníkov", tex:R`\begin{aligned}\text{obdĺžnik: } S &= ab\\ \text{rovnobežník: } S &= a \cdot v_a\\ \text{lichobežník: } S &= \frac{(a + c)\,v}{2}\\ \text{kosoštvorec: } S &= \frac{e \cdot f}{2}\end{aligned}`},
   {tool:"utvary", ask:R`Rovnobežník. Zapni premenu na obdĺžnik a meň uhol. Mení sa obsah?`,
    take:R`obsah závisí len od základne a výšky. Pri zmene uhla sa výška zmenší a s ňou aj obsah, hoci strany ostávajú rovnaké.`,
    cfg:{typ:"rovnobeznik", on:{premena:true}}},

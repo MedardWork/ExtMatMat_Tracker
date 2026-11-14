@@ -13,7 +13,7 @@ THEORY.b19 = {
 
 "Súradnice bodu":[
   R`Dve kolmé číselné osi so spoločným počiatkom $O$ tvoria **súradnicovú sústavu**. Poloha bodu je daná dvojicou čísel $[x;\ y]$: o koľko je vpravo (vľavo) od osi $y$ a o koľko hore (dole) od osi $x$. Osi delia rovinu na štyri kvadranty.`,
-  {def:"Súmernosť bodov", tex:R`A = [x;\ y]:\quad \text{os } x \to [x;\ -y],\quad \text{os } y \to [-x;\ y],\quad O \to [-x;\ -y]`},
+  {def:"Súmernosť bodov", tex:R`A = [x;\ y] \qquad \text{os } x: A \to [x;\ -y] \qquad \text{os } y: A \to [-x;\ y] \qquad O: A \to [-x;\ -y]`},
   {tool:"analyticka", ask:R`Ťahaj body $A$ a $B$ a sleduj ich súradnice. Aké znamienka majú súradnice v jednotlivých kvadrantoch?`,
    take:R`I. kvadrant $[+;\ +]$, II. $[-;\ +]$, III. $[-;\ -]$, IV. $[+;\ -]$. Body na osiach majú jednu súradnicu nulovú.`,
    cfg:{typ:"body"}},

@@ -65,7 +65,7 @@ THEORY.a4 = {
 
 "Šestnástková sústava — prevody":[
   R`Šestnástková (hexadecimálna) sústava potrebuje 16 číslic. Za 0 až 9 pokračujú písmená: $A = 10$, $B = 11$, $C = 12$, $D = 13$, $E = 14$, $F = 15$. Hodnoty miest sú $1, 16, 256, 4096, \ldots$`,
-  {def:"Číslice šestnástkovej sústavy", tex:R`A = 10,\ B = 11,\ C = 12,\ D = 13,\ E = 14,\ F = 15`},
+  {def:"Číslice šestnástkovej sústavy", tex:R`A = 10,\ B = 11,\ C = 12 \qquad D = 13,\ E = 14,\ F = 15`},
   {tool:"sustavy", ask:R`Meň číslo a sleduj šestnástkový zápis. Aké je najväčšie číslo s dvoma šestnástkovými číslicami?`,
    take:R`$(FF)_{16} = 15 \cdot 16 + 15 = 255$. Dve šestnástkové číslice popíšu jeden bajt.`,
    cfg:{n:{v:254, max:4095}, b:L(16), on:{rady:true, delenie:true}}},
@@ -96,7 +96,7 @@ THEORY.a4 = {
   R`| znak | I | V | X | L | C | D | M |
 |---|---|---|---|---|---|---|---|
 | hodnota | 1 | 5 | 10 | 50 | 100 | 500 | 1000 |`,
-  {def:"Odčítanie", tex:R`\text{IV} = 4,\ \text{IX} = 9,\ \text{XL} = 40,\ \text{XC} = 90,\ \text{CD} = 400,\ \text{CM} = 900`, note:"Odčítať sa smie len I, X, C, a len od dvoch najbližších väčších znakov. Ten istý znak sa opakuje najviac trikrát za sebou."},
+  {def:"Odčítanie", tex:R`\text{IV} = 4,\ \text{IX} = 9 \qquad \text{XL} = 40,\ \text{XC} = 90 \qquad \text{CD} = 400,\ \text{CM} = 900`, note:"Odčítať sa smie len I, X, C, a len od dvoch najbližších väčších znakov. Ten istý znak sa opakuje najviac trikrát za sebou."},
   {tool:"sustavy", ask:R`Meň číslo a pozri sa, z akých častí sa skladá rímsky zápis.`,
    take:R`číslo sa rozloží na tisícky, stovky, desiatky a jednotky a každá časť sa zapíše zvlášť. Preto je 1994 = M + CM + XC + IV.`,
    cfg:{n:{v:1994, max:3999}, b:L(10), on:{rim:true}}},

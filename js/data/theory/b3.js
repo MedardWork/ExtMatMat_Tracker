@@ -95,7 +95,7 @@ THEORY.b3 = {
 
 "Logaritmické nerovnice":[
   R`Nerovnica sa rieši ako rovnica, s dvoma rozdielmi. Pri základe medzi 0 a 1 sa po odlogaritmovaní otočí znak, lebo funkcia klesá. A výsledok sa vždy spojí s podmienkami (prienik).`,
-  {def:"Logaritmická nerovnica", tex:R`\log_a f(x) < \log_a g(x) \;\Leftrightarrow\; \begin{cases} 0 < f(x) < g(x) & a > 1\\ f(x) > g(x) > 0 & 0 < a < 1\end{cases}`},
+  {def:"Logaritmická nerovnica", tex:R`\log_a f(x) < \log_a g(x) \;\Leftrightarrow \qquad a > 1:\ 0 < f(x) < g(x) \qquad 0 < a < 1:\ f(x) > g(x) > 0`},
   {tool:"graf", ask:R`Graf $y = \log_a x$ a priamka $y = -2$. Meň základ $\va{a}$. Pre ktoré $x$ je graf nad priamkou?`,
    take:R`pre $a > 1$ vpravo od priesečníka. Pre $0 < a < 1$ vľavo, od nuly po priesečník: tam sa znak otočí. Pri $a = \frac{1}{2}$ je to $(0;\ 4\rangle$.`,
    cfg:Object.assign({}, LV, {view:[-1, 4, 11, -4], fns:[{f:"ln(x)/ln(a)", lhs:"y", dom:[.01, 11]}, {f:"-2", lhs:"y", color:"c"}],

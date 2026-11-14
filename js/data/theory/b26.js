@@ -14,7 +14,7 @@ THEORY.b26 = {
 
 "Osová súmernosť":[
   R`Pri **osovej súmernosti** sa každý bod zrkadlí cez priamku $o$ (os). Spojnica bodu a jeho obrazu je na os kolmá a os ju rozpoľuje. Body na osi sa nehýbu. Obraz má opačnú orientáciu (ako v zrkadle).`,
-  {def:"Osová súmernosť", tex:R`o:\ \text{os úsečky } XX',\qquad \text{os } x: [x;\ y] \to [x;\ -y],\quad \text{os } y: [x;\ y] \to [-x;\ y]`},
+  {def:"Osová súmernosť", tex:R`o:\ \text{os úsečky } XX' \qquad \text{os } x: [x;\ y] \to [x;\ -y] \qquad \text{os } y: [x;\ y] \to [-x;\ y]`},
   {tool:"zobrazenia", ask:R`Ťahaj stred osi a meň jej sklon. Ktoré body sa nepohnú?`,
    take:R`body ležiace na osi. Ostatné sa preklopia na druhú stranu do rovnakej vzdialenosti.`,
    cfg:{typ:"osova"}},

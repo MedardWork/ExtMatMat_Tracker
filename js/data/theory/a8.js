@@ -13,7 +13,7 @@ THEORY.a8 = {
 
 "Kvantifikátory „každý“ a „existuje“":[
   R`Výroková forma $x > 3$ nie je výrok. Výrokom sa stane, keď povieš, pre ktoré $x$ má platiť: pre **všetky**, alebo aspoň pre **jedno**. Slová „každý“ a „existuje“ sa volajú **kvantifikátory**.`,
-  {def:"Kvantifikátory", tex:R`\forall x \in M:\ V(x)\quad\text{„pre každé } x \text{ z } M \text{ platí } V(x)\text{“}\\[4pt] \exists x \in M:\ V(x)\quad\text{„existuje } x \text{ z } M\text{, pre ktoré platí } V(x)\text{“}`},
+  {def:"Kvantifikátory", tex:R`\forall x \in M:\ V(x) \qquad \exists x \in M:\ V(x)`, note:R`Čítaj: „pre každé $x$ z $M$ platí $V(x)$“ a „existuje $x$ z $M$, pre ktoré platí $V(x)$“.`},
   R`Na dôkaz výroku „každý“ treba ukázať, že platí pre všetky prvky, na vyvrátenie stačí **jeden protipríklad**. Pri „existuje“ je to naopak: stačí jeden príklad, na vyvrátenie treba overiť všetky.`,
   {ex:R`Urči pravdivosť: a) $\forall x \in \mathbb{R}:\ x^2 \geq 0$. b) $\forall x \in \mathbb{N}:\ x^2 > x$. c) $\exists x \in \mathbb{Z}:\ x^2 = 2$. d) $\exists x \in \mathbb{R}:\ x^2 = 2$.`,
    steps:[

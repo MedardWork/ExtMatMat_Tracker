@@ -13,7 +13,7 @@ THEORY.b30 = {
 
 "Súradnice v priestore":[
   R`V priestore pribudne k osiam $x$ a $y$ tretia os $z$, kolmá na obe. Bod má tri súradnice. Pri kocke či kvádri je pohodlné dať vrchol $A$ do počiatku a hrany $AB$, $AD$, $AE$ na osi.`,
-  {def:"Kocka v súradniciach", tex:R`A = [0;\ 0;\ 0],\quad B = [a;\ 0;\ 0],\quad D = [0;\ a;\ 0],\quad E = [0;\ 0;\ a],\quad G = [a;\ a;\ a]`},
+  {def:"Kocka v súradniciach", tex:R`A = [0;\ 0;\ 0] \qquad B = [a;\ 0;\ 0] \qquad D = [0;\ a;\ 0] \qquad E = [0;\ 0;\ a] \qquad G = [a;\ a;\ a]`},
   {tool:"kocka", ask:R`Posúvaj body $X$ a $Y$ po hranách kocky a sleduj ich súradnice.`,
    take:R`bod na hrane má dve súradnice rovnaké ako vrcholy hrany a jednu medzi nimi. Stred hrany má jednu súradnicu $\frac{a}{2}$.`,
    cfg:{typ:"vzdialenost"}},
@@ -29,7 +29,7 @@ THEORY.b30 = {
 
 "Vzdialenosť bodov v priestore":[
   R`Vzdialenosť sa počíta Pytagorovou vetou dvakrát: najprv v pôdoryse, potom s výškovým rozdielom. Vzorec je rovnaký ako v rovine, len s tretím členom.`,
-  {def:"Vzdialenosť v priestore", tex:R`|AB| = \sqrt{(x_B - x_A)^2 + (y_B - y_A)^2 + (z_B - z_A)^2}`},
+  {def:"Vzdialenosť v priestore", tex:R`|AB| = \sqrt{\Delta x^2 + \Delta y^2 + \Delta z^2}`, note:R`$\Delta x = x_B - x_A$, $\Delta y = y_B - y_A$, $\Delta z = z_B - z_A$.`},
   {tool:"kocka", ask:R`Telesová uhlopriečka: $X$ v $A$, $Y$ v $G$. Pozri si pravouhlé kroky. Posúvaj body a sleduj vzdialenosť.`,
    take:R`vzdialenosť je odmocnina zo súčtu štvorcov troch rozdielov. Pri telesovej uhlopriečke kocky $a\sqrt{3}$.`,
    cfg:{typ:"vzdialenost", body:[["AE", 0], ["CG", 1]]}},

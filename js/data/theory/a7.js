@@ -36,7 +36,7 @@ THEORY.a7 = {
 
 "Logické spojky (a, alebo, ak–tak, práve vtedy)":[
   R`Z jednoduchých výrokov sa spojkami skladajú zložené. Ich pravdivosť závisí len od pravdivosti častí, nie od obsahu.`,
-  {def:"Spojky", tex:R`\begin{aligned}A \wedge B &\quad \text{„A a B“ (konjunkcia)}\\ A \vee B &\quad \text{„A alebo B“ (disjunkcia)}\\ A \Rightarrow B &\quad \text{„ak A, tak B“ (implikácia)}\\ A \Leftrightarrow B &\quad \text{„A práve vtedy, keď B“ (ekvivalencia)}\end{aligned}`},
+  {def:"Spojky", tex:R`\begin{aligned}A \wedge B &\quad \text{„A a B“}\\ A \vee B &\quad \text{„A alebo B“}\\ A \Rightarrow B &\quad \text{„ak A, tak B“}\\ A \Leftrightarrow B &\quad \text{„A práve vtedy, keď B“}\end{aligned}`, note:R`Názvy: konjunkcia, disjunkcia, implikácia, ekvivalencia.`},
   {tool:"vyroky", ask:R`Prepínaj $A$ a $B$ a porovnaj všetky štyri spojky v jednej tabuľke. Ktorá je pravdivá najčastejšie?`,
    take:R`disjunkcia a implikácia sú nepravdivé len v jednom riadku, konjunkcia je pravdivá len v jednom. Ekvivalencia je pravdivá, keď majú $A$ a $B$ rovnakú hodnotu.`,
    cfg:{vyraz:"A ∧ B; A ∨ B; A ⇒ B; A ⇔ B", kroky:false}},

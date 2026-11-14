@@ -49,7 +49,7 @@ THEORY.a1 = {
 
 "Opakované zmeny o percentá (zdraženie, zľava)":[
   R`Keď cena stúpne o $\va{p}\,\%$, nová cena je pôvodných $100\,\%$ plus $p\,\%$. Namiesto počítania prírastku a sčítania stačí jedno násobenie.`,
-  {def:"Zmena o percentá", tex:R`\text{nová hodnota} = \vb{z} \cdot \left(1 + \frac{\va{p}}{100}\right)`, legend:[
+  {def:"Zmena o percentá", tex:R`\text{nová} = \vb{z} \cdot \left(1 + \frac{\va{p}}{100}\right)`, legend:[
     ["p", "a", "zmena v %", R`kladná pri zvýšení, záporná pri znížení: zľava $20\,\%$ je násobenie $0{,}8$`]
   ]},
   {tool:"percenta", ask:R`Meň zmenu $\va{p}$. Akým číslom sa násobí pri zdražení o $15\,\%$ a pri zľave $30\,\%$?`,

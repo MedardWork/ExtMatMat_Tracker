@@ -95,7 +95,7 @@ THEORY.a15 = {
 
 "Neúplné kvadratické rovnice":[
   R`Ak chýba lineárny člen ($b = 0$) alebo absolútny člen ($c = 0$), vzorec nie je potrebný. Rovnica sa vyrieši priamo.`,
-  {def:"Neúplné rovnice", tex:R`\begin{aligned}ax^2 + c = 0 &: \quad x^2 = -\frac{c}{a}\\ ax^2 + bx = 0 &: \quad x(ax + b) = 0 \;\Rightarrow\; x = 0 \vee x = -\frac{b}{a}\end{aligned}`},
+  {def:"Neúplné rovnice", tex:R`\begin{aligned}ax^2 + c = 0 &: \quad x^2 = -\frac{c}{a}\\ ax^2 + bx = 0 &: \quad x(ax + b) = 0\\ &\;\Rightarrow\; x = 0 \vee x = -\frac{b}{a}\end{aligned}`},
   {tool:"graf", ask:R`Rovnica $x^2 = \vd{k}$: priesečníky paraboly $y = x^2$ s priamkou $y = k$. Koľko ich je pre kladné, nulové a záporné $k$?`,
    take:R`pre $k > 0$ dva, $\pm\sqrt{k}$. Pre $k = 0$ jeden, $0$. Pre $k < 0$ žiadny.`,
    cfg:{view:[-4, 6, 4, -3], tick:1, fns:[{f:"x^2", lhs:"y"}, {f:"k", lhs:"y", color:"d"}],

@@ -51,7 +51,7 @@ THEORY.a5 = {
 
 "Prvočísla a zložené čísla":[
   R`**Prvočíslo** je prirodzené číslo, ktoré má práve dva delitele: 1 a samo seba. Číslo s viac deliteľmi je **zložené**. Číslo 1 nie je ani jedno, má len jedného deliteľa.`,
-  {def:"Prvočísla do 50", tex:R`2,\ 3,\ 5,\ 7,\ 11,\ 13,\ 17,\ 19,\ 23,\ 29,\ 31,\ 37,\ 41,\ 43,\ 47`, note:"2 je jediné párne prvočíslo."},
+  {def:"Prvočísla do 50", tex:R`2,\ 3,\ 5,\ 7,\ 11 \qquad 13,\ 17,\ 19,\ 23,\ 29 \qquad 31,\ 37,\ 41,\ 43,\ 47`, note:"2 je jediné párne prvočíslo."},
   R`Ako zistiť, či je číslo $n$ prvočíslo? Stačí ho skúsiť deliť prvočíslami po $\sqrt{n}$. Keby malo väčšieho deliteľa, druhý činiteľ by bol menší než $\sqrt{n}$ a už by sme ho našli.`,
   {tool:"rozklad", ask:R`Meň $\va{a}$ a hľadaj prvočísla. Ktoré nepárne čísla nie sú prvočísla, hoci tak vyzerajú?`,
    take:R`napríklad $91 = 7 \cdot 13$, $119 = 7 \cdot 17$ alebo $221 = 13 \cdot 17$. Nepárnosť ani koncovka 1, 3, 7, 9 nestačí.`,
@@ -74,7 +74,7 @@ THEORY.a5 = {
   {tool:"rozklad", ask:R`Meň $\va{a}$ a sleduj rebrík delenia. Ktorým prvočíslom sa delí najprv?`,
    take:R`vždy najmenším, ktoré číslo delí. Keď už 2 nedelí, ide 3, potom 5 a tak ďalej, až kým nezostane 1.`,
    cfg:{a:{v:360, max:999}}},
-  {def:"Počet deliteľov", tex:R`a = p^{\va{e}} \cdot q^{\vb{f}} \cdot r^{\vd{g}} \;\Rightarrow\; \text{počet deliteľov} = (\va{e} + 1)(\vb{f} + 1)(\vd{g} + 1)`},
+  {def:"Počet deliteľov", tex:R`a = p^{\va{e}} \cdot q^{\vb{f}} \cdot r^{\vd{g}} \qquad \text{počet deliteľov} = (\va{e} + 1)(\vb{f} + 1)(\vd{g} + 1)`},
   {ex:R`Rozlož 360 na prvočísla a urči počet jeho deliteľov.`,
    steps:[
      ["Deľ postupne.", R`360 \to 180 \to 90 \to 45 \to 15 \to 5 \to 1`],
@@ -91,7 +91,7 @@ THEORY.a5 = {
 
 "Najväčší spoločný deliteľ (NSD)":[
   R`**Najväčší spoločný deliteľ** $D(a, b)$ je najväčšie číslo, ktoré delí $a$ aj $b$. Z rozkladov ho poskladáš zo spoločných prvočísel, každé s menším z oboch exponentov.`,
-  {def:"Najväčší spoločný deliteľ", tex:R`D(\va{a}, \vb{b}) = \text{spoločné prvočísla s menším exponentom}`, note:R`Ak $D(a, b) = 1$, čísla sú **nesúdeliteľné**.`},
+  {def:"Najväčší spoločný deliteľ", tex:R`D(\va{a}, \vb{b}) = \text{spoločné prvočísla} \qquad \text{s menším exponentom}`, note:R`Ak $D(a, b) = 1$, čísla sú **nesúdeliteľné**.`},
   {tool:"rozklad", ask:R`Meň $\va{a}$ a $\vb{b}$. Ktoré prvočísla sa dostanú do $D$?`,
    take:R`len tie, ktoré sú v oboch rozkladoch, s menším exponentom. Pre $84 = 2^2 \cdot 3 \cdot 7$ a $120 = 2^3 \cdot 3 \cdot 5$ je $D = 2^2 \cdot 3 = 12$.`,
    cfg:{a:{v:84}, b:{v:120}, on:{dva:true}}},
@@ -114,7 +114,7 @@ THEORY.a5 = {
 
 "Najmenší spoločný násobok (NSN)":[
   R`**Najmenší spoločný násobok** $n(a, b)$ je najmenšie kladné číslo deliteľné $a$ aj $b$. Musí obsahovať všetky prvočísla z oboch rozkladov, každé s väčším exponentom.`,
-  {def:"Najmenší spoločný násobok", tex:R`n(\va{a}, \vb{b}) = \text{všetky prvočísla s väčším exponentom},\qquad D \cdot n = \va{a} \cdot \vb{b}`},
+  {def:"Najmenší spoločný násobok", tex:R`n(\va{a}, \vb{b}) = \text{všetky prvočísla} \qquad \text{s väčším exponentom} \qquad D \cdot n = \va{a} \cdot \vb{b}`},
   {tool:"rozklad", ask:R`Meň $\va{a}$ a $\vb{b}$ a porovnaj $D$ a $n$. Kedy je $n = a \cdot b$?`,
    take:R`práve pre nesúdeliteľné čísla, keď $D = 1$. Inak je $n$ menší, lebo spoločné prvočísla sa počítajú len raz.`,
    cfg:{a:{v:12, max:100}, b:{v:18, max:100}, on:{dva:true}}},
