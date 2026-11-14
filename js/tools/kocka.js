@@ -11,6 +11,9 @@
      t1, t2, t3              the places of X, Y, Z on their edges, {v, lock}
      klikaj   false          forbid moving a point to another edge by clicking the edge
      free, lock, hide        as in toolParams
+     stred    true           (vzdialenost) mark the midpoint M of XY with its coordinates
+     vrchol   "A"            (rez) the distance of this corner from the plane XYZ, with the foot of the perpendicular
+     stena    "ABCD"         (rez) the angle between the plane XYZ and the plane of this face (first three letters count)
      out(P, h, st)     h.cube = {X, Y, Z (coordinates), poly:[[x, y, z]…], n (corners of the section), area, perimeter, d, uhol}
    ============================================================ */
 const CUBE_EDGES = ["AB", "BC", "CD", "DA", "EF", "FG", "GH", "HE", "AE", "BF", "CG", "DH"];
@@ -26,7 +29,10 @@ defTool("kocka", {
     {name:"Trojuholníkový rez", cfg:{typ:"rez", body:[["AB", 1], ["DA", 0], ["AE", 1]]}},
     {name:"Rez kvádra", cfg:{typ:"rez", kvader:true, a:6, b:4, c:3, body:[["AE", .5], ["BF", 1], ["CD", .5]]}},
     {name:"Telesová uhlopriečka", cfg:{typ:"vzdialenost", body:[["AE", 0], ["CG", 1]]}},
-    {name:"Uhol uhlopriečok", cfg:{typ:"uhol", body:[["AE", 0], ["CG", 1], ["BC", 1]]}}
+    {name:"Uhol uhlopriečok", cfg:{typ:"uhol", body:[["AE", 0], ["CG", 1], ["BC", 1]]}},
+    {name:"Stred úsečky", cfg:{typ:"vzdialenost", stred:true, body:[["AE", 0], ["CG", 1]]}},
+    {name:"Vzdialenosť vrcholu od roviny", cfg:{typ:"rez", vrchol:"A", body:[["AB", 1], ["DA", 0], ["AE", 1]]}},
+    {name:"Uhol roviny so stenou", cfg:{typ:"rez", stena:"ABCD", body:[["AB", 1], ["DA", 0], ["AE", 1]]}}
   ],
   help:"Body **X**, **Y**, **Z** ťahaj po hranách. Kliknutím na inú hranu na ňu presunieš ďalší bod v poradí.",
 
@@ -48,6 +54,17 @@ defTool("kocka", {
     const edges = st => (st.data && st.data.e) || init.map(x => x[0]);
     const pts = (P, st) => { const V = corners(P); return edges(st).map((e, i) => { const p = V[e[0]], q = V[e[1]], t = P["t" + (i + 1)]; return [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t, p[2] + (q[2] - p[2]) * t]; }); };
 
+    /* extras of the plane XYZ: distance of cfg.vrchol from it (dv, foot F), angle with the face cfg.stena (uhol2) */
+    const plane = (P, st) => {
+      const V = corners(P), X = pts(P, st), n = cross(sub(X[1], X[0]), sub(X[2], X[0])), o = {};
+      if(len(n) < 1e-9) return o;
+      if(cfg.vrchol && V[cfg.vrchol]){ const q = V[cfg.vrchol], w = dot(n, sub(q, X[0])); o.V = q; o.dv = Math.abs(w) / len(n); o.F = sub(q, n.map(x => x * w / dot(n, n))); }
+      if(cfg.stena && cfg.stena.length >= 3 && cfg.stena.split("").every(k => V[k])){
+        const [a, b, c] = cfg.stena.slice(0, 3).split("").map(k => V[k]), m = cross(sub(b, a), sub(c, a));
+        o.uhol2 = Math.acos(Math.min(1, Math.abs(dot(n, m)) / (len(n) * len(m)))) * 180 / Math.PI;
+      }
+      return o;
+    };
     const calc = (P, st) => {
       const V = corners(P), X = pts(P, st), r = {X:X[0], Y:X[1], Z:X[2]};
       if(typ === "vzdialenost"){ r.v = sub(X[1], X[0]); r.d = len(r.v); return r; }
@@ -85,13 +102,16 @@ defTool("kocka", {
         const f = fit(P), V = corners(P), r = calc(P, st), thumb = st.env.thumb, X = pts(P, st), col = ["ca", "cb", "cd"];
         const pp = n => proj(f, V[n]);
         let h = "";
+        if(typ === "rez" && cfg.stena && cfg.stena.split("").every(k => V[k])) h += SV.poly(cfg.stena.split("").map(k => pp(k)), "bg cb");
         if(typ === "rez" && r.poly.length > 2) h += SV.poly(r.poly.map(p => proj(f, p)), "bg cd vn-on");
         CUBE_EDGES.forEach(e => { h += SG.seg(pp(e[0]), pp(e[1]), e.includes("D") ? "s csoft w1 dash" : "s"); });
         if(typ === "rez" && r.poly.length > 2) h += SV.poly(r.poly.map(p => proj(f, p)), "s cd w3");
+        if(typ === "rez"){ const o = plane(P, st); if(o.F){ const a = proj(f, o.V), b = proj(f, o.F); h += SG.seg(a, b, "s ca w3") + SV.circle(b[0], b[1], 4, "f ca"); } }
         if(typ === "vzdialenost"){
           const foot = [X[1][0], X[1][1], X[0][2]], mid = [X[1][0], X[0][1], X[0][2]];
           h += SG.seg(proj(f, X[0]), proj(f, mid), "s cb w1 dash") + SG.seg(proj(f, mid), proj(f, foot), "s cb w1 dash") + SG.seg(proj(f, foot), proj(f, X[1]), "s cb w1 dash") + SG.seg(proj(f, X[0]), proj(f, foot), "s cok w1")
             + SG.seg(proj(f, X[0]), proj(f, X[1]), "s cd w3");
+          if(cfg.stred){ const m = proj(f, X[0].map((v, i) => (v + X[1][i]) / 2)); h += SV.circle(m[0], m[1], 4.5, "f cc") + (thumb ? "" : SV.text(m[0] + 8, m[1] - 8, "M", "sm cc halo")); }
         }
         if(typ === "uhol") h += SG.seg(proj(f, X[0]), proj(f, X[1]), "s cb w3") + SG.seg(proj(f, X[0]), proj(f, X[2]), "s cd w3") + SG.angle(proj(f, X[0]), proj(f, X[1]), proj(f, X[2]), 22, "s ca w1");
         if(!thumb){
@@ -134,12 +154,14 @@ defTool("kocka", {
         const where = edges(st).map((e, i) => `$\\v${"abd"[i]}{${"XYZ"[i]}} \\in ${e}$`).join(", ");
         if(typ === "vzdialenost") return h.p(where) + h.calc(`\\va{X}${c(r.X)}, \\quad \\vb{Y}${c(r.Y)}`)
           + h.calc(`|XY| = \\sqrt{${r.v.map(v => (v < 0 ? `(${tn(v)})` : tn(v)) + "^2").join(" + ")}} = \\sqrt{${tn(dot(r.v, r.v))}} \\doteq \\vd{${tn(r.d)}}`)
-          + h.p("Dvakrát Pytagorova veta: najprv v podstave, potom v zvislom trojuholníku.");
+          + h.p("Dvakrát Pytagorova veta: najprv v podstave, potom v zvislom trojuholníku.")
+          + (cfg.stred ? h.calc(`\\vc{M} = \\left[\\tfrac{x_X + x_Y}{2};\\ \\tfrac{y_X + y_Y}{2};\\ \\tfrac{z_X + z_Y}{2}\\right] = \\vc{${c(r.X.map((v, i) => (v + r.Y[i]) / 2))}}`) : "");
         if(typ === "uhol") return h.p(where) + h.calc(`\\cos \\va{\\varphi} = \\dfrac{\\overrightarrow{XY} \\cdot \\overrightarrow{XZ}}{|XY| \\cdot |XZ|} = \\dfrac{${tn(dot(r.u, r.v))}}{${tn(len(r.u))} \\cdot ${tn(len(r.v))}}`) + h.calc(`\\va{\\varphi} \\doteq \\va{${tn(r.uhol, 1)}^\\circ}`);
         if(!r.n) return h.p(where) + h.pill("tri body na jednej priamke rovinu neurčujú", "flat");
         const name = {3:"trojuholník", 4:"štvoruholník", 5:"päťuholník", 6:"šesťuholník"}[r.n] || "bod alebo úsečka";
         return h.p(where) + h.pill(`rez je ${name}`, "ok") + (r.n > 2 ? h.p(`Strany: ${r.sides.map(s => `$${tn(s)}$`).join(", ")}`) + h.calc(`o \\doteq ${tn(r.perimeter)}, \\quad S \\doteq \\vd{${tn(r.area)}}`) : "")
-          + h.p("Rovina pretína dve rovnobežné steny v **rovnobežných** úsečkách.");
+          + h.p("Rovina pretína dve rovnobežné steny v **rovnobežných** úsečkách.")
+          + ((o => (o.dv != null ? h.calc(`d(${cfg.vrchol}, XYZ) \\doteq \\va{${tn(o.dv)}}`) : "") + (o.uhol2 != null ? h.calc(`\\angle(XYZ,\\ ${cfg.stena}) \\doteq ${tn(o.uhol2, 1)}^\\circ`) : ""))(plane(P, st)));
       }
     };
   }
