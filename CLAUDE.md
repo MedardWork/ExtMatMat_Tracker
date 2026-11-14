@@ -32,8 +32,10 @@ model it runs on; it cannot switch itself, the person picks the model when start
 - **Strongest model (Fable):** a batch that needs a **new tool**. It writes the tool and the first topic
   that uses it, as the pattern for the rest.
 - **Opus:** theory for topics whose tools already exist. Adding a small option to an existing tool is
-  fine; writing a new tool is not — if a topic turns out to need one, skip that visual, note the topic
-  and the tool under *Next*, and carry on with the rest of the batch.
+  fine; writing a new tool is not.
+- **No tool, no theory** (the person, 2026-11-14): if a topic has no tool of its own, do not write its
+  theory at all, not even with cards and examples or a tool borrowed from another topic. Put the topic
+  and the tool it needs under *Next* for Fable and go on with the next topic.
 - Each batch under *Next* is marked with the model it is meant for. If the session runs on the other
   one, say so in one line at the start and wait for the person's answer before spending usage.
 - With any model, the page check does not catch wrong maths. Recompute every number of every worked
@@ -97,8 +99,10 @@ task), 2–4 worked examples per subtopic, about 150 lines per theory file.
 ### Next, in this order
 
 1. **Opus**, theory with existing tools, 2–4 topics per batch, in this order:
-   Stereometria b29 b31 (no close tool: `telesa`, `kocka` for pictures, the rest cards and worked examples).
+   (nothing left: b29 and b31 wait for their tools below).
 2. **Fable**, tools still missing, then Opus for their topics:
+   Stereometria b29 (projections, plan/front/side views, solids from cubes) and b31 (relative position
+   of lines and planes in space).
    KPŠ (a38–a42, b36–b42): tree of choices / counting, Pascal's triangle, probability simulator,
    histogram and pie chart, variance. Danish part (c1–c42): tangent/secant (derivative), area under a
    curve, slope field + Euler, distributions (binomial, normal), box plot, regression, 3D vectors.
