@@ -1,4 +1,5 @@
 /* Mocniny, odmocniny, usmerňovanie zlomkov */
+/* TOOL-TODO: no tool of its own, written with borrowed tools: powers, roots, rationalising (borrowed graf). Rework when the tool exists (see CLAUDE.md). */
 (() => {
 const fr = (h, v) => v >= 1 || v <= -1 || v === 0 ? h.tn(Math.round(v * 1000) / 1000) : `\\frac{1}{${h.tn(Math.round(1 / v * 1000) / 1000)}}`;
 

@@ -1,4 +1,5 @@
 /* Rovnica kružnice, poloha priamky a kružnice, dvoch kružníc */
+/* TOOL-TODO: subtopic without any tool: "Doplnenie na štvorec v rovnici kružnice". Rework when the tool exists (see CLAUDE.md). */
 (() => {
 const t2 = (h, v) => h.tn(Math.round(v * 100) / 100);
 const two = {view:[-7, 6, 9, -6], tick:1, fns:[],

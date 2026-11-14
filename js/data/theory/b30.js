@@ -1,4 +1,5 @@
 /* Súradnice v priestore, vzdialenosť bodov, stred úsečky */
+/* TOOL-TODO: subtopic without any tool: "Stred úsečky v priestore". Rework when the tool exists (see CLAUDE.md). */
 (() => {
 const cube = st => st.h && st.h.cube;
 

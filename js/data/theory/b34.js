@@ -1,4 +1,5 @@
 /* Vzdialenosti v priestore: bod–priamka, bod–rovina, rovnobežné roviny */
+/* TOOL-TODO: subtopic without any tool: "Vzdialenosť rovnobežných rovín". Rework when the tool exists (see CLAUDE.md). */
 (() => {
 const L = v => ({v, lock:true});
 const cube = st => st.h && st.h.cube;

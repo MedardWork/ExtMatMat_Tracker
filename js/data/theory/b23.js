@@ -1,4 +1,5 @@
 /* Vzdialenosť bodu od priamky, obsah trojuholníka z vrcholov */
+/* TOOL-TODO: subtopic without any tool: "Vzdialenosť rovnobežných priamok". Rework when the tool exists (see CLAUDE.md). */
 (() => {
 
 THEORY.b23 = {

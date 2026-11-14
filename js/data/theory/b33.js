@@ -1,4 +1,5 @@
 /* Uhly v priestore: dve priamky, priamka a rovina, dve roviny */
+/* TOOL-TODO: subtopic without any tool: "Uhol dvoch rovín". Rework when the tool exists (see CLAUDE.md). */
 (() => {
 const L = v => ({v, lock:true});
 
