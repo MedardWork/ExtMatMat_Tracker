@@ -85,10 +85,10 @@ Tools (each file starts with its options and its `presets`; `topics` in each say
 | `podobnost` | a32 b27 | triangle and its k-copy, shadow problem |
 | `zobrazenia` | b26 b27 | reflections, translation, rotation, homothety on a grid |
 | `uhly` | a27 | vertical/adjacent/corresponding/alternate angles |
-| `utvary` | a33 a35 | perimeter and area of plane figures, regular polygons |
-| `analyticka` | b19–b25 | points, vectors, line forms, two lines, circle + line, area (JSXGraph) |
-| `kocka` | b29–b34 | cube/cuboid: section through 3 points, distance, angle |
-| `telesa` | a36 a37 b35 | volume, surface, nets of solids |
+| `utvary` | a33 a35 | perimeter and area of plane figures, kite (`deltoid`), regular polygons |
+| `analyticka` | b19–b25 | points, vectors (`nasobok` k·u), line forms, two lines (distance when parallel), circle + line, area (JSXGraph) |
+| `kocka` | b29–b34 | cube/cuboid: section through 3 points, distance (`stred`), angle; `vrchol` = corner–plane distance, `stena` = angle with a face |
+| `telesa` | a36 a37 b35 | volume, surface, nets of solids; `siete` = the 11 cube nets (+ a T shape) folded, opposite faces coloured |
 
 The tools from `kruznica` on were written by Fable on 2026-11-13 and checked by `dev/check.js` and by eye
 (every preset), and theory uses `kruznica` (b8–b11) and every tool of Základy it reached so far (see the theory files). Opus writes the theory; if a tool lacks a small option, add it.
@@ -107,13 +107,8 @@ left out because the tool or an option was missing. Each such file has a `/* TOO
 | Topic | Skipped visual | Needed |
 |---|---|---|
 | b28 | the construction itself (only written steps) | new tool: ruler-and-compass construction, step by step |
-| b33 | angle of two planes | `kocka`: option for the angle of two planes (two planes through an edge) |
-| b34 | point–plane distance (shown via the section BDE), parallel planes | `kocka`: option for the distance of a point from a plane |
-| b30 | midpoint of a segment in space | `kocka`: mark the midpoint of XY with its coordinates |
-| b23 | distance of two parallel lines | `analyticka` typ "priamky": distance when the lines are parallel |
-| b20 | multiple of a vector k·u | `analyticka` typ "vektory": slider k and the vector k·u |
-| a35 | kite (deltoid) | `utvary`: typ "deltoid" (diagonals e, f, where they cross) |
-| b35 | other cube nets, a non-net (T shape) | `telesa`: choose one of the 11 cube nets, or arrange 6 squares and test the fold |
+
+The small options for b20, b23, b30, b33, b34, a35 and b35 were added on 2026-11-14 and the visuals put in.
 
 Nice to have, nothing skipped: `graf` axis ticks in multiples of π (b9 uses degrees instead).
 

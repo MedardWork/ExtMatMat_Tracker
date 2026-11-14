@@ -1,5 +1,4 @@
 /* Vzdialenosti v priestore: bod–priamka, bod–rovina, rovnobežné roviny */
-/* TOOL-TODO: point–plane distance shown only through the section BDE; kocka has no point–plane distance, and "Vzdialenosť rovnobežných rovín" has no picture. Add the visual when the tool or option exists (see CLAUDE.md). */
 (() => {
 const L = v => ({v, lock:true});
 const cube = st => st.h && st.h.cube;
@@ -40,14 +39,17 @@ THEORY.b34 = {
      ["Výška.", R`v = \frac{3 \cdot \frac{32}{3}}{8\sqrt{3}} = \frac{4}{\sqrt{3}} = \frac{4\sqrt{3}}{3} \doteq 2{,}31`]
    ],
    res:R`$\dfrac{4\sqrt{3}}{3} \doteq 2{,}31$, teda tretina telesovej uhlopriečky.`},
-  {tool:"kocka", ask:R`Rez rovinou $BDE$. Telesová uhlopriečka $AG$ je na túto rovinu kolmá. Sleduj, akú časť uhlopriečky odreže.`,
-   take:R`rovina $BDE$ pretne $AG$ v tretine od $A$. Vzdialenosť $A$ od roviny je $\frac{a\sqrt{3}}{3}$.`,
-   cfg:{typ:"rez", body:[["AB", 1], ["DA", 0], ["AE", 1]], klikaj:false, lock:["t1", "t2", "t3"]}},
+  {tool:"kocka", ask:R`Rovina $XYZ$ a vrchol $A$. Fialová úsečka je kolmica z $A$ na rovinu. Posúvaj body roviny a sleduj vzdialenosť.`,
+   take:R`pre rovinu $BDE$ je vzdialenosť $\frac{4\sqrt{3}}{3} \doteq 2{,}31$, tretina telesovej uhlopriečky. Päta kolmice je ťažisko trojuholníka $BDE$.`,
+   cfg:{typ:"rez", vrchol:"A", body:[["AB", 1], ["DA", 0], ["AE", 1]], klikaj:false}},
   {warn:R`Pri metóde objemu dávaj pozor, aby išlo o **ten istý** ihlan, len inak postavený. Objem sa nemení, mení sa podstava aj výška.`}
 ],
 
 "Vzdialenosť rovnobežných rovín":[
   R`Rovnobežné roviny majú všade rovnakú vzdialenosť. Stačí zobrať jeden bod prvej roviny a vypočítať jeho vzdialenosť od druhej.`,
+  {tool:"kocka", ask:R`Rovina $CFH$ a vrchol $B$, ktorý leží v rovnobežnej rovine $BDE$. Aká je vzdialenosť rovín?`,
+   take:R`$\doteq 2{,}31$, rovnako ako vzdialenosť $A$ od roviny $BDE$. Roviny $BDE$ a $CFH$ delia uhlopriečku $AG$ na tretiny.`,
+   cfg:{typ:"rez", vrchol:"B", body:[["BC", 1], ["EF", 1], ["GH", 1]], klikaj:false, lock:["t1", "t2", "t3"]}},
   {ex:R`Kocka s hranou 4. Vypočítaj vzdialenosť rovín $BDE$ a $CFH$.`,
    steps:[
      [R`Obe roviny sú kolmé na uhlopriečku $AG$ a rozdelia ju na tretiny.`, R`|AG| = 4\sqrt{3}`],

@@ -1,5 +1,4 @@
 /* Štvoruholníky a mnohouholníky */
-/* TOOL-TODO: the kite (deltoid) is text only; utvary has no typ "deltoid". Add the visual when the tool or option exists (see CLAUDE.md). */
 (() => {
 const L = v => ({v, lock:true});
 
@@ -50,6 +49,13 @@ THEORY.a35 = {
    ],
    res:R`$v = 4$, $S = 28$.`},
   R`**Deltoid** má dve dvojice susedných zhodných strán (tvar šarkana). Jeho uhlopriečky sú kolmé, jedna z nich je osou súmernosti. Obsah sa preto počíta ako pri kosoštvorci: $S = \frac{ef}{2}$.`,
+  {tool:"utvary", ask:R`Deltoid. Posúvaj priesečník uhlopriečok $\vd{p}$ po osi $e$. Mení sa obsah? Kedy vznikne kosoštvorec?`,
+   take:R`obsah je stále $\frac{e \cdot f}{2}$, lebo uhlopriečky sú kolmé. Pri $p = \frac{e}{2}$ sú všetky štyri strany rovnaké a deltoid je kosoštvorec.`,
+   cfg:{typ:"deltoid", on:{premena:true}, lock:["e", "f"]}},
+  {tool:"utvary", kind:"uloha", ask:R`Uhlopriečka $e$ má dĺžku 9. Nastav $\vd{p}$ tak, aby bol deltoid kosoštvorcom.`,
+   hint:R`Uhlopriečky kosoštvorca sa rozpoľujú.`,
+   goal:P => P.p === 4.5,
+   cfg:{typ:"deltoid", e:{v:9, lock:true}, f:{v:5, lock:true}, p:{v:2}}},
   {tool:"utvary", kind:"uloha", ask:R`Lichobežník so základňami 8 a 4. Nastav posun hornej základne tak, aby bol rovnoramenný.`,
    hint:R`Na každej strane musí horná základňa „chýbať“ rovnako: $\frac{8 - 4}{2}$.`,
    goal:P => P.posun === 2,

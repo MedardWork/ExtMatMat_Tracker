@@ -1,5 +1,4 @@
 /* Siete telies */
-/* TOOL-TODO: the other nets of the cube (the T-shaped non-net, 11 nets) have no picture; telesa draws only one cube net. Add the visual when the tool or option exists (see CLAUDE.md). */
 (() => {
 const L = v => ({v, lock:true});
 
@@ -62,9 +61,9 @@ THEORY.b35 = {
      ["Zvyšné dva štvorce sú podstavy.", R`5 \leftrightarrow 6`]
    ],
    res:"Dvojice 1–3, 2–4, 5–6."},
-  {tool:"telesa", ask:R`Sieť kocky. Pozri sa, ktoré štvorce po zložení stoja oproti sebe.`,
-   take:R`rovnakou farbou sú vyznačené protiľahlé steny. Nikdy nesusedia: v rade sú to prvá a tretia, druhá a štvrtá, a dve steny mimo radu.`,
-   cfg:{typ:"kocka", on:{siet:true}}},
+  {tool:"telesa", ask:R`Prepínaj čísla sietí $\vd{s}$ od 1 po 11. Rovnakou farbou sú protiľahlé steny. Čo sa stane pri čísle 12?`,
+   take:R`všetkých 11 sietí sa dá zložiť do kocky a protiľahlé steny v nich nikdy nesusedia. Útvar č. 12 (tvar T z príkladu vyššie) sieťou nie je, dva štvorce by sa prekryli.`,
+   cfg:{typ:"kocka", siete:true, on:{siet:true}, lock:["a"], s:{v:12}}},
   {warn:R`Susedné štvorce v sieti nikdy nie sú protiľahlé, po zložení majú spoločnú hranu.`}
 ]
 

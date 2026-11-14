@@ -1,5 +1,4 @@
 /* Vzdialenosť bodu od priamky, obsah trojuholníka z vrcholov */
-/* TOOL-TODO: subtopic "Vzdialenosť rovnobežných priamok" has no picture; analyticka typ "priamky" cannot show the distance of two parallel lines. Add the visual when the tool or option exists (see CLAUDE.md). */
 (() => {
 
 THEORY.b23 = {
@@ -36,6 +35,9 @@ THEORY.b23 = {
 "Vzdialenosť rovnobežných priamok":[
   R`Rovnobežné priamky majú všade rovnakú vzdialenosť. Stačí zobrať ľubovoľný bod jednej priamky a zmerať jeho vzdialenosť od druhej. Ak majú rovnice rovnaké $a$, $b$, existuje aj priamy vzorec.`,
   {def:"Vzdialenosť rovnobežiek", tex:R`ax + by + c_1 = 0,\ ax + by + c_2 = 0:\qquad d = \frac{|c_1 - c_2|}{\sqrt{a^2 + b^2}}`},
+  {tool:"analyticka", ask:R`Priamky $AB$ a $CD$ sú rovnobežné. Posuň oba body $C$, $D$ o rovnaký kus, aby priamky ostali rovnobežné. Ako sa mení ich vzdialenosť?`,
+   take:R`vzdialenosť meria kolmica medzi priamkami. Je všade rovnaká, preto stačí vzdialenosť jedného bodu prvej priamky od druhej.`,
+   cfg:{typ:"priamky", fixed:["A", "B"], pts:{A:[-5, -2], B:[3, 2], C:[-3, 2], D:[3, 5]}}},
   {ex:R`Vypočítaj vzdialenosť priamok $p: 3x - 4y + 2 = 0$ a $q: 6x - 8y - 16 = 0$.`,
    steps:[
      [R`Druhú vydeľ dvoma, aby mali rovnaké $a$, $b$.`, R`q: 3x - 4y - 8 = 0`],

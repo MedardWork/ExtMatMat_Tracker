@@ -1,5 +1,4 @@
 /* Uhly v priestore: dve priamky, priamka a rovina, dve roviny */
-/* TOOL-TODO: subtopic "Uhol dvoch rovín" has no picture; kocka typ "uhol" measures only the angle of two lines. Add the visual when the tool or option exists (see CLAUDE.md). */
 (() => {
 const L = v => ({v, lock:true});
 
@@ -47,6 +46,9 @@ THEORY.b33 = {
 "Uhol dvoch rovín":[
   R`Dve rôznobežné roviny sa pretínajú v priamke (**priesečnici**). Ich uhol zmeriaš v rovine kolmej na priesečnicu: v každej rovine veď kolmicu na priesečnicu z toho istého bodu. Uhol týchto kolmíc je uhol rovín.`,
   {def:"Uhol rovín", tex:R`\angle(\rho, \sigma) = \angle(p, q),\quad p \subset \rho,\ q \subset \sigma,\ p, q \perp \rho \cap \sigma`},
+  {tool:"kocka", ask:R`Rovina $XYZ$ a podstava $ABCD$ (modrá). Posúvaj body roviny a sleduj uhol, ktorý zviera s podstavou.`,
+   take:R`pre rovinu $BDE$ je uhol $\doteq 54{,}7^\circ$, ako v príklade nižšie. Čím je rovina „plochejšia“, tým je uhol menší.`,
+   cfg:{typ:"rez", stena:"ABCD", body:[["AB", 1], ["DA", 0], ["AE", 1]], klikaj:false}},
   {ex:R`Kocka $ABCDEFGH$. Aký uhol zviera rovina $ABGH$ s rovinou podstavy $ABCD$?`,
    steps:[
      [R`Priesečnica je $AB$. V rovine $BCGF$ (kolmej na $AB$) sú kolmice $BC$ a $BG$.`, R`\angle(ABGH, ABCD) = \angle CBG`],

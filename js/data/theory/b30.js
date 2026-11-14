@@ -1,5 +1,4 @@
 /* Súradnice v priestore, vzdialenosť bodov, stred úsečky */
-/* TOOL-TODO: subtopic "Stred úsečky v priestore" has no picture; kocka cannot mark the midpoint of XY. Add the visual when the tool or option exists (see CLAUDE.md). */
 (() => {
 const cube = st => st.h && st.h.cube;
 
@@ -56,6 +55,9 @@ THEORY.b30 = {
 "Stred úsečky v priestore":[
   R`Stred úsečky má za súradnice priemery súradníc koncov, rovnako ako v rovine ([[b19]]), teraz tri.`,
   {def:"Stred úsečky", tex:R`S = \left[\frac{x_A + x_B}{2};\ \frac{y_A + y_B}{2};\ \frac{z_A + z_B}{2}\right]`},
+  {tool:"kocka", ask:R`Posúvaj body $X$ a $Y$ po hranách a sleduj stred $\vc{M}$ úsečky $XY$.`,
+   take:R`každá súradnica stredu je priemer súradníc koncov. Stred telesovej uhlopriečky $AG$ je stred kocky $[2;\ 2;\ 2]$.`,
+   cfg:{typ:"vzdialenost", stred:true, body:[["AE", 0], ["CG", 1]]}},
   {ex:R`Nájdi stred úsečky $A\,[1;\ 2;\ -1]$, $B\,[3;\ -1;\ 5]$ a stred telesovej uhlopriečky kocky s hranou 4.`,
    steps:[
      ["Priemery.", R`S = [2;\ 0{,}5;\ 2]`],

@@ -1,5 +1,4 @@
 /* Vektory: súradnice, súčet, násobok, dĺžka, skalárny súčin, uhol */
-/* TOOL-TODO: the multiple k·u has no picture; analyticka typ "vektory" has no k slider. Add the visual when the tool or option exists (see CLAUDE.md). */
 (() => {
 
 THEORY.b20 = {
@@ -47,6 +46,9 @@ THEORY.b20 = {
    hint:R`$\vec{v} = (2;\ 5) - (4;\ 1)$.`,
    goal:P => P.Vx === -2 && P.Vy === 4,
    cfg:{typ:"vektory", fixed:["U"], on:{sucet:true}}},
+  {tool:"analyticka", ask:R`Zapni násobok a meň $\vd{k}$. Ako sa mení dĺžka a smer vektora $k\vec{u}$?`,
+   take:R`dĺžka sa násobí $|k|$ a pri $k < 0$ sa smer otočí. Pri $k = 0$ vznikne nulový vektor.`,
+   cfg:{typ:"vektory", on:{nasobok:true}, fixed:["V"]}},
   {warn:R`Vektory sa nesčítavajú dĺžkami: $|\vec{u} + \vec{v}| \leq |\vec{u}| + |\vec{v}|$, rovnosť len pri rovnako orientovaných vektoroch.`}
 ],
 
