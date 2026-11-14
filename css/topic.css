@@ -229,3 +229,4 @@
 .rel-link:hover{color:var(--flag);text-decoration:underline}
 .t-rel-note{color:var(--ink-soft)}
 .t-weight.off{color:var(--flag);font-weight:600}
+@media (min-width:1400px){ .page.topic{max-width:1320px} }

@@ -27,7 +27,7 @@
 .th-toc a .dot{transform:translateY(-1px)}
 .th-toc a[aria-current]{color:var(--ink);border-color:var(--ink)}
 @media (min-width:1000px){
-  .th-cols{grid-template-columns:220px minmax(0,780px);gap:40px}
+  .th-cols{grid-template-columns:220px minmax(0,1fr);gap:40px}
   .th-toc{position:sticky;top:calc(var(--bar-h) + 16px);align-self:start;flex-direction:column;gap:2px;overflow:visible}
   .th-toc-h{display:block;font:600 11px/1 var(--sans);letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 8px 11px}
   .th-toc a{border-color:transparent;background:none}
@@ -130,6 +130,8 @@
 .tw-board{padding:10px;min-width:0}
 .tw-board > div{width:100%;max-width:100%;margin:0 auto}
 .jxgbox{position:relative;overflow:hidden;aspect-ratio:1;border:0;border-radius:6px;background:var(--panel)}
+.tw-board > .jxgbox{max-width:min(100%,calc((100vh - 170px) * var(--ar,1)))}
+.tw-board > .tw-svg{max-width:min(100%,calc((100vh - 170px) * var(--ar,100)))}
 .jxgbox svg text{user-select:none;-webkit-user-select:none}
 .JXGtext{font-family:var(--sans)!important;white-space:nowrap;background-color:transparent;padding:0;margin:0}
 .tw:not(.tw-full) .JXG_navigation{display:none}

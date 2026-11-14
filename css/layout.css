@@ -104,3 +104,4 @@
   .page-head h1{font-size:22px}
   .toast{bottom:84px}
 }
+@media (min-width:1400px){ body:has(.page.topic) .appbar-in{max-width:1320px} }

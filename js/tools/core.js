@@ -625,6 +625,7 @@ async function toolStart(st){
   const w = st.w;
   st.boardEl.className = w.board ? "jxgbox" : "tw-svg";
   st.boardEl.style.aspectRatio = (w.board ? w.board.aspect : w.aspect) || "";
+  { const ar = (w.board ? w.board.aspect : w.aspect) || ""; if(ar) st.boardEl.style.setProperty("--ar", ar); else st.boardEl.style.removeProperty("--ar"); }
   if(w.board){
     try{ await needJXG(); }
     catch(e){ st.boardEl.innerHTML = `<div class="tw-fail">Graf sa nepodarilo načítať.</div>`; return; }

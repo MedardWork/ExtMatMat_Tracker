@@ -10,7 +10,8 @@ A tracker for preparing for the Slovak external maths maturita (plus Danish Mate
 - Usage limits matter to them. Keep context small: don't re-read files you already know, look at
   screenshots only when a check can't answer the question, keep command output short.
 - Commit and push to the working branch after every finished topic or batch (the container is
-  ephemeral and sessions get cut off). Merge to `main` only when they say so.
+  ephemeral and sessions get cut off). After every finished batch or bigger change, also merge to
+  `main` without asking (the person, 2026-11-14: they check the result on GitHub Pages).
 
 ## Starting a session
 
@@ -22,7 +23,8 @@ A tracker for preparing for the Slovak external maths maturita (plus Danish Mate
   theory file listed under *Done* is missing on the session's branch, the branch is behind: fast-forward
   it to `origin/main` first.
 - Before finishing: move the topics from *Next* to *Done* here, add anything new that bit, commit, push
-  the working branch. Merge to `main` only when asked (a fast-forward: `git push origin HEAD:main`).
+  the working branch, then merge to `main` (a fast-forward: `git push origin HEAD:main`; if `main` moved,
+  rebase on `origin/main` first).
 
 ### Which model does what
 
@@ -181,5 +183,8 @@ Things that bite:
 - Labels and `text` in `graf` show "—" for `round(…)`; write the number in `out` instead.
 - `kocka`: a task goal can read the section through `(P, st) => st.h.cube.n` (goal runs after `out`). With `kvader:true` lock a, b, c unless they matter.
 - A formula box (`def`) is split at top-level `\qquad` into relations that wrap as wholes and shrink to fit (`defParts`, `fitDefs` in js/theory.js). Separate independent relations with `\qquad` (no comma), use one-column `aligned` blocks, put long words into `note`. `node dev/defwrap.js [ids]` lists boxes still too wide at 1280/900/400 px.
+- Layout (2026-11-14): theory column fills the page (`.th-cols` 220px + 1fr), the topic page is 1320px from
+  1400px screens, paragraphs stay at 68ch. A board is capped to `(100vh - 170px) * --ar` so it fits on screen;
+  `--ar` comes from the tool's `aspect` (core.js `toolStart`).
 - Long shell heredocs containing backticks or `${}` trip the command safety check. Put patch scripts
   in a file (Write tool) and run the file.
