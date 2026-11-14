@@ -1,5 +1,4 @@
 /* Množiny bodov danej vlastnosti a ich analytické vyjadrenie */
-/* TOOL-TODO: subtopic without any tool: "Analytický zápis množiny bodov". Rework when the tool exists (see CLAUDE.md). */
 (() => {
 const t2 = (h, v) => h.tn(Math.round(v * 100) / 100);
 /* perpendicular bisector of AB drawn as a long segment, X = M + t·n on it */

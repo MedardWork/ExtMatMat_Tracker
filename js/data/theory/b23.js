@@ -1,5 +1,5 @@
 /* Vzdialenosť bodu od priamky, obsah trojuholníka z vrcholov */
-/* TOOL-TODO: subtopic without any tool: "Vzdialenosť rovnobežných priamok". Rework when the tool exists (see CLAUDE.md). */
+/* TOOL-TODO: subtopic "Vzdialenosť rovnobežných priamok" has no picture; analyticka typ "priamky" cannot show the distance of two parallel lines. Add the visual when the tool or option exists (see CLAUDE.md). */
 (() => {
 
 THEORY.b23 = {

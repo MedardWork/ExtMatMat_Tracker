@@ -1,5 +1,5 @@
 /* Vzdialenosti v priestore: bod–priamka, bod–rovina, rovnobežné roviny */
-/* TOOL-TODO: subtopic without any tool: "Vzdialenosť rovnobežných rovín". Rework when the tool exists (see CLAUDE.md). */
+/* TOOL-TODO: point–plane distance shown only through the section BDE; kocka has no point–plane distance, and "Vzdialenosť rovnobežných rovín" has no picture. Add the visual when the tool or option exists (see CLAUDE.md). */
 (() => {
 const L = v => ({v, lock:true});
 const cube = st => st.h && st.h.cube;

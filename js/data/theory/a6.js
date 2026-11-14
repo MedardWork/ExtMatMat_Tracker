@@ -1,5 +1,4 @@
 /* Množiny, číselné obory, intervaly, Vennove diagramy */
-/* TOOL-TODO: subtopic without any tool: "Číselné obory N, Z, Q, R". Rework when the tool exists (see CLAUDE.md). */
 (() => {
 const L = v => ({v, lock:true});
 const ok = (P, st) => st.ok;

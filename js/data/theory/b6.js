@@ -1,5 +1,4 @@
 /* Viètove vzťahy a koreňoví činitelia */
-/* TOOL-TODO: no tool of its own, written with borrowed tools: Vieta: roots and coefficients (borrowed graf). Rework when the tool exists (see CLAUDE.md). */
 (() => {
 const L = v => ({v, lock:true});
 const t2 = (h, v) => h.tn(Math.round(v * 100) / 100);

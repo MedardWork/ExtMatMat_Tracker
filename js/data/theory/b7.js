@@ -1,5 +1,4 @@
 /* Nerovnica s dvoma neznámymi a jej obraz v rovine */
-/* TOOL-TODO: no tool of its own, written with borrowed tools: half-planes and systems of inequalities in two variables (graf with polygons). Rework when the tool exists (see CLAUDE.md). */
 (() => {
 const L = v => ({v, lock:true});
 const V = {view:[-5, 6, 6, -4], tick:1};

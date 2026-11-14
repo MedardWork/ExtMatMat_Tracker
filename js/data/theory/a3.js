@@ -1,5 +1,4 @@
 /* Zaokrúhľovanie, približné čísla, zápis v tvare a · 10ⁿ */
-/* TOOL-TODO: no tool of its own, written with borrowed tools: rounding and approximate numbers (borrowed sustavy, os). Rework when the tool exists (see CLAUDE.md). */
 (() => {
 const L = v => ({v, lock:true});
 

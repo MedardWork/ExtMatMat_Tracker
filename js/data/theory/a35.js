@@ -1,4 +1,5 @@
 /* Štvoruholníky a mnohouholníky */
+/* TOOL-TODO: the kite (deltoid) is text only; utvary has no typ "deltoid". Add the visual when the tool or option exists (see CLAUDE.md). */
 (() => {
 const L = v => ({v, lock:true});
 

@@ -1,5 +1,5 @@
 /* Uhly v priestore: dve priamky, priamka a rovina, dve roviny */
-/* TOOL-TODO: subtopic without any tool: "Uhol dvoch rovín". Rework when the tool exists (see CLAUDE.md). */
+/* TOOL-TODO: subtopic "Uhol dvoch rovín" has no picture; kocka typ "uhol" measures only the angle of two lines. Add the visual when the tool or option exists (see CLAUDE.md). */
 (() => {
 const L = v => ({v, lock:true});
 

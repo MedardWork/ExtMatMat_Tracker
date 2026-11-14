@@ -1,5 +1,5 @@
 /* Konštrukčné úlohy: základné konštrukcie a počet riešení */
-/* TOOL-TODO: no tool of its own, written with borrowed tools: constructions with ruler and compass (trojuholnik, graf). Rework when the tool exists (see CLAUDE.md). */
+/* TOOL-TODO: constructions are shown only as written steps; a ruler-and-compass tool that draws the construction step by step is missing. Add the visual when the tool or option exists (see CLAUDE.md). */
 (() => {
 const L = v => ({v, lock:true});
 /* Ssu: A = [0; 0], B = [6; 0], ray from A at 30°, circle k(B, a) */

@@ -1,4 +1,5 @@
 /* Vektory: súradnice, súčet, násobok, dĺžka, skalárny súčin, uhol */
+/* TOOL-TODO: the multiple k·u has no picture; analyticka typ "vektory" has no k slider. Add the visual when the tool or option exists (see CLAUDE.md). */
 (() => {
 
 THEORY.b20 = {

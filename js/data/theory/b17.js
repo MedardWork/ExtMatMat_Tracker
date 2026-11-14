@@ -1,5 +1,4 @@
 /* Sínusová a kosínusová veta, obsah S = ½ · a · b · sin γ */
-/* TOOL-TODO: no tool of its own, written with borrowed tools: law of sines / cosines on a general triangle (trojuholnik, triangle built in graf); subtopic without any tool: "Kedy ktorú vetu použiť". Rework when the tool exists (see CLAUDE.md). */
 (() => {
 const L = v => ({v, lock:true});
 const t2 = (h, v) => h.tn(Math.round(v * 100) / 100);

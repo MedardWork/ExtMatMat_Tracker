@@ -1,5 +1,5 @@
 /* Súradnice v priestore, vzdialenosť bodov, stred úsečky */
-/* TOOL-TODO: subtopic without any tool: "Stred úsečky v priestore". Rework when the tool exists (see CLAUDE.md). */
+/* TOOL-TODO: subtopic "Stred úsečky v priestore" has no picture; kocka cannot mark the midpoint of XY. Add the visual when the tool or option exists (see CLAUDE.md). */
 (() => {
 const cube = st => st.h && st.h.cube;
 

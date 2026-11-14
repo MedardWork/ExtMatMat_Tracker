@@ -96,28 +96,24 @@ The tools from `kruznica` on were written by Fable on 2026-11-13 and checked by 
 Size to aim for, from the last batch: 3–4 subtopics per topic, 3–4 tools per subtopic (one of them a
 task), 2–4 worked examples per subtopic, about 150 lines per theory file.
 
-### Written without a proper tool (flagged, rework later)
+### Visuals skipped for lack of a tool (flagged, add later)
 
-Agreed 2026-11-14: these stay as they are, but each file carries a `/* TOOL-TODO: … */` line
-(`grep -l TOOL-TODO js/data/theory/*.js`). When Fable writes the missing tool, rework the topic around it
-and remove the flag. Don't treat these as finished.
+Agreed 2026-11-14: a topic that does not need a tool of its own is fine without one (number sets,
+"which theorem when", algebra of a circle equation…). Flagged are only the places where a picture was
+left out because the tool or an option was missing. Each such file has a `/* TOOL-TODO: … */` line
+(`grep -l TOOL-TODO js/data/theory/*.js`); add the visual and remove the line when the tool exists.
 
-| Topic | What is missing |
-|---|---|
-| a3 | rounding, significant figures, a·10ⁿ (now `sustavy` + `os`) |
-| a11 | powers, roots, rationalising fractions (now `graf`) |
-| b6 | Vieta, root factors (now `graf`) |
-| b7 | half-planes, systems of linear inequalities (now `graf` polygons) |
-| b17 | law of sines/cosines, triangle from sss/sus/usu (now `trojuholnik` + triangle in `graf`) |
-| b28 | constructions and number of solutions (now `trojuholnik` + `graf`) |
-| a6 | subtopic „Číselné obory N, Z, Q, R“ has no tool |
-| b17 | subtopic „Kedy ktorú vetu použiť“ has no tool |
-| b23 | subtopic „Vzdialenosť rovnobežných priamok“ has no tool |
-| b24 | subtopic „Doplnenie na štvorec v rovnici kružnice“ has no tool |
-| b25 | subtopic „Analytický zápis množiny bodov“ has no tool |
-| b30 | subtopic „Stred úsečky v priestore“ has no tool |
-| b33 | subtopic „Uhol dvoch rovín“ has no tool |
-| b34 | subtopic „Vzdialenosť rovnobežných rovín“ has no tool |
+| Topic | Skipped visual | Needed |
+|---|---|---|
+| b28 | the construction itself (only written steps) | new tool: ruler-and-compass construction, step by step |
+| b33 | angle of two planes | `kocka`: option for the angle of two planes (two planes through an edge) |
+| b34 | point–plane distance (shown via the section BDE), parallel planes | `kocka`: option for the distance of a point from a plane |
+| b30 | midpoint of a segment in space | `kocka`: mark the midpoint of XY with its coordinates |
+| b23 | distance of two parallel lines | `analyticka` typ "priamky": distance when the lines are parallel |
+| b20 | multiple of a vector k·u | `analyticka` typ "vektory": slider k and the vector k·u |
+| a35 | kite (deltoid) | `utvary`: typ "deltoid" (diagonals e, f, where they cross) |
+
+Nice to have, nothing skipped: `graf` axis ticks in multiples of π (b9 uses degrees instead).
 
 ### Next, in this order
 
