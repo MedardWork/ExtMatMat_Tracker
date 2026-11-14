@@ -18,7 +18,7 @@ A tracker for preparing for the Slovak external maths maturita (plus Danish Mate
   it, update this file, commit, push. No questions needed.
 - **A batch** is one stretch between two arrows in that list (usually 2–4 topics, plus the new tool they
   need). Finish and push one batch before starting the next.
-- `main` holds everything listed under *Done* (last merged 2026-11-13, with the tools). Start from `main`. If this file or a
+- `main` holds everything listed under *Done* (last merged 2026-11-14). Start from `main`. If this file or a
   theory file listed under *Done* is missing on the session's branch, the branch is behind: fast-forward
   it to `origin/main` first.
 - Before finishing: move the topics from *Next* to *Done* here, add anything new that bit, commit, push
