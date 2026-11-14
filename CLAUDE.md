@@ -60,7 +60,7 @@ Decided with the person, don't reopen:
 
 ### Done
 
-Theory, 66 of 126 topics: a1–a17, b1–b7 (Základy), a18 a19 a20 a21 a22 a23 a24 a25 a26 b8 b9 b10 b11 b12 b13 b14 b15 (Funkcie), a27–a35, b16–b28 (Planimetria), a36 a37 (Stereometria), b40 (KPŠ).
+Theory, 67 of 126 topics: a1–a17, b1–b7 (Základy), a18 a19 a20 a21 a22 a23 a24 a25 a26 b8 b9 b10 b11 b12 b13 b14 b15 (Funkcie), a27–a35, b16–b28 (Planimetria), a36 a37 b32 (Stereometria), b40 (KPŠ).
 Tools (each file starts with its options and its `presets`; `topics` in each says where it belongs):
 
 | Tool | For | What it does |
@@ -97,7 +97,7 @@ task), 2–4 worked examples per subtopic, about 150 lines per theory file.
 ### Next, in this order
 
 1. **Opus**, theory with existing tools, 2–4 topics per batch, in this order:
-   Stereometria b29–b35 (tools `telesa`, `kocka`).
+   Stereometria b29 b30 b31 b33 b34 b35 (tools `telesa`, `kocka`).
 2. **Fable**, tools still missing, then Opus for their topics:
    KPŠ (a38–a42, b36–b42): tree of choices / counting, Pascal's triangle, probability simulator,
    histogram and pie chart, variance. Danish part (c1–c42): tangent/secant (derivative), area under a
@@ -159,5 +159,6 @@ Things that bite:
 - `mnoziny` `hladaj` prints the wanted set; add `skry:true` when the task text must not give it away.
 - A half-plane in `graf`: `show:[{poly:[[-6, "k*(-6)+q"], [7, "k*7+q"], [7, 9], [-6, 9]], color:"c"}]` (see `b7.js`); poly corners take expressions.
 - Labels and `text` in `graf` show "—" for `round(…)`; write the number in `out` instead.
+- `kocka`: a task goal can read the section through `(P, st) => st.h.cube.n` (goal runs after `out`). With `kvader:true` lock a, b, c unless they matter.
 - Long shell heredocs containing backticks or `${}` trip the command safety check. Put patch scripts
   in a file (Write tool) and run the file.
