@@ -5,9 +5,35 @@
      typ      "kocka" (a) | "kvader" (a, b, c) | "hranol" (regular: n, a, v) | "ihlan" (regular: n, a, v)
               "valec" (r, v) | "kuzel" (r, v) | "gula" (r)
      on       {siet:true}     show the net instead of the solid;  toggles:["siet"] lets the reader switch
+     siete    true           (kocka) a slider "s" picks one of the 11 nets of the cube, 12 = a T shape that is no net;
+                             faces that end up opposite share a colour. h.sol.net = {ok, opp:[[i, j]…]} (cell numbers from 1)
      a, b, c, v, r, n         a number or {v, min, max, step, lock};  free / lock / hide as in toolParams
      out(P, h, st)     h.sol = {V, S, Sp (base), Spl (lateral), s (slant edge / side of a cone), w (height of a side face), u (space diagonal), ro, R}
    ============================================================ */
+/* the 11 nets of the cube (cells [column, row]) and, as no. 12, a T shape that does not fold */
+const CUBE_NETS = (() => {
+  const row = (y, xs) => xs.map(x => [x, y]), N = [];
+  [[0, 0], [0, 1], [0, 2], [0, 3], [1, 1], [1, 2]].forEach(([t, b]) => N.push([...row(1, [0, 1, 2, 3]), [t, 0], [b, 2]]));
+  [1, 2, 3].forEach(b => N.push([...row(0, [0, 1]), ...row(1, [1, 2, 3]), [b, 2]]));
+  N.push([...row(0, [0, 1]), ...row(1, [1, 2]), ...row(2, [2, 3])], [...row(0, [0, 1, 2]), ...row(1, [2, 3, 4])]);
+  N.push([...row(2, [0, 1, 2, 3]), [1, 1], [1, 0]]);
+  return N;
+})();
+/* fold the cells onto a cube: the outward normal of every cell, or null when two cells would cover one face */
+function foldNet(cells){
+  const neg = v => v.map(x => -x), key = c => c.join(","), idx = new Map(cells.map((c, i) => [key(c), i]));
+  const out = cells.map(() => null), q = [0];
+  out[0] = {n:[0, 0, -1], ex:[1, 0, 0], ey:[0, 1, 0]};
+  const moves = [[1, 0, o => ({n:o.ex, ex:neg(o.n), ey:o.ey})], [-1, 0, o => ({n:neg(o.ex), ex:o.n, ey:o.ey})],
+    [0, 1, o => ({n:o.ey, ex:o.ex, ey:neg(o.n)})], [0, -1, o => ({n:neg(o.ey), ex:o.ex, ey:o.n})]];
+  while(q.length){
+    const i = q.shift(), o = out[i];
+    moves.forEach(([dx, dy, f]) => { const j = idx.get(key([cells[i][0] + dx, cells[i][1] + dy])); if(j != null && !out[j]){ out[j] = f(o); q.push(j); } });
+  }
+  if(out.some(o => !o) || new Set(out.map(o => key(o.n))).size !== cells.length) return null;
+  return out.map(o => o.n);
+}
+
 defTool("telesa", {
   name:"Objem a povrch telies",
   area:"Stereometria",
@@ -22,7 +48,8 @@ defTool("telesa", {
     {name:"Kužeľ", cfg:{typ:"kuzel"}},
     {name:"Guľa", cfg:{typ:"gula"}},
     {name:"Sieť ihlana", cfg:{typ:"ihlan", on:{siet:true}}},
-    {name:"Sieť kužeľa", cfg:{typ:"kuzel", on:{siet:true}}}
+    {name:"Sieť kužeľa", cfg:{typ:"kuzel", on:{siet:true}}},
+    {name:"Siete kocky", cfg:{typ:"kocka", siete:true, on:{siet:true}}}
   ],
   fromText:toolTextIn, toText:toolTextOut,
 
@@ -34,6 +61,7 @@ defTool("telesa", {
       : typ === "hranol" || typ === "ihlan" ? {n:N, a:sl(3, "a", "hrana podstavy", 6), v:sl(5, "b", "výška")}
       : typ === "gula" ? {r:sl(3, "a", "polomer", 5)} : {r:sl(3, "a", "polomer", 5), v:sl(5, "b", "výška")};
     if(typ !== "gula") defs.siet = {type:"check", v:false, name:"Sieť telesa"};
+    if(typ === "kocka" && (cfg.siete || env.full)) defs.s = {v:1, min:1, max:12, step:1, color:"d", name:"s", note:"sieť č. (12 = tvar T)"};
     const params = toolParams(defs, cfg, env);
     const W = 560, H = 340, K = .5 * Math.SQRT1_2, PI = Math.PI;
     const ngon = (n, a) => { const R = a / (2 * Math.sin(PI / n)), out = []; for(let i = 0; i < n; i++){ const t = -PI / 2 - PI / n + 2 * PI * i / n; out.push([R * Math.cos(t), R * Math.sin(t)]); } return out; };
@@ -105,7 +133,11 @@ defTool("telesa", {
     /* the net: a list of flat pieces in one plane */
     const drawNet = (P, k, T) => {
       const polys = [], circles = [];
-      if(typ === "kocka" || typ === "kvader"){
+      if(typ === "kocka" && P.s){
+        const cells = CUBE_NETS[Math.max(1, Math.min(12, P.s)) - 1], ns = foldNet(cells), a = P.a;
+        cells.forEach((c, i) => polys.push({p:[[c[0] * a, -c[1] * a], [(c[0] + 1) * a, -c[1] * a], [(c[0] + 1) * a, -(c[1] + 1) * a], [c[0] * a, -(c[1] + 1) * a]],
+          cls:ns ? ["cb", "cd", "ca"][ns[i].findIndex(x => x)] : "cc", num:i + 1}));
+      } else if(typ === "kocka" || typ === "kvader"){
         const [a, b, c] = typ === "kocka" ? [P.a, P.a, P.a] : [P.a, P.b, P.c], rect = (x, y, w, ht, cls) => polys.push({p:[[x, y], [x + w, y], [x + w, y + ht], [x, y + ht]], cls});
         rect(0, 0, a, b, "ca"); rect(0, b, a, c, "cd"); rect(0, -c, a, c, "cd"); rect(-c, 0, c, b, "cb"); rect(a, 0, c, b, "cb"); rect(a + c, 0, a, b, "ca");
       } else if(typ === "hranol"){
@@ -126,7 +158,8 @@ defTool("telesa", {
       }
       const all = [...polys.flatMap(q => q.p), ...circles.flatMap(c => [[c[0] - c[2], c[1] - c[2]], [c[0] + c[2], c[1] + c[2]]])];
       const f = svFit(W, H, [Math.min(...all.map(p => p[0])), Math.min(...all.map(p => p[1])), Math.max(...all.map(p => p[0])), Math.max(...all.map(p => p[1]))], 22);
-      return polys.map(q => SV.poly(q.p.map(f.p), `bg ${q.cls}`) + SV.poly(q.p.map(f.p), `s ${q.cls} w1`)).join("") + circles.map(c => SV.circle(f.X(c[0]), f.Y(c[1]), c[2] * f.u, "bg ca") + SV.circle(f.X(c[0]), f.Y(c[1]), c[2] * f.u, "s ca w1")).join("")
+      return polys.map(q => SV.poly(q.p.map(f.p), `bg ${q.cls}`) + SV.poly(q.p.map(f.p), `s ${q.cls} w1`)
+        + (q.num ? T(f.p([(q.p[0][0] + q.p[2][0]) / 2, (q.p[0][1] + q.p[2][1]) / 2]), String(q.num), q.cls) : "")).join("") + circles.map(c => SV.circle(f.X(c[0]), f.Y(c[1]), c[2] * f.u, "bg ca") + SV.circle(f.X(c[0]), f.Y(c[1]), c[2] * f.u, "s ca w1")).join("")
         + (typ === "valec" ? T([f.X(PI * P.r), f.Y(P.v / 2)], `2πr = ${fmtN(2 * PI * P.r)}`, "cb") : typ === "kuzel" ? T([f.X(0), f.Y(k.s * .6)], `s = ${fmtN(k.s)},  ${fmtN(k.uhol, 1)}°`, "cb") : "");
     };
 
@@ -139,9 +172,12 @@ defTool("telesa", {
       },
       out(P, h, st){
         const k = calc(P), tn = h.tn, A = `\\va{${tn(P.a)}}`, R = `\\va{${tn(P.r)}}`, Vv = `\\vb{${tn(P.v)}}`;
+        if(typ === "kocka" && P.s){ const ns = foldNet(CUBE_NETS[Math.max(1, Math.min(12, P.s)) - 1]);
+          k.net = {ok:!!ns, opp:ns ? ns.flatMap((n, i) => ns.map((m, j) => j > i && n.every((v, t) => v === -m[t]) ? [i + 1, j + 1] : null)).filter(Boolean) : []}; }
         h.sol = k;
         if(cfg.out) return cfg.out(P, h, st);
-        if(typ === "kocka") return h.calc(`V = \\va{a}^3 = ${A}^3 = ${tn(k.V)}`) + h.calc(`S = 6\\va{a}^2 = 6 \\cdot ${tn(P.a * P.a)} = ${tn(k.S)}`) + h.p(`Stenová uhlopriečka $a\\sqrt2 \\doteq ${tn(k.us)}$, telesová $a\\sqrt3 \\doteq ${tn(k.u)}$.`);
+        const netNote = k.net && P.siet ? (k.net.ok ? h.p(`Protiľahlé steny (rovnaká farba): ${k.net.opp.map(([i, j]) => `${i} – ${j}`).join(", ")}.`) : h.pill("tento útvar nie je sieť kocky: dva štvorce by sa po zložení prekryli", "down")) : "";
+        if(typ === "kocka") return netNote + h.calc(`V = \\va{a}^3 = ${A}^3 = ${tn(k.V)}`) + h.calc(`S = 6\\va{a}^2 = 6 \\cdot ${tn(P.a * P.a)} = ${tn(k.S)}`) + h.p(`Stenová uhlopriečka $a\\sqrt2 \\doteq ${tn(k.us)}$, telesová $a\\sqrt3 \\doteq ${tn(k.u)}$.`);
         if(typ === "kvader") return h.calc(`V = \\va{a}\\vb{b}\\vd{c} = ${A} \\cdot \\vb{${tn(P.b)}} \\cdot \\vd{${tn(P.c)}} = ${tn(k.V)}`)
           + h.calc(`S = 2(ab + bc + ac) = 2(${tn(P.a * P.b)} + ${tn(P.b * P.c)} + ${tn(P.a * P.c)}) = ${tn(k.S)}`) + h.calc(`u = \\sqrt{a^2 + b^2 + c^2} \\doteq ${tn(k.u)}`);
         if(typ === "hranol") return h.calc(`S_p \\doteq ${tn(k.Sp)}`) + h.calc(`V = S_p \\cdot \\vb{v} \\doteq ${tn(k.Sp)} \\cdot ${Vv} \\doteq ${tn(k.V)}`)
