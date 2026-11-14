@@ -4,9 +4,10 @@
    cfg:
      typ      "body"       A, B: vector AB, distance, midpoint; switch pomer + sliders m, n (the point dividing AB as m : n)
               "vektory"    u = OU, v = OV; switches sucet, rozdiel, uhol (scalar product and angle),
-                           kolmy (the perpendicular vector), plocha (determinant, parallelogram), priemet (projection of u on v)
+                           kolmy (the perpendicular vector), plocha (determinant, parallelogram), priemet (projection of u on v),
+                           nasobok (the multiple k·u; the slider k appears when nasobok is on or k is given)
               "priamka"    the line AB in all its forms; switches vektory (direction and normal), vzdialenost (of point C)
-              "priamky"    lines AB and CD: intersection, angle, parallel or perpendicular
+              "priamky"    lines AB and CD: intersection, angle, parallel or perpendicular (parallel: their distance)
               "kruznica"   circle with centre S and radius r, and the line AB: common points
               "obsah"      triangle ABC: area from the coordinates
      pts      {A:[-3, -1]}            starting positions          fixed  ["A"]   points that cannot be moved
@@ -34,10 +35,12 @@ defTool("analyticka", {
     {name:"Vzdialenosť a stred", cfg:{typ:"body"}},
     {name:"Deliaci pomer", cfg:{typ:"body", on:{pomer:true}}},
     {name:"Vektory", cfg:{typ:"vektory", on:{sucet:true}}},
+    {name:"Násobok vektora", cfg:{typ:"vektory", on:{nasobok:true}}},
     {name:"Skalárny súčin a uhol", cfg:{typ:"vektory", on:{uhol:true}}},
     {name:"Rovnica priamky", cfg:{typ:"priamka", on:{vektory:true}}},
     {name:"Vzdialenosť bodu od priamky", cfg:{typ:"priamka", on:{vzdialenost:true}}},
     {name:"Dve priamky", cfg:{typ:"priamky"}},
+    {name:"Rovnobežky a ich vzdialenosť", cfg:{typ:"priamky", pts:{A:[-5, -2], B:[3, 2], C:[-3, 2], D:[3, 5]}}},
     {name:"Kružnica a priamka", cfg:{typ:"kruznica"}},
     {name:"Obsah trojuholníka", cfg:{typ:"obsah"}}
   ],
@@ -54,7 +57,8 @@ defTool("analyticka", {
     for(const n in start){ const p = (cfg.pts && cfg.pts[n]) || start[n]; points[n] = [p[0], p[1], {fixed:(cfg.fixed || []).includes(n), color:colors[n], name:typ === "vektory" ? "" : n}]; }
     const ck = (name, color) => ({type:"check", v:false, name, color});
     const defs = typ === "body" ? {pomer:ck("Bod deliaci AB v pomere m : n", "d"), m:{v:1, min:1, max:6, step:1, color:"d"}, n:{v:2, min:1, max:6, step:1, color:"d"}}
-      : typ === "vektory" ? {sucet:ck("Súčet u + v", "d"), rozdiel:ck("Rozdiel u − v", "c"), uhol:ck("Skalárny súčin a uhol"), kolmy:ck("Kolmý vektor k u"), plocha:ck("Determinant a rovnobežník"), priemet:ck("Priemet u do smeru v")}
+      : typ === "vektory" ? {sucet:ck("Súčet u + v", "d"), rozdiel:ck("Rozdiel u − v", "c"), uhol:ck("Skalárny súčin a uhol"), kolmy:ck("Kolmý vektor k u"), plocha:ck("Determinant a rovnobežník"), priemet:ck("Priemet u do smeru v"), nasobok:ck("Násobok k · u", "d"),
+          k:env.full || (cfg.on && cfg.on.nasobok) || cfg.k != null ? {v:2, min:-3, max:3, step:.5, color:"d"} : null}
       : typ === "priamka" ? {vektory:ck("Smerový a normálový vektor", "b"), vzdialenost:ck("Vzdialenosť bodu C", "d")}
       : typ === "kruznica" ? {r:{v:4, min:1, max:6, step:.5, color:"b", note:"polomer"}} : {};
     const params = toolParams(defs, cfg, env);
@@ -78,7 +82,7 @@ defTool("analyticka", {
         const u = [P.Ux, P.Uy], v = [P.Vx, P.Vy], dot = u[0] * v[0] + u[1] * v[1], lu = Math.hypot(u[0], u[1]), lv = Math.hypot(v[0], v[1]), det = u[0] * v[1] - u[1] * v[0];
         const t = lv ? dot / (lv * lv) : 0;
         return {u, v, dot, lu, lv, det, uhol:lu && lv ? deg(Math.acos(Math.max(-1, Math.min(1, dot / (lu * lv))))) : NaN, sucet:[u[0] + v[0], u[1] + v[1]], rozdiel:[u[0] - v[0], u[1] - v[1]],
-          kolmy:[-u[1], u[0]], priemet:[v[0] * t, v[1] * t]};
+          kolmy:[-u[1], u[0]], priemet:[v[0] * t, v[1] * t], ku:[(P.k ?? 1) * u[0], (P.k ?? 1) * u[1]]};
       }
       if(typ === "priamka"){
         const l = lineOf(P.Ax, P.Ay, P.Bx, P.By), den = Math.hypot(l.a, l.b) || 1, val = l.a * P.Cx + l.b * P.Cy + l.c;
@@ -88,7 +92,9 @@ defTool("analyticka", {
         const p = lineOf(P.Ax, P.Ay, P.Bx, P.By), q = lineOf(P.Cx, P.Cy, P.Dx, P.Dy), det = p.a * q.b - q.a * p.b;
         const X = Math.abs(det) > 1e-9 ? [(p.b * q.c - q.b * p.c) / det, (q.a * p.c - p.a * q.c) / det] : null;
         const cos = Math.abs(p.u[0] * q.u[0] + p.u[1] * q.u[1]) / ((Math.hypot(...p.u) * Math.hypot(...q.u)) || 1);
-        return {p, q, X, uhol:deg(Math.acos(Math.min(1, cos))), same:!X && Math.abs(p.a * P.Cx + p.b * P.Cy + p.c) < 1e-9};
+        const qd = Math.hypot(q.a, q.b) || 1, qv = q.a * P.Ax + q.b * P.Ay + q.c;
+        return {p, q, X, uhol:deg(Math.acos(Math.min(1, cos))), same:!X && Math.abs(p.a * P.Cx + p.b * P.Cy + p.c) < 1e-9,
+          dpar:X ? NaN : Math.abs(qv) / qd, Fp:X ? null : [P.Ax - q.a * qv / (qd * qd), P.Ay - q.b * qv / (qd * qd)]};
       }
       if(typ === "kruznica"){
         const l = lineOf(P.Ax, P.Ay, P.Bx, P.By), den = Math.hypot(l.a, l.b) || 1, val = l.a * P.Sx + l.b * P.Sy + l.c, d = Math.abs(val) / den;
@@ -122,6 +128,7 @@ defTool("analyticka", {
           g.seg(["Ux", "Uy"], [on("sucet", () => K().sucet[0]), () => K().sucet[1]], "b", {dash:2, strokeWidth:1.3}); g.seg(["Vx", "Vy"], [on("sucet", () => K().sucet[0]), () => K().sucet[1]], "a", {dash:2, strokeWidth:1.3});
           arrow([on("rozdiel", () => P.Vx), "Vy"], ["Ux", "Uy"], "c");
           arrow(O, [on("kolmy", () => K().kolmy[0]), () => K().kolmy[1]], "ok");
+          arrow(O, [on("nasobok", () => K().ku[0]), () => K().ku[1]], "d", {strokeWidth:4});
           arrow(O, [on("priemet", () => K().priemet[0]), () => K().priemet[1]], "warn", {strokeWidth:4});
           g.seg(["Ux", "Uy"], [on("priemet", () => K().priemet[0]), () => K().priemet[1]], "soft", {dash:2, strokeWidth:1.3});
         } else if(typ === "priamka" || typ === "priamky" || typ === "kruznica"){
@@ -134,6 +141,7 @@ defTool("analyticka", {
           } else if(typ === "priamky"){
             g.line(["Cx", "Cy"], ["Dx", "Dy"], "d", {strokeWidth:2.4});
             g.pt(() => K().X ? K().X[0] : NaN, () => K().X ? K().X[1] : NaN, "ok", {label:"P", at:"t"});
+            g.seg(["Ax", "Ay"], [() => K().Fp && !K().same ? K().Fp[0] : NaN, () => K().Fp ? K().Fp[1] : NaN], "c", {strokeWidth:2.4, dash:2});
           } else {
             g.circle("Sx", "Sy", "r", "b", {strokeWidth:2.6});
             [0, 1].forEach(i => g.pt(() => K().pts[i] ? K().pts[i][0] : NaN, () => K().pts[i] ? K().pts[i][1] : NaN, "ok", {label:"P" + "₁₂"[i], at:i ? "br" : "tl"}));
@@ -162,6 +170,7 @@ defTool("analyticka", {
           if(P.rozdiel) o += h.calc(`\\vc{\\vec u - \\vec v} = \\vc{${vec(k.rozdiel)}}`);
           if(P.uhol) o += h.calc(`\\vec u \\cdot \\vec v = ${tn(k.u[0])} \\cdot ${sq(k.v[0])} + ${sq(k.u[1])} \\cdot ${sq(k.v[1])} = ${tn(k.dot)}`)
             + h.calc(`\\cos \\varphi = \\dfrac{${tn(k.dot)}}{${tn(k.lu)} \\cdot ${tn(k.lv)}} \\Rightarrow \\varphi \\doteq ${tn(k.uhol, 1)}^\\circ`) + (Math.abs(k.dot) < 1e-9 ? h.pill("skalárny súčin 0: vektory sú kolmé", "ok") : "");
+          if(P.nasobok) o += h.calc(`\\vd{${tn(P.k ?? 1)}} \\cdot \\va{\\vec u} = \\vd{${vec(k.ku)}}`) + h.p(`$|k \\vec u| = |k| \\cdot |\\vec u| ${eq(Math.abs(P.k ?? 1) * k.lu)} ${tn(Math.abs(P.k ?? 1) * k.lu)}$${(P.k ?? 1) < 0 ? ", opačný smer" : ""}`);
           if(P.kolmy) o += h.calc(`\\hat{u} = (-u_2;\\ u_1) = ${vec(k.kolmy)}`);
           if(P.plocha) o += h.calc(`\\det(\\vec u, \\vec v) = ${tn(k.u[0])} \\cdot ${sq(k.v[1])} - ${sq(k.u[1])} \\cdot ${sq(k.v[0])} = ${tn(k.det)}`) + h.p(`Obsah rovnobežníka: $|\\det| = ${tn(Math.abs(k.det))}$${Math.abs(k.det) < 1e-9 ? ", vektory sú rovnobežné" : ""}.`);
           if(P.priemet) o += h.calc(`\\vec u_v = \\dfrac{\\vec u \\cdot \\vec v}{|\\vec v|^2} \\, \\vec v = ${vec(k.priemet)}`);
@@ -180,7 +189,8 @@ defTool("analyticka", {
         if(typ === "priamky"){
           let o = h.calc(`p:\\ ${general(k.p)}`) + h.calc(`\\vd{q}:\\ ${general(k.q)}`);
           if(k.X) o += h.calc(`P = ${pt(k.X[0], k.X[1])}, \\quad \\varphi \\doteq ${tn(k.uhol, 1)}^\\circ`) + (Math.abs(k.uhol - 90) < 1e-6 ? h.pill("kolmé: normálové vektory majú skalárny súčin 0", "ok") : h.pill("rôznobežné: jeden priesečník", "flat"));
-          else o += h.pill(k.same ? "totožné: nekonečne veľa spoločných bodov" : "rovnobežné: žiadny spoločný bod", k.same ? "ok" : "down");
+          else o += h.pill(k.same ? "totožné: nekonečne veľa spoločných bodov" : "rovnobežné: žiadny spoločný bod", k.same ? "ok" : "down")
+            + (k.same ? "" : h.calc(`d(p, \\vd{q}) = d(A, \\vd{q}) ${eq(k.dpar)} ${tn(k.dpar)}`));
           return o;
         }
         if(typ === "kruznica"){

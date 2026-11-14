@@ -7,6 +7,7 @@
               "trojuholnik"   a (base), v (height), posun (where the top sits above the base)
               "lichobeznik"   a, c (the parallel sides), v, posun
               "kosostvorec"   e, f (the diagonals)
+              "deltoid"       e (the axis), f, p (where f crosses e, measured from the left end of e)
               "mnohouholnik"  n (number of sides), a (side)
      on       {premena:true}  the rectangle the figure can be turned into (why the formula works)
      a, b, c, v, e, f, n, uhol, posun     a number or {v, min, max, step, lock};  free / lock / hide / toggles
@@ -22,13 +23,14 @@ defTool("utvary", {
     {name:"Trojuholník", cfg:{typ:"trojuholnik", on:{premena:true}}},
     {name:"Lichobežník", cfg:{typ:"lichobeznik", on:{premena:true}}},
     {name:"Kosoštvorec", cfg:{typ:"kosostvorec", on:{premena:true}}},
+    {name:"Deltoid", cfg:{typ:"deltoid", on:{premena:true}}},
     {name:"Obdĺžnik", cfg:{typ:"obdlznik"}},
     {name:"Pravidelný mnohouholník", cfg:{typ:"mnohouholnik"}}
   ],
   fromText:toolTextIn, toText:toolTextOut,
 
   make(cfg, env){
-    const typ = ["obdlznik", "rovnobeznik", "trojuholnik", "lichobeznik", "kosostvorec", "mnohouholnik"].includes(cfg.typ) ? cfg.typ : "rovnobeznik";
+    const typ = ["obdlznik", "rovnobeznik", "trojuholnik", "lichobeznik", "kosostvorec", "deltoid", "mnohouholnik"].includes(cfg.typ) ? cfg.typ : "rovnobeznik";
     const sl = (v, color, note, min = 1, max = 10) => ({v, min, max, step:.5, color, note});
     const pre = {type:"check", v:false, name:"Premena na obdĺžnik"};
     const defs = typ === "obdlznik" ? {a:sl(6, "a"), b:sl(4, "b", null, 1, 8)}
@@ -36,6 +38,7 @@ defTool("utvary", {
       : typ === "trojuholnik" ? {a:sl(7, "a", "základňa"), v:sl(4, "b", "výška", 1, 8), posun:{v:2, min:-3, max:12, step:.5, name:"posun", note:"vrcholu", plain:true}, premena:pre}
       : typ === "lichobeznik" ? {a:sl(8, "a", "základňa"), c:sl(4, "d", "základňa", 1, 8), v:sl(4, "b", "výška", 1, 8), posun:{v:1.5, min:-2, max:8, step:.5, name:"posun", note:"hornej základne", plain:true}, premena:pre}
       : typ === "kosostvorec" ? {e:sl(8, "a", "uhlopriečka", 1, 12), f:sl(5, "b", "uhlopriečka", 1, 8), premena:pre}
+      : typ === "deltoid" ? {e:sl(9, "a", "uhlopriečka (os)", 2, 12), f:sl(5, "b", "uhlopriečka", 1, 8), p:{v:2.5, min:.5, max:11.5, step:.5, color:"d", note:"kde ju pretína f", name:"p"}, premena:pre}
       : {n:{v:6, min:3, max:12, step:1, color:"d", note:"počet strán"}, a:sl(3, "a", "strana", 1, 5)};
     const params = toolParams(defs, cfg, env);
     const W = 560, H = 320, u = typ === "mnohouholnik" ? 14 : 27, rad = d => d * Math.PI / 180;
@@ -44,6 +47,8 @@ defTool("utvary", {
       if(typ === "rovnobeznik"){ const v = P.b * Math.sin(rad(P.uhol)), x = P.b * Math.cos(rad(P.uhol)); return {S:P.a * v, o:2 * (P.a + P.b), v, x, pts:[[0, 0], [P.a, 0], [P.a + x, v], [x, v]]}; }
       if(typ === "trojuholnik"){ const b = Math.hypot(P.a - P.posun, P.v), c = Math.hypot(P.posun, P.v); return {S:P.a * P.v / 2, o:P.a + b + c, v:P.v, b, c, pts:[[0, 0], [P.a, 0], [P.posun, P.v]]}; }
       if(typ === "lichobeznik"){ const d = Math.hypot(P.posun, P.v), b = Math.hypot(P.a - P.posun - P.c, P.v); return {S:(P.a + P.c) * P.v / 2, o:P.a + P.c + b + d, v:P.v, b, d, m:(P.a + P.c) / 2, pts:[[0, 0], [P.a, 0], [P.posun + P.c, P.v], [P.posun, P.v]]}; }
+      if(typ === "deltoid"){ const p = Math.min(P.p, P.e - .5), a = Math.hypot(p, P.f / 2), b = Math.hypot(P.e - p, P.f / 2);
+        return {S:P.e * P.f / 2, o:2 * (a + b), strana:a, strana2:b, p, pts:[[0, P.f / 2], [p, 0], [P.e, P.f / 2], [p, P.f]]}; }
       if(typ === "kosostvorec"){ const a = Math.hypot(P.e, P.f) / 2; return {S:P.e * P.f / 2, o:4 * a, strana:a, pts:[[0, P.f / 2], [P.e / 2, 0], [P.e, P.f / 2], [P.e / 2, P.f]]}; }
       const n = Math.round(P.n), r = P.a / (2 * Math.sin(Math.PI / n)), ro = P.a / (2 * Math.tan(Math.PI / n)), pts = [];
       for(let i = 0; i < n; i++){ const t = -Math.PI / 2 - Math.PI / n + 2 * Math.PI * i / n; pts.push([r * Math.cos(t), r * Math.sin(t)]); }
@@ -63,7 +68,7 @@ defTool("utvary", {
           if(typ === "rovnobeznik") h += ghost([[0, 0], [P.a, 0], [P.a, k.v], [0, k.v]]);
           else if(typ === "trojuholnik") h += ghost([[0, 0], [P.a, 0], [P.a, P.v / 2], [0, P.v / 2]]);
           else if(typ === "lichobeznik"){ const m0 = P.posun / 2; h += ghost([[m0, 0], [m0 + k.m, 0], [m0 + k.m, P.v], [m0, P.v]]); }
-          else if(typ === "kosostvorec") h += ghost([[0, 0], [P.e, 0], [P.e, P.f], [0, P.f]]);
+          else if(typ === "kosostvorec" || typ === "deltoid") h += ghost([[0, 0], [P.e, 0], [P.e, P.f], [0, P.f]]);
         }
         h += SV.poly(q, "bg cink") + SV.poly(q, "s w3");
         const base = (i, j, cls, label, off) => SG.seg(q[i], q[j], `s ${cls} w3`) + T([(q[i][0] + q[j][0]) / 2, (q[i][1] + q[j][1]) / 2 + off], label, cls);
@@ -72,6 +77,7 @@ defTool("utvary", {
         else if(typ === "rovnobeznik") h += base(0, 1, "ca", `a = ${fmtN(P.a)}`, 16) + SG.seg(q[0], q[3], "s cd w3") + T([(q[0][0] + q[3][0]) / 2 - 16, (q[0][1] + q[3][1]) / 2], "b", "it cd") + height(k.x, k.v, `v = ${fmtN(k.v)}`) + SG.angle(q[0], q[1], q[3], 20, "s cd w1");
         else if(typ === "trojuholnik") h += base(0, 1, "ca", `a = ${fmtN(P.a)}`, 16) + height(P.posun, P.v, `v = ${fmtN(P.v)}`) + (P.posun < 0 || P.posun > P.a ? SG.seg(px([Math.min(0, P.posun), 0]), px([Math.max(P.a, P.posun), 0]), "s csoft w1 dash") : "");
         else if(typ === "lichobeznik") h += base(0, 1, "ca", `a = ${fmtN(P.a)}`, 16) + base(3, 2, "cd", `c = ${fmtN(P.c)}`, -14) + height(P.posun, P.v, `v = ${fmtN(P.v)}`);
+        else if(typ === "deltoid") h += SG.seg(q[0], q[2], "s ca") + SG.seg(q[1], q[3], "s cb") + T([q[0][0] + 30, q[0][1] - 10], `e = ${fmtN(P.e)}`, "ca") + T([q[1][0] + 8, q[1][1] - 26], `f = ${fmtN(P.f)}`, "cb");
         else if(typ === "kosostvorec") h += SG.seg(q[0], q[2], "s ca") + SG.seg(q[1], q[3], "s cb") + T([q[0][0] + 40, q[0][1] - 10], `e = ${fmtN(P.e)}`, "ca") + T([q[1][0] + 30, q[1][1] - 26], `f = ${fmtN(P.f)}`, "cb");
         else {
           const c = px([0, 0]), m = SG.mid(q[0], q[1]);
@@ -92,6 +98,9 @@ defTool("utvary", {
           + h.p("Posúvaním vrcholu rovnobežne so základňou sa obsah **nemení**, obvod áno.");
         if(typ === "lichobeznik") return h.calc(`S = \\dfrac{(\\va{a} + \\vd{c}) \\cdot \\vb{v}}{2} = \\dfrac{(${A} + \\vd{${tn(P.c)}}) \\cdot \\vb{${tn(P.v)}}}{2} = ${tn(k.S)}`)
           + h.p(`Stredná priečka má dĺžku $\\dfrac{a + c}{2} = ${tn(k.m)}$, lichobežník má rovnaký obsah ako obdĺžnik s touto stranou a výškou $v$.`) + h.calc(`o \\doteq ${tn(k.o)}`);
+        if(typ === "deltoid") return h.calc(`S = \\dfrac{\\va{e} \\cdot \\vb{f}}{2} = \\dfrac{\\va{${tn(P.e)}} \\cdot \\vb{${tn(P.f)}}}{2} = ${tn(k.S)}`)
+          + h.calc(`a \\doteq ${tn(k.strana)},\\quad b \\doteq ${tn(k.strana2)},\\quad o = 2(a + b) \\doteq ${tn(k.o)}`)
+          + h.p("Uhlopriečky sú na seba kolmé. Os $e$ rozpoľuje uhlopriečku $f$, ale $f$ delí $e$ v pomere $\\vd{p} : (e - p)$." + (Math.abs(2 * k.p - P.e) < 1e-9 ? " Pri $p = \\frac{e}{2}$ je to kosoštvorec." : ""));
         if(typ === "kosostvorec") return h.calc(`S = \\dfrac{\\va{e} \\cdot \\vb{f}}{2} = \\dfrac{\\va{${tn(P.e)}} \\cdot \\vb{${tn(P.f)}}}{2} = ${tn(k.S)}`)
           + h.calc(`a = \\sqrt{\\left(\\tfrac{e}{2}\\right)^2 + \\left(\\tfrac{f}{2}\\right)^2} \\doteq ${tn(k.strana)}, \\quad o = 4a \\doteq ${tn(k.o)}`) + h.p("Uhlopriečky sú na seba kolmé a navzájom sa rozpoľujú.");
         return h.calc(`\\text{vnútorný uhol} = \\dfrac{(\\vd{${k.n}} - 2) \\cdot 180^\\circ}{\\vd{${k.n}}} ${Number.isInteger(k.uhol) ? "=" : "\\doteq"} ${tn(k.uhol)}^\\circ`)
