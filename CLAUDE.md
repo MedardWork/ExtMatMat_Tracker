@@ -98,7 +98,8 @@ task), 2–4 worked examples per subtopic, about 150 lines per theory file.
 
 ### Visuals skipped for lack of a tool (flagged, add later)
 
-Agreed 2026-11-14: a topic that does not need a tool of its own is fine without one (number sets,
+Checked 2026-11-14 for every topic written that day (b8–b11, a1–a17, b1–b7, a27–a37, b16–b28, b30,
+b32–b35). Agreed: a topic that does not need a tool of its own is fine without one (number sets,
 "which theorem when", algebra of a circle equation…). Flagged are only the places where a picture was
 left out because the tool or an option was missing. Each such file has a `/* TOOL-TODO: … */` line
 (`grep -l TOOL-TODO js/data/theory/*.js`); add the visual and remove the line when the tool exists.
@@ -112,6 +113,7 @@ left out because the tool or an option was missing. Each such file has a `/* TOO
 | b23 | distance of two parallel lines | `analyticka` typ "priamky": distance when the lines are parallel |
 | b20 | multiple of a vector k·u | `analyticka` typ "vektory": slider k and the vector k·u |
 | a35 | kite (deltoid) | `utvary`: typ "deltoid" (diagonals e, f, where they cross) |
+| b35 | other cube nets, a non-net (T shape) | `telesa`: choose one of the 11 cube nets, or arrange 6 squares and test the fold |
 
 Nice to have, nothing skipped: `graf` axis ticks in multiples of π (b9 uses degrees instead).
 

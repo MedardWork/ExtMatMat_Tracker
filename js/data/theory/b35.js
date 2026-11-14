@@ -1,4 +1,5 @@
 /* Siete telies */
+/* TOOL-TODO: the other nets of the cube (the T-shaped non-net, 11 nets) have no picture; telesa draws only one cube net. Add the visual when the tool or option exists (see CLAUDE.md). */
 (() => {
 const L = v => ({v, lock:true});
 
