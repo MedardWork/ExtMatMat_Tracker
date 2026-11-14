@@ -67,7 +67,7 @@ Tools (each file starts with its options and its `presets`; `topics` in each say
 
 | Tool | For | What it does |
 |---|---|---|
-| `graf` | functions, b1–b3, b4, a14–a17 | graphs with parameters (JSXGraph) |
+| `graf` | functions, b1–b3, b4, a14–a17 | graphs with parameters (JSXGraph); presets incl. sin, cos, tg, log |
 | `trojuholnik` | a28 | triangle with its lines and circles |
 | `statistika` | b40 | dots on a line: mean, median, mode |
 | `postupnost` | a25 a26 | terms as bars/dots, sums |

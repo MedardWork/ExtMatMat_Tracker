@@ -23,7 +23,7 @@ defTool("graf", {
   name:"Graf funkcie",
   area:"Funkcie",
   desc:"Napíš funkciu, pridaj do nej parametre a sleduj, čo ktorý robí s grafom.",
-  topics:["a21", "a22"],
+  topics:["a21", "a22", "b9", "b13"],
   presets:[
     {name:"Lineárna", cfg:{fns:["k*x+q"], params:{k:{v:1, min:-4, max:4, step:.5, color:"a", note:"smernica"}, q:{v:1, min:-5, max:5, step:.5, color:"b", note:"posun"}}}},
     {name:"Kvadratická", cfg:{fns:["a*x^2+b*x+c"], params:{a:{v:1, min:-3, max:3, step:.5, color:"a"}, b:{v:-2, min:-6, max:6, step:.5, color:"b"}, c:{v:-3, min:-6, max:6, step:.5, color:"d"}}}},
@@ -31,7 +31,10 @@ defTool("graf", {
     {name:"Dve funkcie", cfg:{fns:["x^2-3", "k*x+1"], params:{k:{v:1, min:-3, max:3, step:.5, color:"a"}}, on:{meet:true}}},
     {name:"Mocninová", cfg:{fns:["x^n"], params:{n:{v:3, min:-3, max:5, step:1, color:"a"}}}},
     {name:"Exponenciálna", cfg:{fns:["a^x"], params:{a:{v:2, min:.2, max:4, step:.1, color:"a", note:"základ"}}, view:[-5, 8, 5, -2]}},
-    {name:"Sínus", cfg:{fns:["a*sin(b*x)"], params:{a:{v:1, min:-3, max:3, step:.5, color:"a"}, b:{v:1, min:.5, max:4, step:.5, color:"b"}}, view:[-7, 4, 7, -4]}}
+    {name:"Sínus", cfg:{fns:["a*sin(b*x)"], params:{a:{v:1, min:-3, max:3, step:.5, color:"a"}, b:{v:1, min:.5, max:4, step:.5, color:"b"}}, view:[-7, 4, 7, -4]}},
+    {name:"Kosínus", cfg:{fns:["a*cos(b*x)"], params:{a:{v:1, min:-3, max:3, step:.5, color:"a"}, b:{v:1, min:.5, max:4, step:.5, color:"b"}}, view:[-7, 4, 7, -4]}},
+    {name:"Tangens", cfg:{fns:["a*tg(b*x)"], params:{a:{v:1, min:-3, max:3, step:.5, color:"a"}, b:{v:1, min:.5, max:3, step:.5, color:"b"}}, view:[-7, 5, 7, -5]}},
+    {name:"Logaritmická", cfg:{fns:["log(x)", "ln(x)/ln(a)"], params:{a:{v:2, min:.2, max:6, step:.1, color:"a", note:"základ"}}, view:[-1, 4, 10, -4]}}
   ],
 
   help:`Funkciu píš ako na kalkulačke: \`2x + 1\`, \`x^2 - 4\`, \`a*(x-m)^2 + n\`, \`sin(x)\`, \`sqrt(x)\`, \`|x - 2|\`, \`1/x\`.
