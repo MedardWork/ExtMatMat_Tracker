@@ -15,7 +15,7 @@ A tracker for preparing for the Slovak external maths maturita (plus Danish Mate
 
 ## Starting a session
 
-- "Pokračuj ďalšou dávkou teórie" means: take the next batch from *Next, in this order* below, do it, check
+- "Pokračuj ďalšou dávkou teórie" meant: take the next batch from the list under *Next*, do it, check
   it, update this file, commit, push. No questions needed.
 - **A batch** is one stretch between two arrows in that list (usually 2–4 topics, plus the new tool they
   need). Finish and push one batch before starting the next.
@@ -64,7 +64,7 @@ Decided with the person, don't reopen:
 
 ### Done
 
-Theory, 123 of 126 topics: a1–a17, b1–b7 (Základy), a18 a19 a20 a21 a22 a23 a24 a25 a26 b8 b9 b10 b11 b12 b13 b14 b15 (Funkcie), a27–a35, b16–b28 (Planimetria), a36 a37 b29–b35 (Stereometria), a38–a42 b36–b42 (KPŠ), c1–c39 (Danish, English).
+Theory, all 126 topics (finished 2026-11-15): a1–a17, b1–b7 (Základy), a18 a19 a20 a21 a22 a23 a24 a25 a26 b8 b9 b10 b11 b12 b13 b14 b15 (Funkcie), a27–a35, b16–b28 (Planimetria), a36 a37 b29–b35 (Stereometria), a38–a42 b36–b42 (KPŠ), c1–c42 (Danish, English).
 Tools (each file starts with its options and its `presets`; `topics` in each says where it belongs):
 
 | Tool | For | What it does |
@@ -134,21 +134,12 @@ The small options for b20, b23, b30, b33, b34, a35 and b35 were added on 2026-11
 
 Nice to have, nothing skipped: `graf` axis ticks in multiples of π (b9 uses degrees instead).
 
-### Next, in this order
+### Next
 
-All for **Opus**, 2–4 topics per batch, each arrow is one batch:
-
-c40 c41 c42
-
-### Which tool for which topic
-
-The 3 topics still without theory. Options are listed at the top of each tool's file; its presets on the
-Nástroje page show what it can draw. Tools of earlier topics may be used as well wherever they fit.
-For the Danish topics (`c…`) write in English and give **every** tool `en:true`.
-
-| Topic | Tools: typ and the options that matter |
-|---|---|
-| c37–c42 | no tool (CAS, spreadsheets, formula booklet, exam wording, part 1 by hand, oral proofs): text, `def` boxes, steps, cards and worked examples; a `graf` or `derivacia` picture only where a by-hand example gains from it |
+Every topic has theory (the last batches, b29–c42, were written by Opus on 2026-11-15 in one long session on the
+person's request "sprav čo najviac vieš"). Nothing is queued. What may come next: the person reads the new topics
+and reports what to fix; "Pokračuj ďalšou dávkou teórie" now means asking them which topic to improve.
+The Danish topics c37–c42 have no tool of their own (only one `derivacia` picture each in c41 and c42).
 
 ## How to add theory for a topic
 
