@@ -91,6 +91,9 @@ Tools (each file starts with its options and its `presets`; `topics` in each say
 | `analyticka` | b19–b25 | points, vectors (`nasobok` k·u), line forms, two lines (distance when parallel), circle + line, area (JSXGraph) |
 | `kocka` | b29–b34 | cube/cuboid: section through 3 points, distance (`stred`), angle; `vrchol` = corner–plane distance, `stena` = angle with a face |
 | `telesa` | a36 a37 b35 | volume, surface, nets of solids; `siete` = the 11 cube nets (+ a T shape) folded, opposite faces coloured |
+| `premietanie` | b29 | building of unit cubes (click the top view) or one solid in oblique projection (ω, q) with front/top/side views; `ciel` = views to match |
+| `poloha` | b31 (b33 b34) | two lines / line and plane / two planes through corners of a cube: position, angle, distance; `hrany` colours the 12 edges by position to p |
+| `konstrukcia` | b28 | ruler-and-compass constructions in 4 steps (`krok`): os, osuhla, kolmica, rovnobezka, dotycnica, sss, sus, usu, ssu, cvt, cvg; counts solutions |
 
 The tools from `kruznica` on were written by Fable on 2026-11-13 and checked by `dev/check.js` and by eye
 (every preset), and theory uses `kruznica` (b8–b11) and every tool of Základy it reached so far (see the theory files). Opus writes the theory; if a tool lacks a small option, add it.
@@ -108,7 +111,7 @@ left out because the tool or an option was missing. Each such file has a `/* TOO
 
 | Topic | Skipped visual | Needed |
 |---|---|---|
-| b28 | the construction itself (only written steps) | new tool: ruler-and-compass construction, step by step |
+| (none) | | |
 
 The small options for b20, b23, b30, b33, b34, a35 and b35 were added on 2026-11-14 and the visuals put in.
 
@@ -117,10 +120,8 @@ Nice to have, nothing skipped: `graf` axis ticks in multiples of π (b9 uses deg
 ### Next, in this order
 
 1. **Opus**, theory with existing tools, 2–4 topics per batch, in this order:
-   (nothing left: b29 and b31 wait for their tools below).
+   b29 (`premietanie`), b31 (`poloha`).
 2. **Fable**, tools still missing, then Opus for their topics:
-   Stereometria b29 (projections, plan/front/side views, solids from cubes) and b31 (relative position
-   of lines and planes in space).
    KPŠ (a38–a42, b36–b42): tree of choices / counting, Pascal's triangle, probability simulator,
    histogram and pie chart, variance. Danish part (c1–c42): tangent/secant (derivative), area under a
    curve, slope field + Euler, distributions (binomial, normal), box plot, regression, 3D vectors.

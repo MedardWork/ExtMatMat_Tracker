@@ -869,6 +869,31 @@ const SG = {
   }
 };
 
+/* vectors in space, for the tools that draw solids */
+const V3 = {
+  add:(p, q) => [p[0] + q[0], p[1] + q[1], p[2] + q[2]],
+  sub:(p, q) => [p[0] - q[0], p[1] - q[1], p[2] - q[2]],
+  mul:(p, k) => [p[0] * k, p[1] * k, p[2] * k],
+  dot:(p, q) => p[0] * q[0] + p[1] * q[1] + p[2] * q[2],
+  cross:(p, q) => [p[1] * q[2] - p[2] * q[1], p[2] * q[0] - p[0] * q[2], p[0] * q[1] - p[1] * q[0]],
+  len:p => Math.hypot(p[0], p[1], p[2])
+};
+/* a convex solid {v:[[x, y, z]…], f:[[i, j, k…]…]} (corners of a face anticlockwise seen from outside)
+   → its edges {a, b, on}: on = can be seen when looking along the direction d */
+function solidEdges(sol, d){
+  const E = new Map();
+  sol.f.forEach(f => {
+    const n = V3.cross(V3.sub(sol.v[f[1]], sol.v[f[0]]), V3.sub(sol.v[f[2]], sol.v[f[1]])), see = V3.dot(n, d) < -1e-9;
+    f.forEach((i, j) => {
+      const k = f[(j + 1) % f.length], key = Math.min(i, k) + "," + Math.max(i, k);
+      const e = E.get(key) || {a:Math.min(i, k), b:Math.max(i, k), on:false};
+      e.on = e.on || see;
+      E.set(key, e);
+    });
+  });
+  return [...E.values()];
+}
+
 /* the sliders and switches follow values changed from the picture */
 function toolCtlSync(st){
   if(!st.ctl) return;

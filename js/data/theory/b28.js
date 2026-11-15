@@ -1,11 +1,6 @@
 /* Konštrukčné úlohy: základné konštrukcie a počet riešení */
-/* TOOL-TODO: constructions are shown only as written steps; a ruler-and-compass tool that draws the construction step by step is missing. Add the visual when the tool or option exists (see CLAUDE.md). */
 (() => {
 const L = v => ({v, lock:true});
-/* Ssu: A = [0; 0], B = [6; 0], ray from A at 30°, circle k(B, a) */
-const nSol = a => { const c = 6, al = Math.PI / 6, D = a * a - c * c * Math.sin(al) ** 2;
-  if(D < -1e-9) return 0; const r = Math.abs(D) < 1e-9 ? 0 : Math.sqrt(D), m = c * Math.cos(al);
-  return [m - r, m + r].filter((s, i, arr) => s > 1e-9 && arr.indexOf(s) === i).length; };
 
 THEORY.b28 = {
   mins:25,
@@ -26,6 +21,19 @@ THEORY.b28 = {
     {t:"Uhol 60°", d:"Rovnostranný trojuholník: kružnica s polomerom rovným dĺžke strany."},
     {t:"Tálesova kružnica a dotyčnica", d:"Stred úsečky, kružnica s priemerom úsečky. Dotyčnice z bodu: Tálesova kružnica nad $SX$ ([[a31]])."}
   ]},
+  {tool:"konstrukcia", ask:R`Os úsečky. Prejdi konštrukciu tlačidlom „Ďalší krok“. Potom zmenšuj polomer $\vd{r}$: kedy sa kružnice prestanú pretínať?`,
+   take:R`kružnice sa pretnú v dvoch bodoch len pre $r > \tfrac{1}{2}|AB| = 3$. Spojnica priesečníkov je kolmá na $AB$ a prechádza jej stredom.`,
+   cfg:{typ:"os", d:L(6), r:{v:4, min:2, max:6}, krok:{v:1}}},
+  {tool:"konstrukcia", ask:R`Os uhla. Prejdi kroky a potom meň uhol $\vd{\alpha}$. Aký štvoruholník tvoria body $V$, $X$, $Z$, $Y$?`,
+   take:R`kosoštvorec (všetky štyri strany majú dĺžku $r$). Jeho uhlopriečka $VZ$ delí uhol pri $V$ na polovice.`,
+   cfg:{typ:"osuhla", r:L(3), krok:{v:1}}},
+  {tool:"konstrukcia", ask:R`Kolmica z bodu $P$ na priamku $p$. Prejdi kroky. Čo sa stane, keď je polomer $\vd{r}$ menší než vzdialenosť bodu od priamky?`,
+   take:R`kružnica priamku nepretne a konštrukcia sa nedá urobiť. Inak je $PQ$ os úsečky $XY$, teda kolmica na $p$.`,
+   cfg:{typ:"kolmica", h:L(2.5), krok:{v:1}}},
+  {tool:"konstrukcia", kind:"uloha", ask:R`Dotyčnice z bodu $M$ ku kružnici. Posuň bod $M$ (vzdialenosť $\vd{d}$) tak, aby existovala práve jedna dotyčnica.`,
+   hint:R`Jedna dotyčnica vedie len z bodu, ktorý leží na kružnici.`,
+   goal:(P, st) => st.h.kon.n === 1,
+   cfg:{typ:"dotycnica", r:L(2.5), d:{v:6, min:1, max:8}, krok:L(4)}},
   {tool:"trojuholnik", ask:R`Zapni osi strán (opísaná kružnica) a osi uhlov (vpísaná kružnica). Kde sa pretínajú?`,
    take:R`osi strán v strede opísanej kružnice (rovnako ďaleko od vrcholov), osi uhlov v strede vpísanej (rovnako ďaleko od strán).`,
    cfg:{toggles:["opisana", "vpisana", "vysky", "taznice"], on:{opisana:true}}},
@@ -47,6 +55,12 @@ THEORY.b28 = {
      ["Priesečníky.", R`3 < 4 \Rightarrow \text{dva priesečníky}`]
    ],
    res:"V jednej polrovine dve riešenia, navzájom súmerné podľa osi úsečky $AB$."},
+  {tool:"konstrukcia", ask:R`Ten istý príklad narysovaný: $c = 6$, $v_c = 3$, $t_c = 4$. Prejdi kroky. Potom skracuj ťažnicu $\vb{t_c}$: kedy zostane jedno riešenie a kedy žiadne?`,
+   take:R`pre $t_c > v_c$ dve riešenia, pre $t_c = v_c = 3$ jedno (rovnoramenný trojuholník), pre $t_c < v_c$ žiadne.`,
+   cfg:{typ:"cvt", c:L(6), v:L(3), t:{v:4, min:1, max:6}, krok:{v:1}}},
+  {tool:"konstrukcia", ask:R`Veta sss: $c = 6$. Meň strany $\va{a}$ a $\vb{b}$. Kedy trojuholník nevznikne?`,
+   take:R`keď $a + b \leq c$ (kružnice sa nedočiahnu) alebo keď sa jedna strana líši od druhej aspoň o $c$. To je trojuholníková nerovnosť.`,
+   cfg:{typ:"sss", c:L(6), krok:L(4)}},
   {tool:"trojuholnik", ask:R`Ťahaj vrchol $C$ a zapni ťažnice a výšky. Ako sa mení $t_c$ a $v_c$?`,
    take:R`$v_c$ závisí len od vzdialenosti $C$ od priamky $AB$, $t_c$ od vzdialenosti $C$ od stredu $AB$. Preto $C$ hľadáme v prieniku rovnobežky a kružnice.`,
    cfg:{fixed:["A", "B"], on:{taznice:true, vysky:true}}},
@@ -55,27 +69,22 @@ THEORY.b28 = {
 
 "Počet riešení":[
   R`Počet riešení sa určí v diskusii. Ak hľadaný bod leží na priesečníku priamky a kružnice, môžu byť 0, 1 alebo 2 priesečníky ([[b24]]). Typický prípad je trojuholník zadaný $c$, $\alpha$ a stranou $a$ oproti uhlu $\alpha$ (ssu).`,
-  {tool:"graf", ask:R`$|AB| = 6$, uhol $\alpha = 30^\circ$ pri vrchole $A$. Vrchol $C$ leží na polpriamke z $A$ a na kružnici $k(B;\ \va{a})$. Meň $\va{a}$. Koľko trojuholníkov vznikne?`,
+  {tool:"konstrukcia", ask:R`$|AB| = 6$, uhol $\alpha = 30^\circ$ pri vrchole $A$. Vrchol $C$ leží na polpriamke z $A$ a na kružnici $k(B;\ \va{a})$. Meň $\va{a}$. Koľko trojuholníkov vznikne?`,
    take:R`pre $a < 3$ žiadny, pre $a = 3$ jeden (pravouhlý), pre $3 < a < 6$ dva, pre $a \geq 6$ jeden. Hranica 3 je vzdialenosť $B$ od polpriamky: $6 \sin 30^\circ$.`,
-   cfg:{view:[-1, 6, 13, -1.5], tick:1, fns:[{f:"tan(pi/6)*x", lhs:"y", dom:[0, 13]}],
-     params:{a:{v:4, min:1, max:8, step:.5, color:"a"}},
-     show:[{seg:[[0, 0], [6, 0]], color:"d", w:3}, {pt:[0, 0], color:"ink", label:"A", at:"bl"}, {pt:[6, 0], color:"ink", label:"B", at:"br"},
-       {curve:["6+a*cos(t)", "a*sin(t)"], t:[0, "pi"], color:"a"}],
-     out:(P, h) => { const n = nSol(P.a); return h.calc(R`d(B, \text{polpriamka}) = 6 \sin 30^\circ = 3,\quad \va{a} = ${h.tn(P.a)}`) + h.pill(`počet riešení: ${n}`, n ? "ok" : "down"); }}},
+   cfg:{typ:"ssu", c:L(6), alfa:L(30), a:{v:4, min:1, max:8}, krok:L(4)}},
   {ex:R`Koľko riešení má konštrukcia trojuholníka s $c = 6$, $\alpha = 30^\circ$ a $a = 4$?`,
    steps:[
      [R`Vzdialenosť $B$ od ramena uhla $\alpha$.`, R`6 \sin 30^\circ = 3`],
      [R`$3 < a = 4 < c = 6$: kružnica pretne polpriamku v dvoch bodoch, oba za $A$.`, R`2 \text{ riešenia}`]
    ],
    res:"Dva rôzne trojuholníky."},
-  {tool:"graf", kind:"uloha", ask:R`Nastav dĺžku strany $\va{a}$ tak, aby mala úloha práve jedno riešenie a trojuholník bol pravouhlý.`,
+  {tool:"konstrukcia", kind:"uloha", ask:R`Nastav dĺžku strany $\va{a}$ tak, aby mala úloha práve jedno riešenie a trojuholník bol pravouhlý.`,
    hint:R`Kružnica sa musí polpriamky len dotknúť.`,
    goal:P => P.a === 3,
-   cfg:{view:[-1, 6, 13, -1.5], tick:1, fns:[{f:"tan(pi/6)*x", lhs:"y", dom:[0, 13]}],
-     params:{a:{v:5, min:1, max:8, step:.5, color:"a"}},
-     show:[{seg:[[0, 0], [6, 0]], color:"d", w:3}, {pt:[0, 0], color:"ink", label:"A", at:"bl"}, {pt:[6, 0], color:"ink", label:"B", at:"br"},
-       {curve:["6+a*cos(t)", "a*sin(t)"], t:[0, "pi"], color:"a"}],
-     out:(P, h) => h.pill(`počet riešení: ${nSol(P.a)}`, "flat")}},
+   cfg:{typ:"ssu", c:L(6), alfa:L(30), a:{v:5, min:1, max:8}, krok:L(4)}},
+  {tool:"konstrukcia", ask:R`Trojuholník z $c = 6$, výšky $\vd{v_c}$ a uhla $\gamma = 60^\circ$ pri vrchole $C$. Vrchol $C$ leží na oblúku, z ktorého vidno $AB$ pod uhlom $60^\circ$. Zväčšuj výšku: kedy riešenie zanikne?`,
+   take:R`najvyšší bod oblúka je vo výške $3\sqrt{3} \doteq 5{,}2$. Pre menšiu výšku sú dve riešenia, pre väčšiu žiadne.`,
+   cfg:{typ:"cvg", c:L(6), gama:L(60), v:{v:3, min:1, max:7}, krok:L(4)}},
   {warn:R`Riešenia súmerné podľa priamky $AB$ sa zvyčajne nepočítajú ako rôzne (sú zhodné). Počet riešení sa udáva v jednej polrovine.`}
 ]
 
