@@ -24,6 +24,25 @@ if(!primary) app.quit();
 
 let win = null, store = null, closing = false, quitting = false;
 
+/* MATURITA_SMOKE=1: start, check that the page rendered and the database answers, print the result
+   and exit (0 = fine). The release workflow starts every packaged build this way, so an installer
+   that cannot start is never published. */
+const SMOKE = !!process.env.MATURITA_SMOKE;
+function smoke(){
+  const done = (ok, msg) => { console.log(`SMOKE ${ok ? "OK" : "FAIL"}: ${msg}`); app.exit(ok ? 0 : 1); };
+  setTimeout(() => done(false, "no page after 60 s"), 60000);
+  win.webContents.once("did-fail-load", (e, code, desc) => done(false, `page did not load (${desc})`));
+  win.webContents.once("did-finish-load", async () => {
+    try{
+      const r = await win.webContents.executeJavaScript(`new Promise(res => setTimeout(async () => {
+        const s = await fetch("/api/state").then(r => r.json()).catch(e => ({app:String(e)}));
+        res({text:document.body.innerText.length, links:document.querySelectorAll("a[href^='#/']").length, app:s.app});
+      }, 1500))`);
+      done(r.text > 200 && r.links > 0 && r.app === "maturita-tracker", JSON.stringify(r));
+    }catch(e){ done(false, e.message); }
+  });
+}
+
 /* ---------- window size and position survive a restart ---------- */
 const boundsFile = () => path.join(app.getPath("userData"), "window.json");
 function loadBounds(){
@@ -45,6 +64,7 @@ function createWindow(){
   });
   if(b.maximized) win.maximize();
   win.once("ready-to-show", () => win.show());
+  if(SMOKE) smoke();
   win.loadURL(START);
 
   /* links to other sites open in the normal browser */

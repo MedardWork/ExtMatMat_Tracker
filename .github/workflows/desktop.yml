@@ -35,6 +35,26 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx electron-builder --publish never
+      # macOS refuses an app whose signature is missing or broken ("is damaged and can't be opened"),
+      # so the ad-hoc signature (package.json: mac.identity "-") has to hold for the whole bundle
+      - name: Check the signature (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          codesign --verify --deep --strict --verbose=2 "dist/mac-universal/Maturita z matematiky.app"
+          codesign -dv "dist/mac-universal/Maturita z matematiky.app" 2>&1 | grep -E "Signature|flags"
+      # start the packaged app: it has to show the page and reach its database (desktop/main.js, MATURITA_SMOKE)
+      - name: Start the packaged app
+        shell: bash
+        timeout-minutes: 3
+        env:
+          MATURITA_SMOKE: "1"
+          MATURITA_DATA_DIR: ${{ runner.temp }}/smoke-data
+        run: |
+          case "$RUNNER_OS" in
+            macOS)   "dist/mac-universal/Maturita z matematiky.app/Contents/MacOS/Maturita z matematiky" ;;
+            Windows) "dist/win-unpacked/Maturita z matematiky.exe" ;;
+            Linux)   xvfb-run -a dist/linux-unpacked/maturita-tracker --no-sandbox ;;
+          esac
       - uses: actions/upload-artifact@v4
         with:
           name: Maturita-${{ runner.os }}
@@ -67,6 +87,6 @@ jobs:
           body: |
             Stiahni súbor pre svoj systém:
             - **Windows** — `Maturita-…-Windows.exe` (ak sa objaví „Windows protected your PC“: *More info → Run anyway*)
-            - **macOS** — `Maturita-…-macOS.dmg` (prvýkrát: *System Settings → Privacy & Security → Open Anyway*)
+            - **macOS** — `Maturita-…-macOS.dmg` (prvýkrát: otvor ju, potom *System Settings → Privacy & Security → Open Anyway*)
             - **Linux** — `Maturita-…-Linux.AppImage` (`chmod +x`, potom spustiť)
           files: dist/*
