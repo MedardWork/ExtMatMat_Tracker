@@ -64,7 +64,7 @@ Decided with the person, don't reopen:
 
 ### Done
 
-Theory, 84 of 126 topics: a1–a17, b1–b7 (Základy), a18 a19 a20 a21 a22 a23 a24 a25 a26 b8 b9 b10 b11 b12 b13 b14 b15 (Funkcie), a27–a35, b16–b28 (Planimetria), a36 a37 b29–b35 (Stereometria), a38–a42 b36–b42 (KPŠ).
+Theory, 87 of 126 topics: a1–a17, b1–b7 (Základy), a18 a19 a20 a21 a22 a23 a24 a25 a26 b8 b9 b10 b11 b12 b13 b14 b15 (Funkcie), a27–a35, b16–b28 (Planimetria), a36 a37 b29–b35 (Stereometria), a38–a42 b36–b42 (KPŠ), c1–c3 (Danish, English).
 Tools (each file starts with its options and its `presets`; `topics` in each says where it belongs):
 
 | Tool | For | What it does |
@@ -138,21 +138,18 @@ Nice to have, nothing skipped: `graf` axis ticks in multiples of π (b9 uses deg
 
 All for **Opus**, 2–4 topics per batch, each arrow is one batch:
 
-c1 c2 c3 → c4 c5 → c6 c7 → c8 c9 c10 →
+c4 c5 → c6 c7 → c8 c9 c10 →
 c11 c12 → c13 c14 c15 → c16 c17 c18 → c19 c20 c21 → c22 c23 → c24 c25 → c26 c27 c28 → c29 c30 →
 c31 c32 c33 → c34 c35 c36 → c37 c38 c39 → c40 c41 c42
 
 ### Which tool for which topic
 
-The 42 topics still without theory. Options are listed at the top of each tool's file; its presets on the
+The 39 topics still without theory. Options are listed at the top of each tool's file; its presets on the
 Nástroje page show what it can draw. Tools of earlier topics may be used as well wherever they fit.
 For the Danish topics (`c…`) write in English and give **every** tool `en:true`.
 
 | Topic | Tools: typ and the options that matter |
 |---|---|
-| c1 | `derivacia` typ `limita` (a hole, a jump; `inf:true` for x → ∞); `graf` with `pt … open:true` for continuity |
-| c2 | `derivacia` typ `secna` (`h`, `on:{dot:true}`); `graf` for a rate of change in a context |
-| c3 | `derivacia` typ `dotycnica` with `on:{der:true}`: type f, g, f + g, f · g and compare the dashed f′ with the rule |
 | c4 | `derivacia` typ `dotycnica` with `on:{der:true}` and `f:"x^3"`, `"sqrt(x)"`, `"1/x"`, `"exp(x)"`, `"ln(x)"`, `"sin(x)"`, `"2^x"` |
 | c5 | `derivacia` typ `dotycnica` (the equation comes from `h.der.m`, `h.der.q`) |
 | c6 | `derivacia` typ `priebeh` (`on:{der:true}`); optimisation: `graf` with a parameter and `turns` |
@@ -259,6 +256,9 @@ Things that bite:
   therefore take **`apart:true`** for axes scaled separately; only `graf` uses `free:true` for that.
 - `fact(n)` and `binom(n, k)` are global (core.js), so are `V3.*` (vectors in space), `solidEdges`, `simpson`, `binomPmf`,
   `normCdf`, `fiveNum`, `regFit`: a theory `out` can use them to recompute a worked example.
+- `node dev/entext.js c1 c2` lists Slovak words that tools print on English pages (the frame's "Nápoveď" is ignored).
+  `graf` has no `en`, but it prints only formulas and the notes you give its params, so it is fine in `c…` topics.
+- `derivacia` takes `out` (it replaces the tool's own text): c3 uses it to print the slope next to the rule's value.
 - `vektory3d`: a line that points straight at the viewer shows as a dot; change `otoc` / `sklon` rather than the line.
 - `git push origin HEAD:main` can be refused by the session's own permission check until the person says "merge to
   main" in that session. Then push the branch, say that `main` still waits, and merge once they answer.
