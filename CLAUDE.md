@@ -64,7 +64,7 @@ Decided with the person, don't reopen:
 
 ### Done
 
-Theory, 99 of 126 topics: a1–a17, b1–b7 (Základy), a18 a19 a20 a21 a22 a23 a24 a25 a26 b8 b9 b10 b11 b12 b13 b14 b15 (Funkcie), a27–a35, b16–b28 (Planimetria), a36 a37 b29–b35 (Stereometria), a38–a42 b36–b42 (KPŠ), c1–c15 (Danish, English).
+Theory, 102 of 126 topics: a1–a17, b1–b7 (Základy), a18 a19 a20 a21 a22 a23 a24 a25 a26 b8 b9 b10 b11 b12 b13 b14 b15 (Funkcie), a27–a35, b16–b28 (Planimetria), a36 a37 b29–b35 (Stereometria), a38–a42 b36–b42 (KPŠ), c1–c18 (Danish, English).
 Tools (each file starts with its options and its `presets`; `topics` in each says where it belongs):
 
 | Tool | For | What it does |
@@ -138,20 +138,17 @@ Nice to have, nothing skipped: `graf` axis ticks in multiples of π (b9 uses deg
 
 All for **Opus**, 2–4 topics per batch, each arrow is one batch:
 
-c16 c17 c18 → c19 c20 c21 → c22 c23 → c24 c25 → c26 c27 c28 → c29 c30 →
+c19 c20 c21 → c22 c23 → c24 c25 → c26 c27 c28 → c29 c30 →
 c31 c32 c33 → c34 c35 c36 → c37 c38 c39 → c40 c41 c42
 
 ### Which tool for which topic
 
-The 27 topics still without theory. Options are listed at the top of each tool's file; its presets on the
+The 24 topics still without theory. Options are listed at the top of each tool's file; its presets on the
 Nástroje page show what it can draw. Tools of earlier topics may be used as well wherever they fit.
 For the Danish topics (`c…`) write in English and give **every** tool `en:true`.
 
 | Topic | Tools: typ and the options that matter |
 |---|---|
-| c16 | `smerpole` with `on:{euler:true}`, `h`, `n` (`h.sp.chyba` is Euler's error) |
-| c17 | `smerpole` with `on:{riesenie:false}`, `toggles:["riesenie"]`: guess the curve, then switch it on |
-| c18 | `smerpole` with the model's equation and `params`; `graf` for the solution |
 | c19 | `analyticka` typ `vektory` with `on:{kolmy:true}` / `on:{plocha:true}` |
 | c20 | `analyticka` typ `vektory` with `on:{priemet:true}` |
 | c21 | `analyticka` typ `priamka` with `on:{vektory:true}`; a parametric circle: `graf` `show:[{curve:["a + r*cos(t)", "b + r*sin(t)"], t:[0, "2pi"]}]` |
