@@ -64,7 +64,7 @@ Decided with the person, don't reopen:
 
 ### Done
 
-Theory, 76 of 126 topics: a1–a17, b1–b7 (Základy), a18 a19 a20 a21 a22 a23 a24 a25 a26 b8 b9 b10 b11 b12 b13 b14 b15 (Funkcie), a27–a35, b16–b28 (Planimetria), a36 a37 b29–b35 (Stereometria), a38–a40 b40 (KPŠ).
+Theory, 78 of 126 topics: a1–a17, b1–b7 (Základy), a18 a19 a20 a21 a22 a23 a24 a25 a26 b8 b9 b10 b11 b12 b13 b14 b15 (Funkcie), a27–a35, b16–b28 (Planimetria), a36 a37 b29–b35 (Stereometria), a38–a42 b40 (KPŠ).
 Tools (each file starts with its options and its `presets`; `topics` in each says where it belongs):
 
 | Tool | For | What it does |
@@ -138,20 +138,18 @@ Nice to have, nothing skipped: `graf` axis ticks in multiples of π (b9 uses deg
 
 All for **Opus**, 2–4 topics per batch, each arrow is one batch:
 
-a41 a42 → b36 b37 → b38 b39 → b41 b42 → c1 c2 c3 → c4 c5 → c6 c7 → c8 c9 c10 →
+b36 b37 → b38 b39 → b41 b42 → c1 c2 c3 → c4 c5 → c6 c7 → c8 c9 c10 →
 c11 c12 → c13 c14 c15 → c16 c17 c18 → c19 c20 c21 → c22 c23 → c24 c25 → c26 c27 c28 → c29 c30 →
 c31 c32 c33 → c34 c35 c36 → c37 c38 c39 → c40 c41 c42
 
 ### Which tool for which topic
 
-The 50 topics still without theory. Options are listed at the top of each tool's file; its presets on the
+The 48 topics still without theory. Options are listed at the top of each tool's file; its presets on the
 Nástroje page show what it can draw. Tools of earlier topics may be used as well wherever they fit.
 For the Danish topics (`c…`) write in English and give **every** tool `en:true`.
 
 | Topic | Tools: typ and the options that matter |
 |---|---|
-| a41 | `pravdepodobnost` typ `kocka`, typ `kocky` (`jav`; `oznac:true` + `goal:(P, st) => st.h.pr.ok` as a task), typ `pokus`; `mnoziny` for events as sets |
-| a42 | `histogram` typ `pocetnosti` (`on:{stlpce, kruh, rel}`, `hodnoty`, `pocty`, `nazov`); reading a chart: `drag:false` and a question, or a task with a goal on `st.h.hist` |
 | b36 | `strom` typ `vyber` with `on:{poradie:true, opak:true}`; typ `slovo` |
 | b37 | `pascal` typ `trojuholnik` (`sucet`, `symetria`, `riadok`), typ `binom` (`ab:true`, or `p`, `q`, `k`) |
 | b38 | `pravdepodobnost` typ `javy` (`prienik`, `zjednotenie`, `opak`), typ `aspon`, typ `kocky` with `jav:"sestka"` |
