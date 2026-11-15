@@ -71,7 +71,7 @@ Tools (each file starts with its options and its `presets`; `topics` in each say
 |---|---|---|
 | `graf` | functions, b1–b3, b4, a14–a17 | graphs with parameters (JSXGraph); presets incl. sin, cos, tg, log |
 | `trojuholnik` | a28 | triangle with its lines and circles |
-| `statistika` | b40 | dots on a line: mean, median, mode |
+| `statistika` | b40 b41 | dots on a line: mean, median, mode; `on:{var:true}` = deviations, variance, standard deviation (h.stat.var, .sd) |
 | `postupnost` | a25 a26 | terms as bars/dots, sums |
 | `kruznica` | b8–b11 | unit circle, sin/cos/tg segments, graph unrolling, `eq` = sin x = c |
 | `os` | a6 a12–a14 a16 b4 b5 | number line: interval, two sets (∩ ∪ − ′), \|x − s\| < r, sign chart |
@@ -93,6 +93,10 @@ Tools (each file starts with its options and its `presets`; `topics` in each say
 | `telesa` | a36 a37 b35 | volume, surface, nets of solids; `siete` = the 11 cube nets (+ a T shape) folded, opposite faces coloured |
 | `premietanie` | b29 | building of unit cubes (click the top view) or one solid in oblique projection (ω, q) with front/top/side views; `ciel` = views to match |
 | `poloha` | b31 (b33 b34) | two lines / line and plane / two planes through corners of a cube: position, angle, distance; `hrany` colours the 12 edges by position to p |
+| `strom` | a38 a40 b36 | tree of choices: product rule (`volby`), choosing k of n with switches order / repetition (variations, permutations, combinations), letters of a word |
+| `pascal` | a39 b37 | Pascal's triangle (click a number; sum rule, symmetry, row sum), n over k with cancelling, factorial table, binomial theorem (p·x + q)^n |
+| `pravdepodobnost` | a41 b38 b39 | two dice as a 6×6 grid with named events (or marked by the reader), one die, repeated experiment (law of large numbers), independent events as a unit square, “at least one”, geometric probability (segment, circle in square, target, meeting problem) |
+| `histogram` | a42 b42 | frequency table → bar chart + pie chart (drag the bars), raw data sorted into classes → histogram, frequency polygon |
 | `konstrukcia` | b28 | ruler-and-compass constructions in 4 steps (`krok`): os, osuhla, kolmica, rovnobezka, dotycnica, sss, sus, usu, ssu, cvt, cvg; counts solutions |
 
 The tools from `kruznica` on were written by Fable on 2026-11-13 and checked by `dev/check.js` and by eye
@@ -120,10 +124,10 @@ Nice to have, nothing skipped: `graf` axis ticks in multiples of π (b9 uses deg
 ### Next, in this order
 
 1. **Opus**, theory with existing tools, 2–4 topics per batch, in this order:
-   b29 (`premietanie`), b31 (`poloha`).
+   b29 (`premietanie`), b31 (`poloha`); KPŠ: a38 (`strom`), a39 (`pascal`), a40 (`strom`), a41 (`pravdepodobnost`), a42 (`histogram`),
+   b36 (`strom`), b37 (`pascal`), b38 b39 (`pravdepodobnost`), b41 (`statistika` with `var`), b42 (`histogram` + `rozdelenie` once it exists).
 2. **Fable**, tools still missing, then Opus for their topics:
-   KPŠ (a38–a42, b36–b42): tree of choices / counting, Pascal's triangle, probability simulator,
-   histogram and pie chart, variance. Danish part (c1–c42): tangent/secant (derivative), area under a
+   Danish part (c1–c42): tangent/secant (derivative), area under a
    curve, slope field + Euler, distributions (binomial, normal), box plot, regression, 3D vectors.
 
 ## How to add theory for a topic

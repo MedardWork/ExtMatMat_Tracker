@@ -5,13 +5,13 @@
      data     [2, 3, 3, 5, 9]          the values
      dataFn   (P) => [...]             or computed from sliders (then the dots can't be dragged)
      min, max, step                    the number line
-     on       {mean:true, median:true, mode:false}    what is marked from the start
+     on       {mean:true, median:true, mode:false, var:false}    what is marked from the start (var = variance and standard deviation)
      toggles  ["median"]               marks the reader may switch here
      drag     false | [4]              which dots may be dragged (default: all)
      edit     true                     buttons to add / remove a value
-     params, out(P, h, st)             h.stat = {n, sum, mean, median, modes, sorted, mid}
+     params, out(P, h, st)             h.stat = {n, sum, mean, median, modes, sorted, mid, var, sd, dev:[x − mean…]}
    ============================================================ */
-const STAT_MARKS = [["mean", "Aritmetický priemer", "a"], ["median", "Medián", "b"], ["mode", "Modus", "d"]];
+const STAT_MARKS = [["mean", "Aritmetický priemer", "a"], ["median", "Medián", "b"], ["mode", "Modus", "d"], ["var", "Rozptyl a smerodajná odchýlka", "c"]];
 
 function statOf(data){
   const sorted = data.slice().sort((x, y) => x - y), n = sorted.length;
@@ -23,8 +23,9 @@ function statOf(data){
   /* when every value appears equally often, no value stands out — there is no mode */
   const modes = top > 1 && Object.values(count).some(c => c < top) || (top > 1 && Object.keys(count).length === 1)
     ? Object.keys(count).filter(v => count[v] === top).map(Number).sort((x, y) => x - y) : [];
-  return {n, sum, sorted, mid, count, top, modes,
-          mean:n ? sum / n : NaN,
+  const mean = n ? sum / n : NaN, dev = data.map(v => v - mean), vr = n ? dev.reduce((s, d) => s + d * d, 0) / n : NaN;
+  return {n, sum, sorted, mid, count, top, modes, dev, var:vr, sd:Math.sqrt(vr),
+          mean,
           median:n ? mid.reduce((s, i) => s + sorted[i], 0) / mid.length : NaN};
 }
 
@@ -32,12 +33,14 @@ defTool("statistika", {
   name:"Priemer, medián, modus",
   area:"Štatistika",
   desc:"Hodnoty ako bodky na číselnej osi. Potiahni jednu a sleduj, čo sa pohne a čo zostane.",
-  topics:["b40"],
+  topics:["b40", "b41"],
   presets:[
     {name:"Malý súbor", cfg:{data:[2, 3, 3, 4, 5, 6, 8]}},
     {name:"Odľahlá hodnota", cfg:{data:[3, 4, 4, 5, 5, 6, 19], max:20}},
     {name:"Známky v triede", cfg:{data:[1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 4, 5], min:1, max:5}},
-    {name:"Párny počet", cfg:{data:[1, 3, 4, 8, 9, 10]}}
+    {name:"Párny počet", cfg:{data:[1, 3, 4, 8, 9, 10]}},
+    {name:"Rozptyl: hodnoty pri sebe", cfg:{data:[4, 5, 5, 6, 6, 6, 7, 7, 8], on:{mean:true, var:true}}},
+    {name:"Rozptyl: hodnoty ďaleko", cfg:{data:[1, 2, 3, 5, 6, 7, 9, 10, 11], on:{mean:true, var:true}, max:12}}
   ],
 
   /* data: 2 3 3 4 5 / os: 0 10 / ukaz: priemer, median, modus */
@@ -49,7 +52,7 @@ defTool("statistika", {
       if(key === "data"){ const n = toolNums(v); if(n.length) cfg.data = n.slice(0, 40); }
       else if(key === "os"){ const n = toolNums(v); if(n.length > 1 && n[0] < n[1]){ cfg.min = n[0]; cfg.max = n[1]; } }
       else if(key === "ukaz"){ shown = true; toolWords(v).forEach(w => {
-        if(/priemer/.test(w)) cfg.on.mean = true; else if(/median/.test(w)) cfg.on.median = true; else if(/modus/.test(w)) cfg.on.mode = true;
+        if(/priemer/.test(w)) cfg.on.mean = true; else if(/median/.test(w)) cfg.on.median = true; else if(/modus/.test(w)) cfg.on.mode = true; else if(/rozptyl|odchylk/.test(w)) cfg.on.var = true;
       }); }
     });
     if(!shown) cfg.on = {mean:true, median:true};
@@ -61,7 +64,7 @@ defTool("statistika", {
   },
   toText(st){
     const c = st.cfg, out = [`data: ${(st.data || []).map(toolNum).join(" ")}`, `os: ${c.min != null ? c.min : 0} ${c.max != null ? c.max : 10}`];
-    const show = [["mean", "priemer"], ["median", "medián"], ["mode", "modus"]].filter(x => st.P[x[0]]).map(x => x[1]);
+    const show = [["mean", "priemer"], ["median", "medián"], ["mode", "modus"], ["var", "rozptyl"]].filter(x => st.P[x[0]]).map(x => x[1]);
     if(show.length) out.push(`ukaz: ${show.join(", ")}`);
     return out.join("\n");
   },
@@ -75,7 +78,7 @@ defTool("statistika", {
     const computed = typeof cfg.dataFn === "function";
     const canDrag = (i, st) => !computed && !env.thumb && (st.open || cfg.drag === undefined || cfg.drag === true || (Array.isArray(cfg.drag) && cfg.drag.includes(i)));
     const values = (P, st) => computed ? cfg.dataFn(P, st) : st.data;
-    const W = 520, H = 262, L = 30, Rt = 30, AX = 184;
+    const W = 520, H = 272, L = 30, Rt = 30, AX = 184;
     const some = Array.isArray(cfg.drag);   /* only some dots move here — make them stand out */
     const sx = v => L + (v - lo) / (hi - lo) * (W - L - Rt);
 
@@ -128,6 +131,13 @@ defTool("statistika", {
         if(P.mean && s.n){
           const x = sx(s.mean);
           marks += `<path d="M${x} ${AX + 28} l11 17 h-22 z" class="st-mean"/><text x="${x}" y="${AX + 62}" class="st-lab a">priemer ${fmtN(s.mean)}</text>`;
+        }
+        if(P.var && s.n){
+          const seen2 = {};
+          data.forEach(v => { const k = seen2[v] = (seen2[v] || 0) + 1, y = (AX - 7 - r - (k - 1) * r * 2.1).toFixed(1); marks += `<line x1="${sx(s.mean).toFixed(1)}" y1="${y}" x2="${sx(v).toFixed(1)}" y2="${y}" class="st-dev"/>`; });
+          const a = sx(Math.max(lo, s.mean - s.sd)), b = sx(Math.min(hi, s.mean + s.sd));
+          marks += `<line x1="${sx(s.mean)}" y1="30" x2="${sx(s.mean)}" y2="${AX}" class="st-dev"/><rect x="${a.toFixed(1)}" y="${AX - 5}" width="${(b - a).toFixed(1)}" height="10" rx="3" class="st-var"/>`
+            + `<text x="${((a + b) / 2).toFixed(1)}" y="${H - 6}" class="st-lab c">x̄ ± s, s = ${fmtN(s.sd)}</text>`;
         }
         if(P.mode && s.modes.length) s.modes.forEach(v => {
           marks += `<text x="${sx(v)}" y="${(AX - 12 - s.count[v] * r * 2.1).toFixed(1)}" class="st-lab d">modus</text>`;
@@ -186,6 +196,12 @@ defTool("statistika", {
         if(P.mean) o += h.calc(`\\va{\\bar{x}} = \\dfrac{${texN(s.sum)}}{${s.n}} = \\va{${texN(s.mean)}}`);
         if(P.median) o += h.p(`Medián: $\\vb{${texN(s.median)}}$${s.n % 2 ? " (prostredná hodnota)" : " (priemer dvoch prostredných)"}`);
         if(P.mode) o += h.p(s.modes.length ? `Modus: $\\vd{${s.modes.map(v => texN(v)).join(";\\ ")}}$ (vyskytuje sa ${s.top}-krát)` : "Modus: žiadna hodnota sa nevyskytuje častejšie než ostatné.");
+        if(P.var && s.n){
+          const sq = s.dev.reduce((a, d) => a + d * d, 0), eq = v => Math.abs(v * 100 - Math.round(v * 100)) < 1e-9 ? "=" : "\\doteq";
+          if(s.n <= 10) o += h.p(`Odchýlky od priemeru: ${s.dev.map(d => `$${texN(d)}$`).join(", ")}`);
+          o += h.calc(`\\vc{s^2} = \\dfrac{\\sum (x_i - \\bar{x})^2}{n} = \\dfrac{${texN(sq)}}{${s.n}} ${eq(s.var)} \\vc{${texN(s.var)}}`)
+            + h.calc(`\\vc{s} = \\sqrt{${texN(s.var)}} ${eq(s.sd)} \\vc{${texN(s.sd)}}`);
+        }
         return o;
       }
     };

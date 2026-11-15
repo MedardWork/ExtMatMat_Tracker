@@ -237,7 +237,9 @@
 .st-med{stroke:var(--vb);stroke-width:2.2;stroke-dasharray:6 5}
 .st-mean{fill:var(--va)}
 .st-lab{font:700 14px var(--sans);text-anchor:middle}
-.st-lab.a{fill:var(--va)} .st-lab.b{fill:var(--vb)} .st-lab.d{fill:var(--vd)}
+.st-lab.a{fill:var(--va)} .st-lab.b{fill:var(--vb)} .st-lab.d{fill:var(--vd)} .st-lab.c{fill:var(--dk);font-size:13px}
+.st-dev{stroke:var(--dk);stroke-width:1.6;stroke-opacity:.55}
+.st-var{fill:var(--dk);fill-opacity:.38}
 
 /* postupnost: bars or dots, one per term */
 .ps-grid{stroke:var(--rule);stroke-width:1}
@@ -356,3 +358,15 @@
 .kon-steps li{margin:3px 0;color:var(--ink-soft)}
 .kon-steps li.now{color:var(--ink);font-weight:600}
 .kon-steps li.now::marker{color:var(--vd)}
+
+/* ---------- tool: pascal ---------- */
+.sv .pa-c{fill:var(--panel);stroke:var(--rule);stroke-width:1.2}
+.sv .pa-on{stroke:var(--c);stroke-width:1.6}
+.sv circle[data-pick]:hover{stroke:var(--ink-soft)}
+
+/* ---------- tool: histogram (bars and pie slices share one palette) ---------- */
+.sv [class^="hi-"]{stroke:var(--panel);stroke-width:1.5;fill-opacity:.82}
+.sv .hi-0{fill:var(--va)} .sv .hi-1{fill:var(--vb)} .sv .hi-2{fill:var(--vd)} .sv .hi-3{fill:var(--dk)}
+.sv .hi-4{fill:var(--l4)} .sv .hi-5{fill:var(--l1)} .sv .hi-6{fill:var(--ink-soft)} .sv .hi-7{fill:var(--l2)}
+.sv .t.hi-t{stroke:none;fill:var(--panel);fill-opacity:1}
+.tw-out .tw-tab{font-size:13px} .tw-out .tw-tab th, .tw-out .tw-tab td{padding:4px 7px}

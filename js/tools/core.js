@@ -280,6 +280,10 @@ const toolNums = s => (String(s).match(/[-−]?\d+(?:[.,]\d+)?/g) || []).map(x =
 const toolWords = s => norm(s).split(/[,;]+/).map(x => x.trim()).filter(Boolean);
 const toolNum = n => String(round2(n));
 
+/* ---------- counting: n! and n over k ---------- */
+const fact = n => { let r = 1; for(let i = 2; i <= n; i++) r *= i; return r; };
+const binom = (n, k) => { if(k < 0 || k > n) return 0; let r = 1; for(let i = 1; i <= Math.min(k, n - k); i++) r = r * (n - i + 1) / i; return Math.round(r); };
+
 /* ---------- numeric: where a function crosses zero, and where it turns ---------- */
 function findRoots(f, lo, hi, n = 480){
   const out = [], h = (hi - lo) / n;
