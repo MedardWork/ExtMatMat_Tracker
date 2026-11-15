@@ -19,7 +19,7 @@ A tracker for preparing for the Slovak external maths maturita (plus Danish Mate
   it, update this file, commit, push. No questions needed.
 - **A batch** is one stretch between two arrows in that list (usually 2–4 topics, plus the new tool they
   need). Finish and push one batch before starting the next.
-- `main` holds everything listed under *Done* (last merged 2026-11-14). Start from `main`. If this file or a
+- `main` holds everything listed under *Done* (last merged 2026-11-15). Start from `main`. If this file or a
   theory file listed under *Done* is missing on the session's branch, the branch is behind: fast-forward
   it to `origin/main` first.
 - Before finishing: move the topics from *Next* to *Done* here, add anything new that bit, commit, push
@@ -31,15 +31,15 @@ A tracker for preparing for the Slovak external maths maturita (plus Danish Mate
 Agreed with the person on 2026-11-13, to save usage. `get_session` (no arguments) tells a session which
 model it runs on; it cannot switch itself, the person picks the model when starting the session.
 
-- **Strongest model (Fable):** a batch that needs a **new tool**. It writes the tool and the first topic
-  that uses it, as the pattern for the rest.
-- **Opus:** theory for topics whose tools already exist. Adding a small option to an existing tool is
-  fine; writing a new tool is not.
-- **No tool, no theory** (the person, 2026-11-14): if a topic has no tool of its own, do not write its
-  theory at all, not even with cards and examples or a tool borrowed from another topic. Put the topic
-  and the tool it needs under *Next* for Fable and go on with the next topic.
-- Each batch under *Next* is marked with the model it is meant for. If the session runs on the other
-  one, say so in one line at the start and wait for the person's answer before spending usage.
+- **Every tool is written** (Fable, 2026-11-15). What is left is theory, and that is **Opus's** job: the table
+  *Which tool for which topic* below says what to use where. Adding a small option to an existing tool is fine.
+- **Strongest model (Fable):** only if a topic turns out to need a genuinely new tool. Then note the topic and
+  the tool under *Next*, go on with the next topic, and tell the person.
+- **The aim is the best learning experience** (the person, 2026-11-15; this replaces the old rule "no tool, no
+  theory"). Use a tool wherever it helps to see or try something. Where a tool makes no sense (c37–c42 and
+  single subtopics elsewhere), write the theory without one: text, formula boxes, steps, cards, worked examples.
+- If the session runs on a model other than the one the work is meant for, say so in one line at the start
+  and wait for the person's answer before spending usage.
 - With any model, the page check does not catch wrong maths. Recompute every number of every worked
   example with `node -e` before committing, and read the Slovak once more as a reader would.
 
@@ -136,15 +136,70 @@ Nice to have, nothing skipped: `graf` axis ticks in multiples of π (b9 uses deg
 
 ### Next, in this order
 
-1. **Opus**, theory with existing tools, 2–4 topics per batch, in this order:
-   b29 (`premietanie`), b31 (`poloha`); KPŠ: a38 (`strom`), a39 (`pascal`), a40 (`strom`), a41 (`pravdepodobnost`), a42 (`histogram`),
-   b36 (`strom`), b37 (`pascal`), b38 b39 (`pravdepodobnost`), b41 (`statistika` with `var`), b42 (`histogram`, `rozdelenie` typ `binom`).
-   Danish part, in English, every tool with `en:true`: c1 c2 c4 c5 c6 c7 (`derivacia`), c3 (`derivacia` typ `dotycnica` with `der`, to check a
-   derivative found by the rules), c8–c12 (`integral`; c10 with `F`), c13–c18 (`smerpole`; c14 with `params`), c19 c20 (`analyticka` typ
-   `vektory`: `kolmy`, `plocha`, `priemet`), c21 (`analyticka` typ `priamka`; a parametric circle is a `graf` `curve`), c22–c25 (`vektory3d`),
-   c26 c27 c28 c30 (`rozdelenie`), c29 (`boxplot`), c31–c36 (`regresia`, `graf`).
-2. **Fable**: no tool is missing any more. c37–c42 (CAS, spreadsheets, formula booklet, exam wording, part 1 by hand,
-   oral proofs) have no tool of their own by nature: ask the person whether to write them without tools before starting.
+All for **Opus**, 2–4 topics per batch, each arrow is one batch:
+
+b29 b31 → a38 a39 a40 → a41 a42 → b36 b37 → b38 b39 → b41 b42 → c1 c2 c3 → c4 c5 → c6 c7 → c8 c9 c10 →
+c11 c12 → c13 c14 c15 → c16 c17 c18 → c19 c20 c21 → c22 c23 → c24 c25 → c26 c27 c28 → c29 c30 →
+c31 c32 c33 → c34 c35 c36 → c37 c38 c39 → c40 c41 c42
+
+### Which tool for which topic
+
+The 55 topics still without theory. Options are listed at the top of each tool's file; its presets on the
+Nástroje page show what it can draw. Tools of earlier topics may be used as well wherever they fit.
+For the Danish topics (`c…`) write in English and give **every** tool `en:true`.
+
+| Topic | Tools: typ and the options that matter |
+|---|---|
+| b29 | `premietanie` typ `teleso` (`teleso:"kvader"` with ω and q; `ihlan`, `valec`, `kuzel` for the three views), typ `kocky` (`vysky`; tasks with `ciel` and `goal:(P, st) => st.h.pr.ok`, `on:{obraz:false}` to build blind) |
+| b31 | `poloha` typ `priamky` (`p`, `q`; `on:{hrany:true}` counts the edges; task with `pevne:"p"` and `goal:(P, st) => st.h.pol.vztah === "mimobezne"`), typ `rovina`, typ `roviny`; `on:{miery:true}` for angle and distance |
+| a38 | `strom` typ `strom` (`volby`, `mena`, `nazvy`) for the rule of product and the tree; listing: typ `vyber` prints every outcome; rule of sum: two small trees, or `mnoziny` with counts |
+| a39 | `pascal` typ `faktorial`, typ `cislo`; `strom` typ `vyber` with `k = n` shows n! as a tree |
+| a40 | `strom` typ `vyber` (`on:{poradie:true}` variations / permutations, off = combinations); recognising the type: `toggles:["poradie", "opak"]` |
+| a41 | `pravdepodobnost` typ `kocka`, typ `kocky` (`jav`; `oznac:true` + `goal:(P, st) => st.h.pr.ok` as a task), typ `pokus`; `mnoziny` for events as sets |
+| a42 | `histogram` typ `pocetnosti` (`on:{stlpce, kruh, rel}`, `hodnoty`, `pocty`, `nazov`); reading a chart: `drag:false` and a question, or a task with a goal on `st.h.hist` |
+| b36 | `strom` typ `vyber` with `on:{poradie:true, opak:true}`; typ `slovo` |
+| b37 | `pascal` typ `trojuholnik` (`sucet`, `symetria`, `riadok`), typ `binom` (`ab:true`, or `p`, `q`, `k`) |
+| b38 | `pravdepodobnost` typ `javy` (`prienik`, `zjednotenie`, `opak`), typ `aspon`, typ `kocky` with `jav:"sestka"` |
+| b39 | `pravdepodobnost` typ `usecka`, typ `plocha` (`tvar:"kruh"`, `"terc"`, `"stretnutie"`) |
+| b41 | `statistika` with `on:{mean:true, var:true}`: two data sets with the same mean and a different spread |
+| b42 | `histogram` typ `triedenie` (`sirka`, `od`, `polygon`); `rozdelenie` typ `binom` for Bernoulli trials; `pravdepodobnost` typ `pokus` with `pokus:"jav"` for a sample against the whole |
+| c1 | `derivacia` typ `limita` (a hole, a jump; `inf:true` for x → ∞); `graf` with `pt … open:true` for continuity |
+| c2 | `derivacia` typ `secna` (`h`, `on:{dot:true}`); `graf` for a rate of change in a context |
+| c3 | `derivacia` typ `dotycnica` with `on:{der:true}`: type f, g, f + g, f · g and compare the dashed f′ with the rule |
+| c4 | `derivacia` typ `dotycnica` with `on:{der:true}` and `f:"x^3"`, `"sqrt(x)"`, `"1/x"`, `"exp(x)"`, `"ln(x)"`, `"sin(x)"`, `"2^x"` |
+| c5 | `derivacia` typ `dotycnica` (the equation comes from `h.der.m`, `h.der.q`) |
+| c6 | `derivacia` typ `priebeh` (`on:{der:true}`); optimisation: `graf` with a parameter and `turns` |
+| c7 | `derivacia` typ `newton` (`x0`, `n`; a bad start shows the failure) |
+| c8 | `integral` typ `plocha` with `F:"…"` (F(b) − F(a) next to the area) |
+| c9 | `integral` typ `sucty` (`druh`, `n`), typ `plocha` with `on:{funkcia:true}` |
+| c10 | `integral` typ `plocha` with `F` to check an antiderivative found by a rule or by substitution |
+| c11 | `integral` typ `medzi` (`f`, `g`; `auto:false` for limits set by hand) |
+| c12 | `integral` typ `rotacia`; `telesa` (`kuzel`, `gula`) to compare with the known formulas |
+| c13 | `smerpole` (`f`, `start`); `graf` to check that a given function fits |
+| c14 | `smerpole` with `params` (`"k*y"`, `"b - a*y"`, `"a*y*(M - y)"`, see its presets) |
+| c15 | `smerpole` (A is the initial condition) next to `graf` with the solved formula |
+| c16 | `smerpole` with `on:{euler:true}`, `h`, `n` (`h.sp.chyba` is Euler's error) |
+| c17 | `smerpole` with `on:{riesenie:false}`, `toggles:["riesenie"]`: guess the curve, then switch it on |
+| c18 | `smerpole` with the model's equation and `params`; `graf` for the solution |
+| c19 | `analyticka` typ `vektory` with `on:{kolmy:true}` / `on:{plocha:true}` |
+| c20 | `analyticka` typ `vektory` with `on:{priemet:true}` |
+| c21 | `analyticka` typ `priamka` with `on:{vektory:true}`; a parametric circle: `graf` `show:[{curve:["a + r*cos(t)", "b + r*sin(t)"], t:[0, "2pi"]}]` |
+| c22 | `vektory3d` typ `vektory` (`a`, `b`, `on:{sucin:true}` / `on:{uhol:true}`) |
+| c23 | `vektory3d` typ `rovina` (`P`, `n`; `smery:[[…], […]]` for the parametric form) |
+| c24 | `vektory3d` typ `priamka` (`P`, `r`, `t`), typ `gula` (`C`, `R`, `on:{bod:true}`) |
+| c25 | `vektory3d` typ `priamka` with `on:{rovina:true}` (intersection, angle) or `on:{bod:true}` (distance); typ `rovina` with `on:{bod:true}` |
+| c26 | `rozdelenie` typ `tabulka` (`x:[…]`, `p:[…]`) |
+| c27 | `rozdelenie` typ `binom` (`n`, `p`, `a`, `b`; `on:{normal:true}`) |
+| c28 | `rozdelenie` typ `normal` (`mu`, `sigma`, `os`, `a`, `b`; `on:{pravidlo:true}`) |
+| c29 | `boxplot` typ `skupiny` (`hranice`, `pocty`, `p`, `on:{kvartily:true, box:true}`), typ `data` (`data`, `data2`) |
+| c30 | `rozdelenie` typ `test` (`n`, `p`, `alfa`, `x`, `strana`) |
+| c31 | `graf` (`"b*a^x"`, `"b*exp(k*x)"`); `regresia` `model:"exp"` prints the doubling / halving time |
+| c32 | `graf` (`"b*x^a"`); `regresia` `model:"pot"` |
+| c33 | `graf` (`"A*sin(w*x + f) + d"` with sliders); `regresia` `model:"sin"` |
+| c34 | `regresia` with `os:"semilog"` and `os:"loglog"`, the same data on plain axes beside it |
+| c35 | `regresia`, one data set under several `model`s |
+| c36 | `regresia` with `on:{rezidua:true, graf2:true}` (a model that fits against one that bends away) |
+| c37–c42 | no tool (CAS, spreadsheets, formula booklet, exam wording, part 1 by hand, oral proofs): text, `def` boxes, steps, cards and worked examples; a `graf` or `derivacia` picture only where a by-hand example gains from it |
 
 ## How to add theory for a topic
 
@@ -218,5 +273,8 @@ Things that bite:
 - `fact(n)` and `binom(n, k)` are global (core.js), so are `V3.*` (vectors in space), `solidEdges`, `simpson`, `binomPmf`,
   `normCdf`, `fiveNum`, `regFit`: a theory `out` can use them to recompute a worked example.
 - `vektory3d`: a line that points straight at the viewer shows as a dot; change `otoc` / `sklon` rather than the line.
-- 2026-11-15: in that session `git push origin HEAD:main` was refused by the session's permission check (only the
-  working branch may be pushed). If it happens again, push the branch and tell the person that `main` still waits.
+- `git push origin HEAD:main` can be refused by the session's own permission check until the person says "merge to
+  main" in that session. Then push the branch, say that `main` still waits, and merge once they answer.
+- **Desktop app release:** bump `version` in `package.json` and both `version` fields at the top of `package-lock.json`,
+  merge to `main`, then push the tag `v<version>` (or *Actions → Desktop app → Run workflow* on `main`). The workflow
+  builds the three installers and publishes them under Releases. Do it whenever the person asks for a new download.
