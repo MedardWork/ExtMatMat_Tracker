@@ -64,7 +64,7 @@ Decided with the person, don't reopen:
 
 ### Done
 
-Theory, 71 of 126 topics: a1–a17, b1–b7 (Základy), a18 a19 a20 a21 a22 a23 a24 a25 a26 b8 b9 b10 b11 b12 b13 b14 b15 (Funkcie), a27–a35, b16–b28 (Planimetria), a36 a37 b30 b32–b35 (Stereometria), b40 (KPŠ).
+Theory, 73 of 126 topics: a1–a17, b1–b7 (Základy), a18 a19 a20 a21 a22 a23 a24 a25 a26 b8 b9 b10 b11 b12 b13 b14 b15 (Funkcie), a27–a35, b16–b28 (Planimetria), a36 a37 b29–b35 (Stereometria), b40 (KPŠ).
 Tools (each file starts with its options and its `presets`; `topics` in each says where it belongs):
 
 | Tool | For | What it does |
@@ -138,20 +138,18 @@ Nice to have, nothing skipped: `graf` axis ticks in multiples of π (b9 uses deg
 
 All for **Opus**, 2–4 topics per batch, each arrow is one batch:
 
-b29 b31 → a38 a39 a40 → a41 a42 → b36 b37 → b38 b39 → b41 b42 → c1 c2 c3 → c4 c5 → c6 c7 → c8 c9 c10 →
+a38 a39 a40 → a41 a42 → b36 b37 → b38 b39 → b41 b42 → c1 c2 c3 → c4 c5 → c6 c7 → c8 c9 c10 →
 c11 c12 → c13 c14 c15 → c16 c17 c18 → c19 c20 c21 → c22 c23 → c24 c25 → c26 c27 c28 → c29 c30 →
 c31 c32 c33 → c34 c35 c36 → c37 c38 c39 → c40 c41 c42
 
 ### Which tool for which topic
 
-The 55 topics still without theory. Options are listed at the top of each tool's file; its presets on the
+The 53 topics still without theory. Options are listed at the top of each tool's file; its presets on the
 Nástroje page show what it can draw. Tools of earlier topics may be used as well wherever they fit.
 For the Danish topics (`c…`) write in English and give **every** tool `en:true`.
 
 | Topic | Tools: typ and the options that matter |
 |---|---|
-| b29 | `premietanie` typ `teleso` (`teleso:"kvader"` with ω and q; `ihlan`, `valec`, `kuzel` for the three views), typ `kocky` (`vysky`; tasks with `ciel` and `goal:(P, st) => st.h.pr.ok`, `on:{obraz:false}` to build blind) |
-| b31 | `poloha` typ `priamky` (`p`, `q`; `on:{hrany:true}` counts the edges; task with `pevne:"p"` and `goal:(P, st) => st.h.pol.vztah === "mimobezne"`), typ `rovina`, typ `roviny`; `on:{miery:true}` for angle and distance |
 | a38 | `strom` typ `strom` (`volby`, `mena`, `nazvy`) for the rule of product and the tree; listing: typ `vyber` prints every outcome; rule of sum: two small trees, or `mnoziny` with counts |
 | a39 | `pascal` typ `faktorial`, typ `cislo`; `strom` typ `vyber` with `k = n` shows n! as a tree |
 | a40 | `strom` typ `vyber` (`on:{poradie:true}` variations / permutations, off = combinations); recognising the type: `toggles:["poradie", "opak"]` |
