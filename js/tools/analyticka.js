@@ -14,6 +14,8 @@
      view     [left, top, right, bottom]                          snap   1       grid the points snap to
      on, toggles, free, lock, hide    as in toolParams
      en       true      English texts (theory of the Danish topics)
+     On the tool's own page a line can be typed as an equation (2x − y + 3 = 0, y = 2x + 3) and a circle too
+     ((x − 1)² + (y + 2)² = 9 or x² + y² − 2x + 4y − 4 = 0): lineFromText / circleFromText below.
      out(P, h, st)     h.an — the measured values of the scene (see calc below), e.g. {d, S, u, n, k, q, a, b, c}
    Helper: linTex([[2, "x"], [-3, "y"], [5, ""]]) → "2x - 3y + 5"
    ============================================================ */
@@ -27,25 +29,62 @@ function linTex(terms, n = texN){
   return s || "0";
 }
 
+/* "2x − y + 3 = 0", "y = 2x + 3" → {a, b, c} of a·x + b·y + c = 0, or {error} */
+function lineFromText(text){
+  const parts = String(text).split("=");
+  if(parts.length > 2 || !parts[0].trim()) return {error:"Napíš rovnicu priamky, napríklad 2x − y + 3 = 0 alebo y = 2x + 3."};
+  const L = mathExpr(parts[0], []), Rr = mathExpr(parts.length === 2 && parts[1].trim() ? parts[1] : "0", []);
+  if(!L.ok || !Rr.ok) return {error:L.err || Rr.err};
+  if([...L.vars, ...Rr.vars].some(v => v !== "x" && v !== "y")) return {error:"V rovnici priamky môžu byť len x a y."};
+  const f = (x, y) => L.f({x, y}) - Rr.f({x, y}), c = f(0, 0), a = f(1, 0) - c, b = f(0, 1) - c;
+  if(![a, b, c].every(isFinite) || Math.abs(f(2, 3) - (2 * a + 3 * b + c)) > 1e-7 || Math.abs(f(-3, 5) - (-3 * a + 5 * b + c)) > 1e-7) return {error:"Toto nie je rovnica priamky (x a y smú byť len v prvej mocnine)."};
+  if(Math.abs(a) + Math.abs(b) < 1e-9) return {error:"V rovnici chýba x aj y."};
+  return {a, b, c};
+}
+/* two points of the line a·x + b·y + c = 0 that sit on the grid if any do */
+function linePoints(a, b, c){
+  const on = [], r3 = v => Math.round(v * 1000) / 1000;
+  for(let x = -8; x <= 8; x++) for(let y = -6; y <= 6; y++) if(Math.abs(a * x + b * y + c) < 1e-9) on.push([x, y]);
+  if(on.length >= 2) return [on[0], on[on.length - 1]];
+  return Math.abs(b) > 1e-9 ? [[-4, r3(-(a * -4 + c) / b)], [4, r3(-(a * 4 + c) / b)]] : [[r3(-c / a), -3], [r3(-c / a), 3]];
+}
+/* "(x − 1)² + (y + 2)² = 9", "x² + y² − 2x + 4y − 4 = 0" → {m, n, r}, or {error} */
+function circleFromText(text){
+  const parts = String(text).split("=");
+  if(parts.length !== 2 || !parts[0].trim() || !parts[1].trim()) return {error:"Napíš rovnicu kružnice, napríklad (x − 1)² + (y + 2)² = 9."};
+  const L = mathExpr(parts[0], []), Rr = mathExpr(parts[1], []);
+  if(!L.ok || !Rr.ok) return {error:L.err || Rr.err};
+  if([...L.vars, ...Rr.vars].some(v => v !== "x" && v !== "y")) return {error:"V rovnici kružnice môžu byť len x a y."};
+  const f = (x, y) => L.f({x, y}) - Rr.f({x, y}), c = f(0, 0);
+  const A = (f(1, 0) + f(-1, 0)) / 2 - c, D = (f(1, 0) - f(-1, 0)) / 2, B = (f(0, 1) + f(0, -1)) / 2 - c, E = (f(0, 1) - f(0, -1)) / 2;
+  const q = (x, y) => A * x * x + B * y * y + D * x + E * y + c;
+  if(![A, B, D, E, c].every(isFinite) || Math.abs(f(2, 3) - q(2, 3)) > 1e-6 || Math.abs(f(-3, 1.5) - q(-3, 1.5)) > 1e-6) return {error:"Toto nie je rovnica kružnice."};
+  if(Math.abs(A) < 1e-9 || Math.abs(A - B) > 1e-9) return {error:"Pri x² a y² musí byť rovnaký nenulový koeficient."};
+  const m = -D / (2 * A), n = -E / (2 * A), rr = m * m + n * n - c / A;
+  if(rr <= 1e-9) return {error:`Po úprave vyjde r² = ${fmtN(rr, 3)}: taká kružnica neexistuje.`};
+  const r4 = v => Math.round(v * 1e4) / 1e4;
+  return {m:r4(m), n:r4(n), r:r4(Math.sqrt(rr))};
+}
+
 defTool("analyticka", {
   name:"Analytická geometria",
   area:"Planimetria",
   desc:"Body, vektory, priamka a kružnica v súradniciach. Ťahaj body a sleduj vzdialenosť, rovnice, priesečníky a uhly.",
   topics:["b19", "b20", "b21", "b22", "b23", "b24", "b25"],
   presets:[
-    {name:"Vzdialenosť a stred", cfg:{typ:"body"}},
-    {name:"Deliaci pomer", cfg:{typ:"body", on:{pomer:true}}},
-    {name:"Vektory", cfg:{typ:"vektory", on:{sucet:true}}},
-    {name:"Násobok vektora", cfg:{typ:"vektory", on:{nasobok:true}}},
-    {name:"Skalárny súčin a uhol", cfg:{typ:"vektory", on:{uhol:true}}},
-    {name:"Rovnica priamky", cfg:{typ:"priamka", on:{vektory:true}}},
-    {name:"Vzdialenosť bodu od priamky", cfg:{typ:"priamka", on:{vzdialenost:true}}},
-    {name:"Dve priamky", cfg:{typ:"priamky"}},
-    {name:"Rovnobežky a ich vzdialenosť", cfg:{typ:"priamky", pts:{A:[-5, -2], B:[3, 2], C:[-3, 2], D:[3, 5]}}},
-    {name:"Kružnica a priamka", cfg:{typ:"kruznica"}},
-    {name:"Obsah trojuholníka", cfg:{typ:"obsah"}}
+    {name:"Vzdialenosť a stred", cfg:{typ:"body"}, tip:"Posuň body $A$, $B$ alebo im napíš súradnice. Vzdialenosť je prepona trojuholníka s odvesnami $|\\Delta x|$ a $|\\Delta y|$."},
+    {name:"Deliaci pomer", cfg:{typ:"body", on:{pomer:true}}, tip:"Nastav pomer $m : n$. Bod leží v $\\frac{m}{m+n}$ cesty z $A$ do $B$."},
+    {name:"Vektory", cfg:{typ:"vektory", on:{sucet:true}}, tip:"Ťahaj konce vektorov. Súčet je uhlopriečka rovnobežníka, súradnice sa sčítajú po zložkách."},
+    {name:"Násobok vektora", cfg:{typ:"vektory", on:{nasobok:true}}, tip:"Meň $k$. Čo urobí s vektorom záporné $k$ a čo $k$ medzi 0 a 1?"},
+    {name:"Skalárny súčin a uhol", cfg:{typ:"vektory", on:{uhol:true}}, tip:"Nájdi polohu, v ktorej je skalárny súčin 0. Vektory sú vtedy kolmé."},
+    {name:"Rovnica priamky", cfg:{typ:"priamka", on:{vektory:true}}, tip:"Priamku zadaj dvoma bodmi alebo napíš jej rovnicu. Uvidíš všeobecný, smernicový aj parametrický tvar."},
+    {name:"Vzdialenosť bodu od priamky", cfg:{typ:"priamka", on:{vzdialenost:true}}, tip:"Posuň bod $C$ na priamku a ďalej od nej. Vzdialenosť sa meria po kolmici."},
+    {name:"Dve priamky", cfg:{typ:"priamky"}, tip:"Obe priamky zadaj bodmi alebo rovnicami. Nástroj nájde priesečník a uhol, ktorý zvierajú."},
+    {name:"Rovnobežky a ich vzdialenosť", cfg:{typ:"priamky", pts:{A:[-5, -2], B:[3, 2], C:[-3, 2], D:[3, 5]}}, tip:"Rovnobežky majú rovnaký normálový vektor. Posuň bod $D$ a rovnobežnosť sa stratí."},
+    {name:"Kružnica a priamka", cfg:{typ:"kruznica"}, tip:"Kružnicu aj priamku môžeš zadať rovnicou. Počet spoločných bodov určí vzdialenosť stredu od priamky."},
+    {name:"Obsah trojuholníka", cfg:{typ:"obsah"}, tip:"Ťahaj vrcholy. Obsah je polovica absolútnej hodnoty determinantu z vektorov $\\overrightarrow{AB}$ a $\\overrightarrow{AC}$."}
   ],
-  help:"Body ťahaj myšou alebo im vpíš súradnice do polí vpravo.",
+  help:"Body ťahaj myšou alebo im vpíš súradnice do polí vpravo. Priamku môžeš napísať aj rovnicou, napríklad `2x - y + 3 = 0` alebo `y = 2x + 3`, kružnicu ako `(x - 1)^2 + (y + 2)^2 = 9` alebo vo všeobecnom tvare `x^2 + y^2 - 2x + 4y - 4 = 0`. Nástroj z rovnice prečíta body, stred a polomer.",
 
   make(cfg, env){
     const T = (sk, en) => cfg.en ? en : sk;
@@ -58,9 +97,9 @@ defTool("analyticka", {
     const points = {};
     for(const n in start){ const p = (cfg.pts && cfg.pts[n]) || start[n]; points[n] = [p[0], p[1], {fixed:(cfg.fixed || []).includes(n), color:colors[n], name:typ === "vektory" ? "" : n}]; }
     const ck = (name, color) => ({type:"check", v:false, name, color});
-    const defs = typ === "body" ? {pomer:ck(T("Bod deliaci AB v pomere m : n", "Point dividing AB in the ratio m : n"), "d"), m:{v:1, min:1, max:6, step:1, color:"d"}, n:{v:2, min:1, max:6, step:1, color:"d"}}
+    const defs = typ === "body" ? {pomer:ck(T("Bod deliaci AB v pomere m : n", "Point dividing AB in the ratio m : n"), "d"), m:{v:1, min:1, max:6, step:1, color:"d", when:P => !!P.pomer}, n:{v:2, min:1, max:6, step:1, color:"d", when:P => !!P.pomer}}
       : typ === "vektory" ? {sucet:ck(T("Súčet u + v", "Sum u + v"), "d"), rozdiel:ck(T("Rozdiel u − v", "Difference u − v"), "c"), uhol:ck(T("Skalárny súčin a uhol", "Dot product and angle")), kolmy:ck(T("Kolmý vektor k u", "Vector perpendicular to u")), plocha:ck(T("Determinant a rovnobežník", "Determinant and parallelogram")), priemet:ck(T("Priemet u do smeru v", "Projection of u onto v")), nasobok:ck(T("Násobok k · u", "Multiple k · u"), "d"),
-          k:env.full || (cfg.on && cfg.on.nasobok) || cfg.k != null ? {v:2, min:-3, max:3, step:.5, color:"d"} : null}
+          k:env.full || (cfg.on && cfg.on.nasobok) || cfg.k != null ? {v:2, min:-3, max:3, step:.5, color:"d", when:P => !!P.nasobok} : null}
       : typ === "priamka" ? {vektory:ck(T("Smerový a normálový vektor", "Direction and normal vector"), "b"), vzdialenost:ck(T("Vzdialenosť bodu C", "Distance of the point C"), "d")}
       : typ === "kruznica" ? {r:{v:4, min:1, max:6, step:.5, color:"b", note:T("polomer", "radius")}} : {};
     const params = toolParams(defs, cfg, env);
@@ -108,10 +147,37 @@ defTool("analyticka", {
       return {det, S:Math.abs(det) / 2, u:[P.Bx - P.Ax, P.By - P.Ay], v:[P.Cx - P.Ax, P.Cy - P.Ay]};
     };
     const C = st => toolDerive(st, "an", calc);
+    /* typed equations (the tool's own page): the field shows the current line or circle and can be rewritten */
+    const eqTxt = l => linTex([[l.a, "x"], [l.b, "y"], [l.c, ""]], v => fmtN(v, 3)) + " = 0";
+    const lineIn = (name, p1, p2, get) => ({
+      label:T(`Priamka ${name} rovnicou`, `Line ${name} as an equation`), wide:true, keys:["x", "y", "=", "+", "−"],
+      read:st => { const l = get(C(st)); return l && l.ok ? eqTxt(l) : ""; },
+      apply(text, st){
+        const l = lineFromText(text);
+        if(l.error) return l;
+        const [q1, q2] = linePoints(l.a, l.b, l.c);
+        return Object.assign({}, cfg, {pts:Object.assign({}, livePts(st), {[p1]:q1, [p2]:q2})});
+      }
+    });
+    const livePts = st => { const o = {}; for(const n in points) o[n] = st ? [st.P[n + "x"], st.P[n + "y"]] : points[n].slice(0, 2); return o; };
+    const sq = (v, s) => Math.abs(v) < 1e-9 ? `${s}²` : `(${s} ${v < 0 ? "+" : "−"} ${fmtN(Math.abs(v), 3)})²`;
+    const inputs = typ === "priamka" ? [lineIn("AB", "A", "B", r => r)]
+      : typ === "priamky" ? [lineIn("AB", "A", "B", r => r.p), lineIn("CD", "C", "D", r => r.q)]
+      : typ === "kruznica" ? [{
+          label:T("Kružnica rovnicou", "Circle as an equation"), wide:true, keys:["x", "y", "²", "=", "+", "−"],
+          read:st => `${sq(st.P.Sx, "x")} + ${sq(st.P.Sy, "y")} = ${fmtN(st.P.r * st.P.r, 3)}`,
+          apply(text, st){
+            const c = circleFromText(text);
+            if(c.error) return c;
+            st.P.r = c.r;   /* values are kept across the rebuild, so the new radius goes in first */
+            return Object.assign({}, cfg, {r:{v:c.r, max:Math.max(6, Math.ceil(c.r))}, pts:Object.assign({}, livePts(st), {S:[c.m, c.n]})});
+          }
+        }, lineIn("AB", "A", "B", r => r.l)] : null;
 
     return {
       params, points, snap:cfg.snap || 1,
       hint:T("Body ťahaj alebo im vpíš súradnice.", "Drag the points or type their coordinates."),
+      inputs,
       board:{bbox:cfg.view || [-9, 7, 9, -7], aspect:"9/7"},
       draw(g, P, st){
         const K = () => C(st), on = (id, f) => () => P[id] ? f() : NaN;

@@ -72,7 +72,9 @@ function drawToolPage(host){
 
 function placeTool(){
   const key = `page:${tp.tool}:${uid()}`;
-  $("#toolHost").innerHTML = toolFigure(Object.assign({}, tp.blk, {ask:null, take:null, hint:null, goal:null}), key, "tw-full");
+  /* an example may say what to try with it: the line above the tool, as "ask" is in theory */
+  const pre = tp.preset != null && TOOLS[tp.tool].presets ? TOOLS[tp.tool].presets[tp.preset] : null;
+  $("#toolHost").innerHTML = toolFigure(Object.assign({}, tp.blk, {kind:"skus", ask:pre && pre.tip || null, take:null, hint:null, goal:null}), key, "tw-full");
 }
 
 action("tool-preset", el => {

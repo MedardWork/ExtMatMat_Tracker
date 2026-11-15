@@ -20,16 +20,16 @@ defTool("vektory3d", {
   desc:"Vektorový súčin, rovnica roviny, priamka v priestore a guľa v otočnom pohľade.",
   topics:["c22", "c23", "c24", "c25"],
   presets:[
-    {name:"Vektorový súčin", cfg:{typ:"vektory", on:{sucin:true}}},
-    {name:"Skalárny súčin a uhol", cfg:{typ:"vektory", on:{uhol:true}}},
-    {name:"Rovnica roviny", cfg:{typ:"rovina"}},
-    {name:"Rovina z dvoch smerov", cfg:{typ:"rovina", smery:[[2, 0, 1], [0, 2, 1]], P:[0, 0, 1]}},
-    {name:"Vzdialenosť bodu od roviny", cfg:{typ:"rovina", on:{bod:true}}},
-    {name:"Priamka v priestore", cfg:{typ:"priamka"}},
-    {name:"Priamka a rovina", cfg:{typ:"priamka", on:{rovina:true}}},
-    {name:"Guľa", cfg:{typ:"gula", on:{bod:true}}}
+    {name:"Vektorový súčin", cfg:{typ:"vektory", on:{sucin:true}}, tip:"Prepíš súradnice vektorov. Vektor $\\vec a \\times \\vec b$ je kolmý na oba a jeho dĺžka sa rovná obsahu rovnobežníka."},
+    {name:"Skalárny súčin a uhol", cfg:{typ:"vektory", on:{uhol:true}}, tip:"Nastav vektory tak, aby bol skalárny súčin 0. Aký uhol vtedy zvierajú?"},
+    {name:"Rovnica roviny", cfg:{typ:"rovina"}, tip:"Zmeň normálový vektor $\\vec n$ a bod $P$. Koeficienty pri $x$, $y$, $z$ sú súradnice normály."},
+    {name:"Rovina z dvoch smerov", cfg:{typ:"rovina", smery:[[2, 0, 1], [0, 2, 1]], P:[0, 0, 1]}, tip:"Rovina je daná bodom a dvoma smerovými vektormi. Normálu dá ich vektorový súčin."},
+    {name:"Vzdialenosť bodu od roviny", cfg:{typ:"rovina", on:{bod:true}}, tip:"Prepíš bod $Q$ a sleduj dosadenie do vzorca. Kedy vyjde vzdialenosť 0?"},
+    {name:"Priamka v priestore", cfg:{typ:"priamka"}, tip:"Meň parameter $t$: bod sa posúva po priamke. Pre $t = 0$ je v bode $P$."},
+    {name:"Priamka a rovina", cfg:{typ:"priamka", on:{rovina:true}}, tip:"Zmeň smer priamky tak, aby bola s rovinou rovnobežná. Čo sa stane s priesečníkom?"},
+    {name:"Guľa", cfg:{typ:"gula", on:{bod:true}}, tip:"Presuň bod $Q$ dovnútra gule, na jej povrch a von. Rozhoduje porovnanie $|CQ|$ s polomerom."}
   ],
-  help:"Pohľad otočíš posuvníkmi **otoč** a **sklon**, alebo ťahaním myšou po obrázku.",
+  help:"Súradnice vektorov a bodov sa píšu priamo do políčok (šípky ↑ ↓ ich menia po jednej). Pohľad otočíš posuvníkmi **otoč** a **sklon**, alebo ťahaním myšou po obrázku.",
 
   make(cfg, env){
     const T = (sk, en) => cfg.en ? en : sk;
@@ -37,15 +37,19 @@ defTool("vektory3d", {
     const RNG = cfg.rozsah || 4, smery = typ === "rovina" && cfg.smery ? cfg.smery : null;
     /* three sliders for one vector or point; cfg may give it whole as [x, y, z] */
     const c2 = Object.assign({}, cfg);
-    const vec = (k, def, color, name) => { const v = Array.isArray(cfg[k]) ? cfg[k] : def; delete c2[k]; return Object.fromEntries([0, 1, 2].map(i => [k + (i + 1), {v:v[i], min:-RNG, max:RNG, step:1, color, name:`${name || k}${"₁₂₃"[i]}`}])); };
+    /* note + sw: what the row is, and the switch it belongs to (it is listed only while that switch is on) */
+    const vec = (k, def, color, name, note, sw) => { const v = Array.isArray(cfg[k]) ? cfg[k] : def; delete c2[k]; return Object.fromEntries([0, 1, 2].map(i => [k + (i + 1),
+      {v:v[i], min:-RNG, max:RNG, step:1, color, name:`${name || k}${"₁₂₃"[i]}`, row:k, rowName:name || k, rowNote:note, when:sw ? P => !!P[sw] : null}])); };
     const ck = (name, color) => ({type:"check", v:false, name, color});
-    const Qd = vec("Q", typ === "gula" ? [3, 2, 2] : [3, 3, 4], "d");
+    const Qd = vec("Q", typ === "gula" ? [3, 2, 2] : [3, 3, 4], "d", null, T("bod", "point"), "bod");
+    /* on the tool's own page the two directions of a plane can be retyped */
+    const dirs = smery && env.full ? Object.assign(vec("u", smery[0], "c", "r₁", "smer"), vec("v", smery[1], "c", "r₂", "smer")) : null;
     const defs = Object.assign({},
-      typ === "vektory" ? Object.assign(vec("a", [2, 1, 0], "a"), vec("b", [0, 2, 1], "b"), {sucin:ck(T("Vektorový súčin a × b", "Cross product a × b"), "d"), uhol:ck(T("Skalárny súčin a uhol", "Dot product and angle"), "c")})
-      : typ === "rovina" ? Object.assign(vec("P", [1, 1, 2], "a"), smery ? null : vec("n", [1, 1, 2], "b"), {bod:ck(T("Vzdialenosť bodu Q od roviny", "Distance of the point Q from the plane"), "d")}, Qd)
-      : typ === "priamka" ? Object.assign(vec("P", [-3, -2, 0], "a"), vec("r", [1, 2, 1], "b"), {t:{v:1, min:-3, max:3, step:.5, color:"c", note:T("parameter", "parameter")},
-          rovina:ck(T("Rovina: priesečník a uhol", "A plane: intersection and angle"), "d"), bod:ck(T("Vzdialenosť bodu Q od priamky", "Distance of the point Q from the line"), "d")}, vec("n", [0, 0, 1], "d"), vec("S", [0, 0, 3], "d"), Qd)
-      : Object.assign(vec("C", [1, 1, 1], "a"), {R:{v:2.5, min:1, max:3, step:.5, color:"b", note:T("polomer", "radius")}, bod:ck(T("Bod Q", "The point Q"), "d")}, Qd),
+      typ === "vektory" ? Object.assign(vec("a", [2, 1, 0], "a", null, T("vektor", "vector")), vec("b", [0, 2, 1], "b", null, T("vektor", "vector")), {sucin:ck(T("Vektorový súčin a × b", "Cross product a × b"), "d"), uhol:ck(T("Skalárny súčin a uhol", "Dot product and angle"), "c")})
+      : typ === "rovina" ? Object.assign(vec("P", [1, 1, 2], "a", null, T("bod roviny", "point of the plane")), smery ? dirs : vec("n", [1, 1, 2], "b", null, T("normála", "normal")), {bod:ck(T("Vzdialenosť bodu Q od roviny", "Distance of the point Q from the plane"), "d")}, Qd)
+      : typ === "priamka" ? Object.assign(vec("P", [-3, -2, 0], "a", null, T("bod priamky", "point of the line")), vec("r", [1, 2, 1], "b", null, T("smer", "direction")), {t:{v:1, min:-3, max:3, step:.5, color:"c", note:T("parameter", "parameter")},
+          rovina:ck(T("Rovina: priesečník a uhol", "A plane: intersection and angle"), "d"), bod:ck(T("Vzdialenosť bodu Q od priamky", "Distance of the point Q from the line"), "d")}, vec("n", [0, 0, 1], "d", null, T("normála roviny", "normal of the plane"), "rovina"), vec("S", [0, 0, 3], "d", null, T("bod roviny", "point of the plane"), "rovina"), Qd)
+      : Object.assign(vec("C", [1, 1, 1], "a", null, T("stred", "centre")), {R:{v:2.5, min:1, max:3, step:.5, color:"b", note:T("polomer", "radius")}, bod:ck(T("Bod Q", "The point Q"), "d")}, Qd),
       {otoc:{v:25, min:-180, max:180, step:5, name:T("otoč", "turn"), plain:true}, sklon:{v:20, min:5, max:85, step:5, name:T("sklon", "tilt"), plain:true}});
     const params = toolParams(defs, c2, env);
     /* points of objects that are switched off are not listed among the sliders */
@@ -87,8 +91,9 @@ defTool("vektory3d", {
         const a = V(P, "a"), b = V(P, "b");
         Object.assign(r, {a, b, kriz:cross(a, b), skal:dot(a, b), obsah:len(cross(a, b)), uhol:len(a) && len(b) ? Math.acos(Math.max(-1, Math.min(1, dot(a, b) / (len(a) * len(b))))) * 180 / Math.PI : NaN});
       } else if(typ === "rovina"){
-        const P0 = V(P, "P"), n = smery ? cross(smery[0], smery[1]) : V(P, "n"), Q = V(P, "Q");
-        Object.assign(r, {P0, n, d:-dot(n, P0), Q});
+        const sm = smery ? (params.u1 ? [V(P, "u"), V(P, "v")] : smery) : null;
+        const P0 = V(P, "P"), n = sm ? cross(sm[0], sm[1]) : V(P, "n"), Q = V(P, "Q");
+        Object.assign(r, {P0, n, d:-dot(n, P0), Q, sm});
         if(len(n) > 1e-9){ const w = dot(n, sub(Q, P0)); r.vzd = Math.abs(w) / len(n); r.X = sub(Q, mul(n, w / dot(n, n))); }
       } else if(typ === "priamka"){
         const P0 = V(P, "P"), d = V(P, "r"), n = V(P, "n"), S = V(P, "S"), Q = V(P, "Q");
@@ -131,7 +136,7 @@ defTool("vektory3d", {
           const poly = len(r.n) > 1e-9 ? patch(r.P0, r.n).map(v.p) : [];
           if(poly.length > 2) h += SV.poly(poly, "bg cb po-pl") + SV.poly(poly, "s cb w1");
           h += axes;
-          if(smery) h += arrow(r.P0, add(r.P0, smery[0]), "cc", "r₁") + arrow(r.P0, add(r.P0, smery[1]), "cc", "r₂");
+          if(smery) h += arrow(r.P0, add(r.P0, r.sm[0]), "cc", "r₁") + arrow(r.P0, add(r.P0, r.sm[1]), "cc", "r₂");
           h += arrow(r.P0, add(r.P0, r.n), "cb", "n") + dot3(r.P0, "ca", "P");
           if(P.bod && r.X) h += seg(r.Q, r.X, "s cd w3") + SG.dot(v.p(r.X), "f cd", 3.5) + dot3(r.Q, "cd", "Q");
         } else if(typ === "priamka"){
@@ -180,7 +185,7 @@ defTool("vektory3d", {
         }
         if(typ === "rovina"){
           if(len(r.n) < 1e-9) return h.pill(smery ? T("smerové vektory sú rovnobežné: rovinu neurčujú", "the direction vectors are parallel: no plane") : T("normálový vektor nesmie byť nulový", "the normal vector must not be zero"), "flat");
-          return (smery ? h.calc(`\\begin{pmatrix}x\\\\y\\\\z\\end{pmatrix} = \\va{${col(r.P0)}} + s \\vc{${col(smery[0])}} + t \\vc{${col(smery[1])}}`) + h.calc(`\\vb{\\vec n} = \\vec r_1 \\times \\vec r_2 = \\vb{${col(r.n)}}`)
+          return (smery ? h.calc(`\\begin{pmatrix}x\\\\y\\\\z\\end{pmatrix} = \\va{${col(r.P0)}} + s \\vc{${col(r.sm[0])}} + t \\vc{${col(r.sm[1])}}`) + h.calc(`\\vb{\\vec n} = \\vec r_1 \\times \\vec r_2 = \\vb{${col(r.n)}}`)
               : h.calc(`\\va{P}${pt(r.P0)}, \\qquad \\vb{\\vec n} = \\vb{${col(r.n)}}`))
             + h.calc(`${r.n.map((v, i) => `${v < 0 ? "-" : i ? "+" : ""} \\vb{${tn(Math.abs(v))}}${r.P0[i] ? `(${"xyz"[i]} ${r.P0[i] < 0 ? "+" : "-"} ${tn(Math.abs(r.P0[i]))})` : "xyz"[i]}`).join(" ")} = 0`) + h.calc(plane(r.n, r.d))
             + (P.bod ? h.calc(`\\text{dist}(\\vd{Q}, \\alpha) = \\dfrac{|${linTex([[r.n[0], `\\cdot ${r.Q[0] < 0 ? `(${tn(r.Q[0])})` : tn(r.Q[0])}`], [r.n[1], `\\cdot ${r.Q[1] < 0 ? `(${tn(r.Q[1])})` : tn(r.Q[1])}`], [r.n[2], `\\cdot ${r.Q[2] < 0 ? `(${tn(r.Q[2])})` : tn(r.Q[2])}`], [r.d, ""]], v => texN(v))}|}{\\sqrt{${tn(dot(r.n, r.n))}}} ${eq(r.vzd)} \\vd{${tn(r.vzd)}}`) : "");

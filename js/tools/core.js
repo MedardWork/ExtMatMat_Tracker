@@ -5,11 +5,18 @@
      · inside theory or a note, pre-filled, with only the values that matter there unlocked.
    make() returns a widget:
      params   {id: {v, min, max, step, lock, color, name, note, type:"check"}}   sliders / switches
+              type:"pick", opts:["a", "b"]   one of several (v = its index); locked like a switch
+              when:P => …                    the control is listed only while this holds
+              row:"a", rowName, rowNote      on the tool's own page neighbours with the same row share one line
+                                             of typed fields (a vector's coordinates) instead of three sliders
      points   {A:[x, y]}            draggable points — read them as P.Ax, P.Ay
      board    {bbox, tick, free, axes, axis, aspect}   → drawn with JSXGraph: draw(g, P, st)
      svg(P, st) + bind(el, st)      → or drawn as plain SVG, re-rendered on every change
      out(P, h, st)                  the text beside the picture
-     inputs / actions               text fields and buttons (full page, or once unlocked)
+     picks    [{name, opts:["priamka", "parabola"], v:0, set(k, st) → cfg}]   on the tool's own page: a choice that
+                                    rebuilds the tool from another config (a model, a kind of scene) and keeps the data
+     inputs / actions               text fields and buttons (full page, or once unlocked);
+                                    an input may list keys:["∩", "∪"]: buttons that type the symbol
    Any element <figure class="tw" data-tool="…"> that appears inside #view is mounted automatically
    and cleaned up when it leaves the page.
    ============================================================ */
@@ -578,21 +585,38 @@ function toolCtl(st){
   const w = st.w;
   let h = "";
   if(w.hint) h += `<div class="tw-drag">${TW_HAND}<span>${inline(w.hint)}</span></div>`;
-  for(const id in w.params){
-    const p = w.params[id], locked = p.lock && !st.open;
+  if(st.env.full && w.picks) w.picks.forEach((pk, i) => {
+    h += `<div class="tw-pm pick" role="group" aria-label="${esc(pk.name || "")}">${pk.name ? `<span class="tw-pn plain">${esc(pk.name)}</span>` : ""}<div class="tw-seg">${pk.opts.map((o, k) =>
+      `<button type="button" id="tw-${st.n}-cp${i}-${k}" data-cp="${i}" data-v="${k}" aria-pressed="${pk.v === k}"${pk.v === k ? ' class="on"' : ""}>${esc(o)}</button>`).join("")}</div></div>`;
+  });
+  const rows = st.env.full || st.root.classList.contains("tw-note"), ids = Object.keys(w.params);
+  const numField = (id, p, fid) => `<input type="text" inputmode="decimal" class="tw-num" id="${fid}-n" data-pn="${id}" value="${fmtN(st.P[id], 4)}" autocomplete="off" aria-label="Hodnota ${esc(p.name || id)}, môžeš ju prepísať" title="Klikni a napíš vlastnú hodnotu; šípky ↑ ↓ ju menia po krokoch">`;
+  for(let i = 0; i < ids.length; i++){
+    const id = ids[i], p = w.params[id], locked = p.lock && !st.open;
+    if(p.when && !p.when(st.P, st)) continue;
     const cls = p.color ? " c-" + p.color : "";
     const name = `<span class="tw-pn${p.color && TW_COLOR[p.color] ? " " + TW_COLOR[p.color] : ""}${p.type === "check" || p.plain ? " plain" : ""}">${esc(p.name || id)}${p.note ? `<small>${esc(p.note)}</small>` : ""}</span>`;
     const fid = `tw-${st.n}-${id}`;
     if(p.type === "check"){
       if(locked) continue;
       h += `<label class="tw-pm check${cls}" for="${fid}"><input type="checkbox" id="${fid}" data-p="${id}"${st.P[id] ? " checked" : ""}>${name}</label>`;
+    } else if(p.type === "pick"){
+      if(locked) continue;
+      h += `<div class="tw-pm pick" role="group" aria-label="${esc(p.name || id)}">${p.name ? `<span class="tw-pn plain">${esc(p.name)}</span>` : ""}<div class="tw-seg">${p.opts.map((o, k) =>
+        `<button type="button" id="${fid}-k${k}" data-pk="${id}" data-v="${k}" aria-pressed="${st.P[id] === k}"${st.P[id] === k ? ' class="on"' : ""}>${esc(o)}</button>`).join("")}</div></div>`;
+    } else if(p.row && rows && !locked){
+      /* a vector or a point in space: its coordinates side by side, typed */
+      let cells = "";
+      for(; i < ids.length && w.params[ids[i]].row === p.row; i++) cells += numField(ids[i], w.params[ids[i]], `tw-${st.n}-${ids[i]}`);
+      i--;
+      h += `<div class="tw-pm vec${cls}"><span class="tw-pn${p.color && TW_COLOR[p.color] ? " " + TW_COLOR[p.color] : ""}">${esc(p.rowName || p.row)}${p.rowNote ? `<small>${esc(p.rowNote)}</small>` : ""}</span><span class="tw-vec">${cells}</span></div>`;
     } else if(locked){
       if(p.hide) continue;
       h += `<div class="tw-pm lock${cls}" title="V tejto ukážke zamknuté">${name}${TW_LOCK}<output>${fmtN(st.P[id])}</output></div>`;
     } else {
       const lim = st.lim[id] || p;
       h += `<div class="tw-pm${cls}"><label class="tw-pl" for="${fid}">${name}</label>
-        <input type="text" inputmode="decimal" class="tw-num" id="${fid}-n" data-pn="${id}" value="${fmtN(st.P[id], 4)}" autocomplete="off" aria-label="Hodnota ${esc(p.name || id)}, môžeš ju prepísať" title="Klikni a napíš vlastnú hodnotu">
+        ${numField(id, p, fid)}
         <input type="range" id="${fid}" data-p="${id}" min="${lim.min}" max="${lim.max}" step="${p.step || 1}" value="${st.P[id]}"></div>`;
     }
   }
@@ -607,10 +631,20 @@ function toolCtl(st){
   st.ctl.innerHTML = h;
 }
 
+/* the list of controls again (a switch or a choice may show or hide others) without losing the focus */
+function toolCtlRedraw(st){
+  const a = document.activeElement, id = a && st.ctl.contains(a) ? a.id : null;
+  toolCtl(st);
+  const e = id && document.getElementById(id);
+  if(e) e.focus();
+}
+const toolHasWhen = st => Object.values(st.w.params).some(p => p.when);
+
 function toolInputs(st){
   const ins = st.env.full && st.w.inputs || [];
   st.inputsEl.innerHTML = ins.map((x, i) =>
     `<label class="tw-in${x.wide ? " wide" : ""}"><span>${inline(x.label)}</span><input type="text" data-wi="${i}" id="tw-${st.n}-in${i}" value="${esc(x.read ? x.read(st) : x.value)}" spellcheck="false" autocomplete="off" autocapitalize="off"></label>`
+    + (x.keys ? `<div class="tw-keys" role="group" aria-label="Vložiť znak">${x.keys.map(k => `<button type="button" data-wk="${i}" data-k="${esc(k)}">${esc(k)}</button>`).join("")}</div>` : "")
     + `<div class="tw-err" data-we="${i}">${x.error ? esc(x.error) : ""}</div>`).join("");
 }
 
@@ -684,7 +718,7 @@ function mountTool(el){
     toolInputs(st); toolCtl(st); toolFoot(st);
     const applyInput = debounce(inp => {
       const x = st.w.inputs[Number(inp.dataset.wi)];
-      const r = x.apply(inp.value);
+      const r = x.apply(inp.value, st);
       const err = $(`[data-we="${inp.dataset.wi}"]`, st.inputsEl);
       if(r && r.error){ err.textContent = r.error; return; }
       err.textContent = "";
@@ -698,6 +732,7 @@ function mountTool(el){
       st.P[id] = t.type === "checkbox" ? t.checked : round2(Number(t.value));
       const o = document.getElementById(t.id + "-n");
       if(o) o.value = fmtN(st.P[id], 4);
+      if(t.type === "checkbox" && toolHasWhen(st)) toolCtlRedraw(st);
       toolUpdate(st);
     });
     /* a value typed into a slider's number or a point's coordinate; on its own page the range grows to fit */
@@ -735,11 +770,39 @@ function mountTool(el){
       }
     };
     body.addEventListener("change", e => { if(e.target.classList.contains("tw-num")) commit(e.target); });
-    body.addEventListener("keydown", e => { if(e.key === "Enter" && e.target.classList.contains("tw-num")){ e.preventDefault(); commit(e.target); e.target.select(); } });
+    body.addEventListener("keydown", e => {
+      const t = e.target;
+      if(!t.classList.contains("tw-num")) return;
+      if(e.key === "Enter"){ e.preventDefault(); commit(t); t.select(); }
+      else if(e.key === "ArrowUp" || e.key === "ArrowDown"){
+        /* a step up or down, ten steps with Shift */
+        const p = t.dataset.pn ? st.w.params[t.dataset.pn] : null, cur = toolParse(t.value);
+        if(isNaN(cur)) return;
+        e.preventDefault();
+        const step = (p ? p.step || 1 : st.w.snap || 1) * (e.shiftKey ? 10 : 1) * (e.key === "ArrowUp" ? 1 : -1);
+        t.value = String(Math.round((cur + step) * 1e4) / 1e4);
+        commit(t); t.select();
+      }
+    });
     body.addEventListener("focusin", e => { if(e.target.classList.contains("tw-num")) e.target.select(); });
     body.addEventListener("click", e => {
       const act = e.target.closest("[data-wa]");
-      if(act){ st.w.actions[Number(act.dataset.wa)].run(st); toolUpdate(st); return; }
+      if(act){ st.w.actions[Number(act.dataset.wa)].run(st); if(toolHasWhen(st)) toolCtlRedraw(st); toolUpdate(st); return; }
+      const cp = e.target.closest("[data-cp]");
+      if(cp){
+        const c = st.w.picks[Number(cp.dataset.cp)].set(Number(cp.dataset.v), st);
+        if(c){ toolRemake(st, c, true); toolInputs(st); const b = document.getElementById(cp.id); if(b) b.focus(); }
+        return;
+      }
+      const pick = e.target.closest("[data-pk]");
+      if(pick){ st.P[pick.dataset.pk] = Number(pick.dataset.v); toolCtlRedraw(st); toolUpdate(st); return; }
+      const key = e.target.closest("[data-wk]");
+      if(key){
+        const inp = $(`[data-wi="${key.dataset.wk}"]`, st.inputsEl), at = inp.selectionStart == null ? inp.value.length : inp.selectionStart;
+        inp.setRangeText(key.dataset.k, at, inp.selectionEnd == null ? at : inp.selectionEnd, "end");
+        inp.focus(); applyInput(inp);
+        return;
+      }
       const btn = e.target.closest("[data-wf]");
       if(!btn) return;
       if(btn.dataset.wf === "tools"){
@@ -788,6 +851,9 @@ function toolParams(defs, cfg, env){
     const p = toolOver(Object.assign({}, defs[id]), cfg[id]);
     if(p.type === "check"){
       if(cfg.on && id in cfg.on) p.v = !!cfg.on[id];
+      p.lock = !(env.full || cfg.note || has(cfg.toggles, id));
+    } else if(p.type === "pick"){
+      p.v = Math.max(0, Math.min(p.opts.length - 1, Math.round(Number(p.v)) || 0));
       p.lock = !(env.full || cfg.note || has(cfg.toggles, id));
     } else {
       if(cfg.free) p.lock = !cfg.free.includes(id);
@@ -903,9 +969,9 @@ function toolCtlSync(st){
   if(!st.ctl) return;
   $$("[data-p]", st.ctl).forEach(el => {
     const v = st.P[el.dataset.p];
-    if(el.type === "checkbox") el.checked = !!v;
-    else { el.value = v; const o = document.getElementById(el.id + "-n"); if(o && o !== document.activeElement) o.value = fmtN(v, 4); }
+    if(el.type === "checkbox") el.checked = !!v; else el.value = v;
   });
+  $$("[data-pn]", st.ctl).forEach(el => { if(el !== document.activeElement) el.value = fmtN(st.P[el.dataset.pn], 4); });
 }
 
 /* where a pointer event landed, in the picture's own (viewBox) units */
@@ -959,7 +1025,7 @@ function toolTextOut(st){
   (st.tool.textKeys || []).forEach(k => { if(st.cfg[k] != null) out.push(`${k}: ${st.cfg[k]}`); });
   for(const id in st.w.params){
     const p = st.w.params[id];
-    out.push(`${id}: ${p.type === "check" ? (st.P[id] ? "áno" : "nie") : toolNum(st.P[id])}`);
+    out.push(`${id}: ${p.type === "check" ? (st.P[id] ? "áno" : "nie") : toolNum(st.P[id])}`);   /* a choice is saved as its index */
   }
   return out.join("\n");
 }

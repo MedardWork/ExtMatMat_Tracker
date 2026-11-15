@@ -42,18 +42,19 @@ defTool("pravdepodobnost", {
   desc:"Priaznivé ku všetkým na dvoch kockách, opakovaný pokus, nezávislé javy, „aspoň jeden“ a geometrická pravdepodobnosť.",
   topics:["a41", "b38", "b39"],
   presets:[
-    {name:"Dve kocky: súčet", cfg:{typ:"kocky", jav:"sucet"}},
-    {name:"Aspoň jedna šestka", cfg:{typ:"kocky", jav:"sestka"}},
-    {name:"Označ si jav sám", cfg:{typ:"kocky", jav:"vlastny"}},
-    {name:"Jedna kocka", cfg:{typ:"kocka", jav:[2, 4, 6]}},
-    {name:"Opakované hody kockou", cfg:{typ:"pokus", pokus:"kocka", start:60}},
-    {name:"Súčet dvoch kociek pokusom", cfg:{typ:"pokus", pokus:"dve", start:60}},
-    {name:"Nezávislé javy", cfg:{typ:"javy", on:{prienik:true}}},
-    {name:"Aspoň jeden úspech", cfg:{typ:"aspon"}},
-    {name:"Bod na úsečke", cfg:{typ:"usecka"}},
-    {name:"Kruh vo štvorci", cfg:{typ:"plocha", tvar:"kruh"}},
-    {name:"Úloha o stretnutí", cfg:{typ:"plocha", tvar:"stretnutie"}}
+    {name:"Dve kocky: súčet", cfg:{typ:"kocky", jav:"sucet"}, tip:"Všetkých výsledkov je 36. Vyber jav tlačidlami vpravo a spočítaj vyfarbené políčka. Ktorý súčet padá najčastejšie?"},
+    {name:"Aspoň jedna šestka", cfg:{typ:"kocky", jav:"sestka"}, tip:"Priaznivých políčok je 11, nie 12: dvojicu [6; 6] nesmieš počítať dvakrát."},
+    {name:"Označ si jav sám", cfg:{typ:"kocky", jav:"vlastny"}, tip:"Klikaním vyznač políčka svojho javu, napríklad „na prvej kocke padne viac než na druhej“."},
+    {name:"Jedna kocka", cfg:{typ:"kocka", jav:[2, 4, 6]}, tip:"Klikni na steny, ktoré javu vyhovujú. Pravdepodobnosť je ich počet delený šiestimi."},
+    {name:"Opakované hody kockou", cfg:{typ:"pokus", pokus:"kocka", start:60}, tip:"Hádž po 100 a po 1000. Relatívna početnosť sa čoraz viac blíži k pravdepodobnosti."},
+    {name:"Súčet dvoch kociek pokusom", cfg:{typ:"pokus", pokus:"dve", start:60}, tip:"Súčty nie sú rovnako časté. Po mnohých hodoch stĺpce dorastú k vypočítaným pravdepodobnostiam."},
+    {name:"Nezávislé javy", cfg:{typ:"javy", on:{prienik:true}}, tip:"Štvorec má obsah 1. Obdĺžnik „A aj B“ má strany $P(A)$ a $P(B)$, preto sa pravdepodobnosti násobia."},
+    {name:"Aspoň jeden úspech", cfg:{typ:"aspon"}, tip:"Ľahšie sa počíta opak: ani jeden úspech. Pridávaj pokusy a sleduj, ako rýchlo rastie pravdepodobnosť."},
+    {name:"Bod na úsečke", cfg:{typ:"usecka"}, tip:"Pravdepodobnosť je pomer dĺžok: priaznivý úsek ku celej úsečke."},
+    {name:"Kruh vo štvorci", cfg:{typ:"plocha", tvar:"kruh"}, tip:"Pravdepodobnosť je pomer obsahov. Hoď body a porovnaj podiel zásahov s výpočtom."},
+    {name:"Úloha o stretnutí", cfg:{typ:"plocha", tvar:"stretnutie"}, tip:"Každý bod štvorca je dvojica časov príchodu. Stretnú sa, ak sa časy líšia najviac o čakanie: to je pás okolo uhlopriečky."}
   ],
+  help:"Pri dvoch kockách vyber jav tlačidlami (súčet, súčin, rozdiel…) a číslo v podmienke nastav posuvníkom $s$. Pri pokusoch a geometrickej pravdepodobnosti prepínaš druh pokusu a tvar rovnako tlačidlami.",
 
   make(cfg, env){
     const typ = ["kocky", "kocka", "pokus", "javy", "aspon", "usecka", "plocha"].includes(cfg.typ) ? cfg.typ : "kocky";
@@ -62,7 +63,7 @@ defTool("pravdepodobnost", {
     const tvar = ["kruh", "terc", "stretnutie"].includes(cfg.tvar) ? cfg.tvar : "kruh";
     const ck = (name, color) => ({type:"check", v:false, name, color});
     const pr = (v, color, note) => ({v, min:.05, max:.95, step:.05, color, note});
-    const defs = typ === "kocky" ? {s:jav.s ? {v:jav.s[2], min:jav.s[0], max:jav.s[1], step:1, color:"a"} : null}
+    const defs = typ === "kocky" ? {s:jav.s ? {v:jav.s[2], min:jav.s[0], max:jav.s[1], step:1, color:"a", note:"číslo v podmienke"} : null}
       : typ === "pokus" ? {p:pokus === "jav" ? pr(.3, "a", "pravdepodobnosť javu") : null}
       : typ === "javy" ? {a:pr(.6, "a", "P(A)"), b:pr(.5, "b", "P(B)"), prienik:ck("A aj B zároveň", "d"), zjednotenie:ck("Aspoň jeden z nich", "c"), opak:ck("Ani jeden")}
       : typ === "aspon" ? {p:pr(.2, "a", "úspech v jednom pokuse"), n:{v:5, min:1, max:15, step:1, color:"b", note:"počet pokusov"}}
@@ -73,6 +74,13 @@ defTool("pravdepodobnost", {
       : {};
     const params = toolParams(defs, cfg, env);
     const W = 560, H = 340, marks = cfg.oznac || cfg.jav === "vlastny";
+    /* on the tool's own page: which event, which experiment, which shape */
+    const JK = ["sucet", "aspon", "najviac", "sucin", "rozdiel", "max", "rovnake", "sestka", "parny", "vlastny"], PK = ["minca", "kocka", "dve", "jav"], TK = ["kruh", "terc", "stretnutie"];
+    const keep = o => { const c = Object.assign({}, cfg, o); delete c.s; delete c.oznac; delete c.popis; delete c.start; delete c.sleduj; delete c.r; return c; };
+    const picks = typ === "kocky" ? [{name:"Jav", opts:["súčet =", "súčet ≥", "súčet ≤", "súčin =", "líšia sa o", "väčšie číslo =", "rovnaké čísla", "aspoň jedna 6", "párny súčet", "označím sám"],
+        v:fnJav || cfg.oznac ? -1 : JK.indexOf(PR_JAVY[cfg.jav] ? cfg.jav : "sucet"), set:k => keep({jav:JK[k]})}]
+      : typ === "pokus" ? [{name:"Pokus", opts:["minca", "kocka", "súčet dvoch kociek", "jav s pravdepodobnosťou p"], v:PK.indexOf(pokus), set:k => keep({pokus:PK[k]})}]
+      : typ === "plocha" ? [{name:"Tvar", opts:["kruh vo štvorci", "stred terča", "úloha o stretnutí"], v:TK.indexOf(tvar), set:k => keep({tvar:TK[k]})}] : null;
     const OUTC = {minca:{l:["hlava", "znak"], p:() => [.5, .5]}, kocka:{l:["1", "2", "3", "4", "5", "6"], p:() => Array(6).fill(1 / 6)},
       dve:{l:Array.from({length:11}, (_, i) => String(i + 2)), p:() => Array.from({length:11}, (_, i) => (6 - Math.abs(5 - i)) / 36)},
       jav:{l:["nastal", "nenastal"], p:P => [P.p, 1 - P.p]}}[pokus];
@@ -107,7 +115,7 @@ defTool("pravdepodobnost", {
     };
 
     return {
-      params, aspect:`${W}/${H}`,
+      params, picks, aspect:`${W}/${H}`,
       hint:typ === "kocky" && marks ? "**Klikaj** na políčka, ktoré patria javu." : typ === "kocka" ? "**Klikaj** na steny kocky, ktoré patria javu." : typ === "javy" || typ === "usecka" ? "Farebné značky sa dajú **ťahať**." : null,
       init(st){
         st.data = typ === "kocky" ? {sel:{}} : typ === "kocka" ? {sel:Object.fromEntries((Array.isArray(cfg.jav) ? cfg.jav : []).map(v => [v, 1]))}

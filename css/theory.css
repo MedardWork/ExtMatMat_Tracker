@@ -177,6 +177,22 @@
 .tw-pm.check .tw-pn{grid-column:2}
 .tw-pm.check.c-a .tw-pn{color:var(--va)} .tw-pm.check.c-b .tw-pn{color:var(--vb)} .tw-pm.check.c-c .tw-pn{color:var(--dk)} .tw-pm.check.c-d .tw-pn{color:var(--vd)}
 .tw-pm.check.c-ok .tw-pn{color:var(--l4)}
+/* one of several: a row of buttons */
+.tw-pm.pick{grid-template-columns:minmax(0,1fr);gap:6px;padding:8px 9px;border-color:transparent;background:var(--track)}
+.tw-pm.pick .tw-pn{grid-column:1;font:600 12px/1.2 var(--sans);letter-spacing:.02em;color:var(--ink-soft)}
+.tw-seg{grid-column:1;display:flex;flex-wrap:wrap;gap:4px}
+.tw-seg button{appearance:none;cursor:pointer;flex:1 1 auto;font:500 13px/1.2 var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:7px 9px}
+.tw-seg button:hover{border-color:var(--ink-soft)}
+.tw-seg button.on{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+/* the coordinates of a vector or a point side by side, typed */
+.tw-pm.vec{grid-template-columns:minmax(26px,auto) minmax(0,1fr);padding:7px 11px}
+.tw-pm.vec .tw-pn{grid-row:1;grid-column:1;white-space:nowrap}
+.tw-vec{grid-row:1;grid-column:2;display:flex;gap:6px;min-width:0}
+.tw-vec .tw-num{flex:1 1 0;width:auto;min-width:0}
+/* buttons that type a symbol into the field above them */
+.tw-keys{display:flex;flex-wrap:wrap;gap:4px}
+.tw-keys button{appearance:none;cursor:pointer;min-width:32px;font:15px/1 var(--mono);color:var(--ink);background:var(--panel);border:1px solid var(--rule);border-radius:5px;padding:6px 7px}
+.tw-keys button:hover{border-color:var(--ink-soft)}
 .tw-drag{display:flex;gap:10px;align-items:center;border:1px solid var(--rule);background:var(--track);border-radius:8px;padding:9px 12px;font-size:14px;line-height:1.35}
 .tw-drag svg{flex:0 0 auto;width:20px;height:20px;fill:none;stroke:var(--ink-soft);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .tw-acts{display:flex;flex-wrap:wrap;gap:6px}
@@ -213,7 +229,14 @@
 /* in a note */
 .md .tw-note{margin:0 0 .9em;box-shadow:none}
 /* on its own page */
-@media (min-width:700px){ .tw-full .tw-body{grid-template-columns:minmax(0,1fr) 320px} }
+@media (min-width:700px){ .tw-full .tw-body{grid-template-columns:minmax(0,1fr) 330px} }
+/* the page has a title and the examples above the tool: keep picture and controls on one screen */
+.tw-full .tw-board > .jxgbox{max-width:min(100%,max(380px,calc((100vh - 280px) * var(--ar,1))))}
+.tw-full .tw-board > .tw-svg{max-width:min(100%,max(380px,calc((100vh - 280px) * var(--ar,100))))}
+.tw-full .tw-side{gap:12px}
+.tw-full .tw-pm:not(.check):not(.lock):not(.pick):not(.vec):not(.xy){padding:7px 10px 6px}
+.tw-full .tw-h{background:var(--track)}
+.tw-full .tw-h p{font-weight:500;font-size:14.5px}
 /* as a miniature on a card */
 .tw.tw-thumb{border:0;box-shadow:none;border-radius:8px;pointer-events:none;background:var(--paper)}
 .tw-thumb .tw-body{grid-template-columns:minmax(0,1fr)}

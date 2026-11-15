@@ -68,15 +68,15 @@ defTool("regresia", {
   desc:"Preloženie údajov priamkou, exponenciálou, mocninou, parabolou alebo sínusoidou; reziduá a logaritmické osi.",
   topics:["c31", "c32", "c33", "c34", "c35", "c36"],
   presets:[
-    {name:"Lineárna", cfg:{model:"lin", on:{rezidua:true}}},
-    {name:"Exponenciálna", cfg:{model:"exp", data:[[0, 2.1], [1, 2.9], [2, 4.4], [3, 6.2], [4, 9.3], [5, 13.4]]}},
-    {name:"Exponenciálna na semilog osiach", cfg:{model:"exp", os:"semilog", data:[[0, 2.1], [1, 2.9], [2, 4.4], [3, 6.2], [4, 9.3], [5, 13.4]]}},
-    {name:"Mocninová na log-log osiach", cfg:{model:"pot", os:"loglog", data:[[1, 3.1], [2, 8.3], [4, 24.5], [8, 67], [16, 195]]}},
-    {name:"Kvadratická", cfg:{model:"kvad", data:[[0, 1.2], [1, 3.8], [2, 5.1], [3, 5.2], [4, 3.9], [5, 1.1]]}},
-    {name:"Sínusová", cfg:{model:"sin", data:[[0, 4.1], [2, 6.4], [4, 7.1], [6, 5.8], [8, 3.4], [10, 1.2], [12, .9], [14, 2.7], [16, 5.1], [18, 6.8]]}},
-    {name:"Nevhodný model a reziduá", cfg:{model:"lin", data:[[0, 2.1], [1, 2.9], [2, 4.4], [3, 6.2], [4, 9.3], [5, 13.4]], on:{rezidua:true, graf2:true}}}
+    {name:"Lineárna", cfg:{model:"lin", on:{rezidua:true}}, tip:"Ťahaj body alebo napíš vlastné údaje. Priamka je tá, pri ktorej je súčet štvorcov odchýlok najmenší."},
+    {name:"Exponenciálna", cfg:{model:"exp", data:[[0, 2.1], [1, 2.9], [2, 4.4], [3, 6.2], [4, 9.3], [5, 13.4]]}, tip:"Základ $a$ hovorí, koľkokrát vzrastie $y$, keď $x$ stúpne o 1. Skús prepnúť model na priamku a porovnaj $r^2$."},
+    {name:"Exponenciálna na semilog osiach", cfg:{model:"exp", os:"semilog", data:[[0, 2.1], [1, 2.9], [2, 4.4], [3, 6.2], [4, 9.3], [5, 13.4]]}, tip:"Na zvislej logaritmickej osi ležia body exponenciálneho rastu na priamke. Prepni osi späť na obyčajné."},
+    {name:"Mocninová na log-log osiach", cfg:{model:"pot", os:"loglog", data:[[1, 3.1], [2, 8.3], [4, 24.5], [8, 67], [16, 195]]}, tip:"Keď sú obe osi logaritmické, mocninová závislosť je priamka a jej sklon je exponent."},
+    {name:"Kvadratická", cfg:{model:"kvad", data:[[0, 1.2], [1, 3.8], [2, 5.1], [3, 5.2], [4, 3.9], [5, 1.1]]}, tip:"Body stúpajú a zasa klesajú: priamka ich nevystihne, parabola áno."},
+    {name:"Sínusová", cfg:{model:"sin", data:[[0, 4.1], [2, 6.4], [4, 7.1], [6, 5.8], [8, 3.4], [10, 1.2], [12, .9], [14, 2.7], [16, 5.1], [18, 6.8]]}, tip:"Údaje sa opakujú. Zo sínusoidy prečítaš amplitúdu, periódu aj stredovú hodnotu."},
+    {name:"Nevhodný model a reziduá", cfg:{model:"lin", data:[[0, 2.1], [1, 2.9], [2, 4.4], [3, 6.2], [4, 9.3], [5, 13.4]], on:{rezidua:true, graf2:true}}, tip:"Reziduá priamky tvoria oblúk: znamenie, že model nesedí. Prepni model na exponenciálu a oblúk zmizne."}
   ],
-  help:"Body sa dajú **ťahať**. Na vlastnej stránke ich napíš ako dvojice: `1 2,1; 2 2,9; 3 4,2`.",
+  help:"Body sa dajú **ťahať**. Vlastné údaje napíš ako dvojice `x y` oddelené bodkočiarkou: `1 2,1; 2 2,9; 3 4,2`. Model aj osi prepneš tlačidlami nad údajmi, body pritom zostanú.",
 
   make(cfg, env){
     const T = (sk, en) => cfg.en ? en : sk;
@@ -95,7 +95,7 @@ defTool("regresia", {
     const xlo = logX ? 10 ** xr[0] : xr[0], xhi = logX ? 10 ** xr[1] : xr[1];
     const params = toolParams({
       rezidua:ck(T("Reziduá (odchýlky od modelu)", "Residuals (deviations from the model)"), "d"), graf2:ck(T("Graf reziduí", "Residual plot"), "d"), predpoved:ck(T("Predpoveď modelu v x", "Prediction of the model at x"), "b"),
-      x:{v:round2((xlo + xhi) / 2), min:round2(xlo), max:round2(xhi + (logX ? 0 : (xhi - xlo) * .5)), step:logX ? 1 : round2((xhi - xlo) / 40) || .1, color:"b"}
+      x:{when:P => !!P.predpoved, v:round2((xlo + xhi) / 2), min:round2(xlo), max:round2(xhi + (logX ? 0 : (xhi - xlo) * .5)), step:logX ? 1 : round2((xhi - xlo) / 40) || .1, color:"b"}
     }, cfg, env);
     const W = 560, H = 340, X0 = 50, X1 = W - 16, Y0 = 16;
     const tx = x => logX ? Math.log10(x) : x, ty = y => logY ? Math.log10(y) : y;
@@ -108,6 +108,15 @@ defTool("regresia", {
       params, aspect:`${W}/${H}`,
       hint:cfg.drag === false ? null : T("Body sa dajú **ťahať**.", "The points can be **dragged**."),
       init(st){ st.data = {d:d0.map(p => p.slice())}; },
+      picks:[
+        {name:T("Model", "Model"), opts:T(["priamka", "exponenciála", "mocnina", "parabola", "sínusoida"], ["line", "exponential", "power", "parabola", "sine"]), v:["lin", "exp", "pot", "kvad", "sin"].indexOf(model),
+          set:(k, st) => Object.assign({}, cfg, {model:["lin", "exp", "pot", "kvad", "sin"][k], data:st.data.d.map(p => p.slice())})},
+        {name:T("Osi", "Axes"), opts:T(["obyčajné", "semilog (log y)", "log-log"], ["plain", "semi-log (log y)", "log-log"]), v:["lin", "semilog", "loglog"].indexOf(os),
+          set(k, st){
+            if(k > 0 && st.data.d.some(p => p[1] <= 0 || (k === 2 && p[0] <= 0))){ toast(k === 2 ? "Logaritmické osi potrebujú kladné x aj y." : "Logaritmická os potrebuje kladné y."); return null; }
+            return Object.assign({}, cfg, {os:["lin", "semilog", "loglog"][k], xr:null, yr:null, data:st.data.d.map(p => p.slice())});
+          }}
+      ],
       inputs:[{label:T("Body (x y; x y; …)", "Points (x y; x y; …)"), wide:true, value:"", read:st => (st.data ? st.data.d : d0).map(p => `${fmtN(p[0], 4)} ${fmtN(p[1], 4)}`).join("; "),
         apply(text){
           const d = text.split(/[;\n]+/).map(t => t.trim().split(/\s+/).map(v => toolParse(v))).filter(p => p.length === 2 && p.every(v => !isNaN(v))).slice(0, 30);

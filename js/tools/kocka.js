@@ -24,17 +24,17 @@ defTool("kocka", {
   desc:"Rez kocky rovinou cez tri body, vzdialenosť dvoch bodov a uhol priamok vo voľnom rovnobežnom premietaní.",
   topics:["b29", "b30", "b31", "b32", "b33", "b34"],
   presets:[
-    {name:"Rez kocky", cfg:{typ:"rez"}},
-    {name:"Šesťuholníkový rez", cfg:{typ:"rez", body:[["AB", .5], ["BC", .5], ["GH", .5]]}},
-    {name:"Trojuholníkový rez", cfg:{typ:"rez", body:[["AB", 1], ["DA", 0], ["AE", 1]]}},
-    {name:"Rez kvádra", cfg:{typ:"rez", kvader:true, a:6, b:4, c:3, body:[["AE", .5], ["BF", 1], ["CD", .5]]}},
-    {name:"Telesová uhlopriečka", cfg:{typ:"vzdialenost", body:[["AE", 0], ["CG", 1]]}},
-    {name:"Uhol uhlopriečok", cfg:{typ:"uhol", body:[["AE", 0], ["CG", 1], ["BC", 1]]}},
-    {name:"Stred úsečky", cfg:{typ:"vzdialenost", stred:true, body:[["AE", 0], ["CG", 1]]}},
-    {name:"Vzdialenosť vrcholu od roviny", cfg:{typ:"rez", vrchol:"A", body:[["AB", 1], ["DA", 0], ["AE", 1]]}},
-    {name:"Uhol roviny so stenou", cfg:{typ:"rez", stena:"ABCD", body:[["AB", 1], ["DA", 0], ["AE", 1]]}}
+    {name:"Rez kocky", cfg:{typ:"rez"}, tip:"Ťahaj body $X$, $Y$, $Z$ po hranách. Rovina cez ne vyreže z kocky mnohouholník: koľko môže mať vrcholov?"},
+    {name:"Šesťuholníkový rez", cfg:{typ:"rez", body:[["AB", .5], ["BC", .5], ["GH", .5]]}, tip:"Rovina cez stredy hrán pretne všetkých šesť stien. Posuň jeden bod a šesťuholník prestane byť pravidelný."},
+    {name:"Trojuholníkový rez", cfg:{typ:"rez", body:[["AB", 1], ["DA", 0], ["AE", 1]]}, tip:"Rovina cez tri vrcholy susediace s jedným vrcholom odreže roh: rez je rovnostranný trojuholník."},
+    {name:"Rez kvádra", cfg:{typ:"rez", kvader:true, a:6, b:4, c:3, body:[["AE", .5], ["BF", 1], ["CD", .5]]}, tip:"Zmeň rozmery kvádra. Protiľahlé strany rezu ležia v rovnobežných stenách, preto sú rovnobežné."},
+    {name:"Telesová uhlopriečka", cfg:{typ:"vzdialenost", body:[["AE", 0], ["CG", 1]]}, tip:"Vzdialenosť dvoch bodov dostaneš dvoma Pytagorovými vetami. Pre protiľahlé vrcholy kocky vyjde $a\\sqrt{3}$."},
+    {name:"Uhol uhlopriečok", cfg:{typ:"uhol", body:[["AE", 0], ["CG", 1], ["BC", 1]]}, tip:"Uhol má vrchol v bode $X$ a ramená idú cez $Y$ a $Z$. Presuň body a zmeraj iný uhol."},
+    {name:"Stred úsečky", cfg:{typ:"vzdialenost", stred:true, body:[["AE", 0], ["CG", 1]]}, tip:"Súradnice stredu sú priemery súradníc koncov. Stred telesovej uhlopriečky je stred kocky."},
+    {name:"Vzdialenosť vrcholu od roviny", cfg:{typ:"rez", vrchol:"A", body:[["AB", 1], ["DA", 0], ["AE", 1]]}, tip:"Vzdialenosť sa meria po kolmici na rovinu. Tlačidlami vyber iný vrchol."},
+    {name:"Uhol roviny so stenou", cfg:{typ:"rez", stena:"ABCD", body:[["AB", 1], ["DA", 0], ["AE", 1]]}, tip:"Uhol dvoch rovín je uhol ich normál. Tlačidlami vyber, s ktorou stenou sa rovina porovnáva."}
   ],
-  help:"Body **X**, **Y**, **Z** ťahaj po hranách. Kliknutím na inú hranu na ňu presunieš ďalší bod v poradí.",
+  help:"Body **X**, **Y**, **Z** ťahaj po hranách alebo ich polohu nastav posuvníkom (0 je začiatok hrany, 1 jej koniec). Na inú hranu bod presunieš tak, že ho vyberieš tlačidlom **Kliknutím na hranu presuniem** a klikneš na hranu.",
 
   make(cfg, env){
     const typ = ["rez", "vzdialenost", "uhol"].includes(cfg.typ) ? cfg.typ : "rez";
@@ -44,10 +44,25 @@ defTool("kocka", {
     const dim = (v, color) => ({v, min:1, max:8, step:.5, color:null, plain:true, lock:!cfg.kvader && !env.full, hide:!cfg.kvader && !env.full});
     const defs = {a:dim(4), b:dim(4), c:dim(4)};
     ["X", "Y", "Z"].slice(0, np).forEach((n, i) => { defs["t" + (i + 1)] = {v:init[i][1], min:0, max:1, step:.05, color:"abd"[i], name:n, note:"poloha na hrane"}; });
+    /* which point a click on an edge moves (the tool's own page; elsewhere the points take turns) */
+    if(cfg.klikaj !== false) defs.kt = {type:"pick", v:0, name:"Kliknutím na hranu presuniem", opts:["X", "Y", "Z"].slice(0, np)};
     const params = toolParams(defs, cfg, env);
+    /* on its own page a cube has one edge length; b and c are listed for a cuboid only */
+    const kv = !!cfg.kvader || params.b.v !== params.a.v || params.c.v !== params.a.v, cube = env.full && !kv;
+    if(cube){ params.a.note = "hrana kocky"; params.b.when = params.c.when = () => false; }
+    const bodyNow = st => edges(st).map((e, i) => [e, st.P["t" + (i + 1)]]);
+    const FACES = ["ABCD", "ABFE", "BCGF"];
+    const picks = [{name:"Teleso", opts:["kocka", "kváder"], v:kv ? 1 : 0, set(k, st){
+        if(!k) st.P.b = st.P.c = st.P.a;
+        return Object.assign({}, cfg, {kvader:!!k, body:bodyNow(st)}, k ? null : {a:st.P.a, b:st.P.a, c:st.P.a});
+      }}].concat(typ !== "rez" ? [] : [
+      {name:"Vzdialenosť vrcholu od roviny", opts:["–", ..."ABCDEFGH"], v:cfg.vrchol ? 1 + "ABCDEFGH".indexOf(cfg.vrchol) : 0, set:(k, st) => Object.assign({}, cfg, {vrchol:k ? "ABCDEFGH"[k - 1] : null, body:bodyNow(st)})},
+      {name:"Uhol roviny so stenou", opts:["–", "dolná ABCD", "predná ABFE", "bočná BCGF"], v:1 + FACES.indexOf(cfg.stena), set:(k, st) => Object.assign({}, cfg, {stena:k ? FACES[k - 1] : null, body:bodyNow(st)})}
+    ]);
     const W = 560, H = 340, K = .5 * Math.SQRT1_2;
-    const corners = P => ({A:[0, 0, 0], B:[P.a, 0, 0], C:[P.a, P.b, 0], D:[0, P.b, 0], E:[0, 0, P.c], F:[P.a, 0, P.c], G:[P.a, P.b, P.c], H:[0, P.b, P.c]});
-    const fit = P => svFit(W, H, [0, 0, P.a + P.b * K, P.c + P.b * K], 34);
+    const dims = P => cube ? [P.a, P.a, P.a] : [P.a, P.b, P.c];
+    const corners = P => { const [a, b, c] = dims(P); return {A:[0, 0, 0], B:[a, 0, 0], C:[a, b, 0], D:[0, b, 0], E:[0, 0, c], F:[a, 0, c], G:[a, b, c], H:[0, b, c]}; };
+    const fit = P => { const [a, b, c] = dims(P); return svFit(W, H, [0, 0, a + b * K, c + b * K], 34); };
     const proj = (f, p) => f.p([p[0] + p[1] * K, p[2] + p[1] * K]);
     const sub = (p, q) => [p[0] - q[0], p[1] - q[1], p[2] - q[2]], dot = (p, q) => p[0] * q[0] + p[1] * q[1] + p[2] * q[2];
     const cross = (p, q) => [p[1] * q[2] - p[2] * q[1], p[2] * q[0] - p[0] * q[2], p[0] * q[1] - p[1] * q[0]], len = p => Math.hypot(p[0], p[1], p[2]);
@@ -95,8 +110,8 @@ defTool("kocka", {
     const free = (i, st) => !(params["t" + (i + 1)].lock && !st.open);
 
     return {
-      params, aspect:`${W}/${H}`,
-      hint:"Body **ťahaj** po hranách" + (cfg.klikaj === false ? "." : ", kliknutím na inú hranu tam presunieš ďalší bod."),
+      params, picks, aspect:`${W}/${H}`,
+      hint:"Body **ťahaj** po hranách" + (cfg.klikaj === false ? "." : env.full ? ". Kliknutie na inú hranu tam presunie bod vybraný nižšie." : ", kliknutím na inú hranu tam presunieš ďalší bod."),
       init(st){ st.data = {e:init.map(x => x[0]), next:0}; },
       svg(P, st){
         const f = fit(P), V = corners(P), r = calc(P, st), thumb = st.env.thumb, X = pts(P, st), col = ["ca", "cb", "cd"];
@@ -115,7 +130,7 @@ defTool("kocka", {
         }
         if(typ === "uhol") h += SG.seg(proj(f, X[0]), proj(f, X[1]), "s cb w3") + SG.seg(proj(f, X[0]), proj(f, X[2]), "s cd w3") + SG.angle(proj(f, X[0]), proj(f, X[1]), proj(f, X[2]), 22, "s ca w1");
         if(!thumb){
-          const c = proj(f, [P.a / 2, P.b / 2, P.c / 2]);
+          const c = proj(f, dims(P).map(v => v / 2));
           "ABCDEFGH".split("").forEach(n => { h += SG.label(pp(n), n, "csoft halo", c, 13); });
           CUBE_EDGES.forEach(e => { const p = pp(e[0]), q = pp(e[1]); h += `<line class="hit" x1="${SV.n(p[0])}" y1="${SV.n(p[1])}" x2="${SV.n(q[0])}" y2="${SV.n(q[1])}" stroke-width="16" data-pick="${e}"/>`; });
         }
@@ -133,13 +148,14 @@ defTool("kocka", {
         svgDrag(el, st, (id, x, y) => {
           const i = Number(id), v = Math.round(near(x, y, st.data.e[i], st.P) * 20) / 20;
           st.moved = true;
+          if(params.kt && !params.kt.lock && st.P.kt !== i){ st.P.kt = i; toolCtlRedraw(st); }   /* the point just dragged is the one a click moves */
           if(v === st.P["t" + (i + 1)]) return false;
           st.P["t" + (i + 1)] = v;
         });
         el.addEventListener("click", e => {
           const hit = e.target.closest("[data-pick]");
           if(!hit || cfg.klikaj === false || st.moved){ st.moved = false; return; }
-          const p = svgPoint(el, e), i = st.data.next % np;
+          const p = svgPoint(el, e), i = params.kt && !params.kt.lock ? st.P.kt : st.data.next % np;
           if(!p || !free(i, st)) return;
           st.data.e[i] = hit.dataset.pick;
           st.P["t" + (i + 1)] = Math.round(near(p[0], p[1], hit.dataset.pick, st.P) * 4) / 4;
