@@ -13,6 +13,7 @@
      pts      {A:[-3, -1]}            starting positions          fixed  ["A"]   points that cannot be moved
      view     [left, top, right, bottom]                          snap   1       grid the points snap to
      on, toggles, free, lock, hide    as in toolParams
+     en       true      English texts (theory of the Danish topics)
      out(P, h, st)     h.an — the measured values of the scene (see calc below), e.g. {d, S, u, n, k, q, a, b, c}
    Helper: linTex([[2, "x"], [-3, "y"], [5, ""]]) → "2x - 3y + 5"
    ============================================================ */
@@ -47,6 +48,7 @@ defTool("analyticka", {
   help:"Body ťahaj myšou alebo im vpíš súradnice do polí vpravo.",
 
   make(cfg, env){
+    const T = (sk, en) => cfg.en ? en : sk;
     const typ = ["body", "vektory", "priamka", "priamky", "kruznica", "obsah"].includes(cfg.typ) ? cfg.typ : "body";
     const start = {
       body:{A:[-3, -1], B:[5, 3]}, vektory:{U:[4, 1], V:[1, 3]}, priamka:{A:[-4, -1], B:[4, 3], C:[2, -3]},
@@ -56,11 +58,11 @@ defTool("analyticka", {
     const points = {};
     for(const n in start){ const p = (cfg.pts && cfg.pts[n]) || start[n]; points[n] = [p[0], p[1], {fixed:(cfg.fixed || []).includes(n), color:colors[n], name:typ === "vektory" ? "" : n}]; }
     const ck = (name, color) => ({type:"check", v:false, name, color});
-    const defs = typ === "body" ? {pomer:ck("Bod deliaci AB v pomere m : n", "d"), m:{v:1, min:1, max:6, step:1, color:"d"}, n:{v:2, min:1, max:6, step:1, color:"d"}}
-      : typ === "vektory" ? {sucet:ck("Súčet u + v", "d"), rozdiel:ck("Rozdiel u − v", "c"), uhol:ck("Skalárny súčin a uhol"), kolmy:ck("Kolmý vektor k u"), plocha:ck("Determinant a rovnobežník"), priemet:ck("Priemet u do smeru v"), nasobok:ck("Násobok k · u", "d"),
+    const defs = typ === "body" ? {pomer:ck(T("Bod deliaci AB v pomere m : n", "Point dividing AB in the ratio m : n"), "d"), m:{v:1, min:1, max:6, step:1, color:"d"}, n:{v:2, min:1, max:6, step:1, color:"d"}}
+      : typ === "vektory" ? {sucet:ck(T("Súčet u + v", "Sum u + v"), "d"), rozdiel:ck(T("Rozdiel u − v", "Difference u − v"), "c"), uhol:ck(T("Skalárny súčin a uhol", "Dot product and angle")), kolmy:ck(T("Kolmý vektor k u", "Vector perpendicular to u")), plocha:ck(T("Determinant a rovnobežník", "Determinant and parallelogram")), priemet:ck(T("Priemet u do smeru v", "Projection of u onto v")), nasobok:ck(T("Násobok k · u", "Multiple k · u"), "d"),
           k:env.full || (cfg.on && cfg.on.nasobok) || cfg.k != null ? {v:2, min:-3, max:3, step:.5, color:"d"} : null}
-      : typ === "priamka" ? {vektory:ck("Smerový a normálový vektor", "b"), vzdialenost:ck("Vzdialenosť bodu C", "d")}
-      : typ === "kruznica" ? {r:{v:4, min:1, max:6, step:.5, color:"b", note:"polomer"}} : {};
+      : typ === "priamka" ? {vektory:ck(T("Smerový a normálový vektor", "Direction and normal vector"), "b"), vzdialenost:ck(T("Vzdialenosť bodu C", "Distance of the point C"), "d")}
+      : typ === "kruznica" ? {r:{v:4, min:1, max:6, step:.5, color:"b", note:T("polomer", "radius")}} : {};
     const params = toolParams(defs, cfg, env);
     if(typ === "body" && !params.pomer.v && params.pomer.lock){ params.m.lock = params.m.hide = params.n.lock = params.n.hide = true; }
 
@@ -109,7 +111,7 @@ defTool("analyticka", {
 
     return {
       params, points, snap:cfg.snap || 1,
-      hint:"Body ťahaj alebo im vpíš súradnice.",
+      hint:T("Body ťahaj alebo im vpíš súradnice.", "Drag the points or type their coordinates."),
       board:{bbox:cfg.view || [-9, 7, 9, -7], aspect:"9/7"},
       draw(g, P, st){
         const K = () => C(st), on = (id, f) => () => P[id] ? f() : NaN;
@@ -161,7 +163,7 @@ defTool("analyticka", {
         if(typ === "body"){
           let o = h.calc(`\\overrightarrow{AB} = B - A = ${vec(k.u)}`) + h.calc(`|AB| = \\sqrt{${sq(k.u[0])}^2 + ${sq(k.u[1])}^2} = \\sqrt{${tn(k.u[0] ** 2 + k.u[1] ** 2)}} ${eq(k.d)} ${tn(k.d)}`)
             + h.calc(`\\vb{S} = \\left[\\tfrac{${tn(P.Ax)} + ${sq(P.Bx)}}{2};\\ \\tfrac{${tn(P.Ay)} + ${sq(P.By)}}{2}\\right] = \\vb{${pt(k.S[0], k.S[1])}}`);
-          if(P.pomer) o += h.calc(`\\vd{X} = A + \\tfrac{${P.m}}{${P.m + P.n}} \\cdot \\overrightarrow{AB} = \\vd{${pt(k.X[0], k.X[1])}}`) + h.p(`$|AX| : |XB| = \\vd{${P.m} : ${P.n}}$, úsečka má $${P.m + P.n}$ rovnakých dielov.`);
+          if(P.pomer) o += h.calc(`\\vd{X} = A + \\tfrac{${P.m}}{${P.m + P.n}} \\cdot \\overrightarrow{AB} = \\vd{${pt(k.X[0], k.X[1])}}`) + h.p(`$|AX| : |XB| = \\vd{${P.m} : ${P.n}}$, ${T("úsečka má", "the segment has")} $${P.m + P.n}$ ${T("rovnakých dielov", "equal parts")}.`);
           return o;
         }
         if(typ === "vektory"){
@@ -169,17 +171,17 @@ defTool("analyticka", {
           if(P.sucet) o += h.calc(`\\vd{\\vec u + \\vec v} = \\vd{${vec(k.sucet)}}`);
           if(P.rozdiel) o += h.calc(`\\vc{\\vec u - \\vec v} = \\vc{${vec(k.rozdiel)}}`);
           if(P.uhol) o += h.calc(`\\vec u \\cdot \\vec v = ${tn(k.u[0])} \\cdot ${sq(k.v[0])} + ${sq(k.u[1])} \\cdot ${sq(k.v[1])} = ${tn(k.dot)}`)
-            + h.calc(`\\cos \\varphi = \\dfrac{${tn(k.dot)}}{${tn(k.lu)} \\cdot ${tn(k.lv)}} \\Rightarrow \\varphi \\doteq ${tn(k.uhol, 1)}^\\circ`) + (Math.abs(k.dot) < 1e-9 ? h.pill("skalárny súčin 0: vektory sú kolmé", "ok") : "");
-          if(P.nasobok) o += h.calc(`\\vd{${tn(P.k ?? 1)}} \\cdot \\va{\\vec u} = \\vd{${vec(k.ku)}}`) + h.p(`$|k \\vec u| = |k| \\cdot |\\vec u| ${eq(Math.abs(P.k ?? 1) * k.lu)} ${tn(Math.abs(P.k ?? 1) * k.lu)}$${(P.k ?? 1) < 0 ? ", opačný smer" : ""}`);
+            + h.calc(`\\cos \\varphi = \\dfrac{${tn(k.dot)}}{${tn(k.lu)} \\cdot ${tn(k.lv)}} \\Rightarrow \\varphi \\doteq ${tn(k.uhol, 1)}^\\circ`) + (Math.abs(k.dot) < 1e-9 ? h.pill(T("skalárny súčin 0: vektory sú kolmé", "dot product 0: the vectors are perpendicular"), "ok") : "");
+          if(P.nasobok) o += h.calc(`\\vd{${tn(P.k ?? 1)}} \\cdot \\va{\\vec u} = \\vd{${vec(k.ku)}}`) + h.p(`$|k \\vec u| = |k| \\cdot |\\vec u| ${eq(Math.abs(P.k ?? 1) * k.lu)} ${tn(Math.abs(P.k ?? 1) * k.lu)}$${(P.k ?? 1) < 0 ? T(", opačný smer", ", opposite direction") : ""}`);
           if(P.kolmy) o += h.calc(`\\hat{u} = (-u_2;\\ u_1) = ${vec(k.kolmy)}`);
-          if(P.plocha) o += h.calc(`\\det(\\vec u, \\vec v) = ${tn(k.u[0])} \\cdot ${sq(k.v[1])} - ${sq(k.u[1])} \\cdot ${sq(k.v[0])} = ${tn(k.det)}`) + h.p(`Obsah rovnobežníka: $|\\det| = ${tn(Math.abs(k.det))}$${Math.abs(k.det) < 1e-9 ? ", vektory sú rovnobežné" : ""}.`);
+          if(P.plocha) o += h.calc(`\\det(\\vec u, \\vec v) = ${tn(k.u[0])} \\cdot ${sq(k.v[1])} - ${sq(k.u[1])} \\cdot ${sq(k.v[0])} = ${tn(k.det)}`) + h.p((cfg.en ? `Area of the parallelogram:` : `Obsah rovnobežníka:`) + ` $|\\det| = ${tn(Math.abs(k.det))}$${Math.abs(k.det) < 1e-9 ? T(", vektory sú rovnobežné", ", the vectors are parallel") : ""}.`);
           if(P.priemet) o += h.calc(`\\vec u_v = \\dfrac{\\vec u \\cdot \\vec v}{|\\vec v|^2} \\, \\vec v = ${vec(k.priemet)}`);
           return o;
         }
         const general = l => `${linTex([[l.a, "x"], [l.b, "y"], [l.c, ""]], t3)} = 0`;
         const slope = l => l.b ? `y = ${linTex([[l.k, "x"], [l.q, ""]], t3)}` : `x = ${t3(-l.c / l.a)}`;
         if(typ === "priamka"){
-          if(!k.ok) return h.p("Body A a B splývajú, priamka nimi nie je určená.");
+          if(!k.ok) return h.p(T("Body A a B splývajú, priamka nimi nie je určená.", "A and B coincide, they do not determine a line."));
           let o = h.calc(`\\vb{\\vec s} = B - A = \\vb{${vec(k.u)}}, \\quad \\vec n = ${vec(k.n)}`)
             + h.calc(`x = ${tn(P.Ax)} ${k.u[0] < 0 ? "-" : "+"} ${t3(Math.abs(k.u[0]))}t,\\quad y = ${tn(P.Ay)} ${k.u[1] < 0 ? "-" : "+"} ${t3(Math.abs(k.u[1]))}t`)
             + h.calc(general(k)) + h.calc(slope(k));
@@ -188,21 +190,21 @@ defTool("analyticka", {
         }
         if(typ === "priamky"){
           let o = h.calc(`p:\\ ${general(k.p)}`) + h.calc(`\\vd{q}:\\ ${general(k.q)}`);
-          if(k.X) o += h.calc(`P = ${pt(k.X[0], k.X[1])}, \\quad \\varphi \\doteq ${tn(k.uhol, 1)}^\\circ`) + (Math.abs(k.uhol - 90) < 1e-6 ? h.pill("kolmé: normálové vektory majú skalárny súčin 0", "ok") : h.pill("rôznobežné: jeden priesečník", "flat"));
-          else o += h.pill(k.same ? "totožné: nekonečne veľa spoločných bodov" : "rovnobežné: žiadny spoločný bod", k.same ? "ok" : "down")
+          if(k.X) o += h.calc(`P = ${pt(k.X[0], k.X[1])}, \\quad \\varphi \\doteq ${tn(k.uhol, 1)}^\\circ`) + (Math.abs(k.uhol - 90) < 1e-6 ? h.pill(T("kolmé: normálové vektory majú skalárny súčin 0", "perpendicular: the normal vectors have dot product 0"), "ok") : h.pill(T("rôznobežné: jeden priesečník", "intersecting: one common point"), "flat"));
+          else o += h.pill(k.same ? T("totožné: nekonečne veľa spoločných bodov", "identical: infinitely many common points") : T("rovnobežné: žiadny spoločný bod", "parallel: no common point"), k.same ? "ok" : "down")
             + (k.same ? "" : h.calc(`d(p, \\vd{q}) = d(A, \\vd{q}) ${eq(k.dpar)} ${tn(k.dpar)}`));
           return o;
         }
         if(typ === "kruznica"){
           const part = (v, c) => c === 0 ? `${v}^2` : `(${v} ${c < 0 ? "+" : "-"} ${t3(Math.abs(c))})^2`;
           let o = h.calc(`${part("x", k.m)} + ${part("y", k.n)} = \\vb{${tn(k.r * k.r)}}`) + h.calc(`p:\\ ${general(k.l)}`) + h.calc(`\\vd{d(S, p)} ${eq(k.d)} \\vd{${tn(k.d)}} ${k.pts.length === 2 ? "<" : k.pts.length ? "=" : ">"} \\vb{r} = \\vb{${tn(k.r)}}`);
-          o += k.pts.length === 2 ? h.pill("sečnica: dva spoločné body", "ok") : k.pts.length ? h.pill("dotyčnica: jeden spoločný bod", "flat") : h.pill("vonkajšia priamka: žiadny spoločný bod", "down");
+          o += k.pts.length === 2 ? h.pill(T("sečnica: dva spoločné body", "secant: two common points"), "ok") : k.pts.length ? h.pill(T("dotyčnica: jeden spoločný bod", "tangent: one common point"), "flat") : h.pill(T("vonkajšia priamka: žiadny spoločný bod", "no common point"), "down");
           if(k.pts.length) o += h.p(k.pts.map((p, i) => `$P_{${i + 1}} = ${pt(p[0], p[1])}$`).join(", "));
           return o;
         }
         return h.calc(`\\overrightarrow{AB} = ${vec(k.u)}, \\quad \\overrightarrow{AC} = ${vec(k.v)}`)
           + h.calc(`S = \\tfrac12 \\left| ${tn(k.u[0])} \\cdot ${sq(k.v[1])} - ${sq(k.u[1])} \\cdot ${sq(k.v[0])} \\right| = \\tfrac12 \\cdot |${tn(k.det)}| = \\vd{${tn(k.S)}}`)
-          + (k.S === 0 ? h.pill("obsah 0: body ležia na jednej priamke", "flat") : "");
+          + (k.S === 0 ? h.pill(T("obsah 0: body ležia na jednej priamke", "area 0: the points lie on one line"), "flat") : "");
       }
     };
   }
