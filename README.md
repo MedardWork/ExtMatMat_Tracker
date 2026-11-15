@@ -15,7 +15,7 @@ Download the installer for your system (step by step below), then install it:
 - **Windows** — `Maturita-…-Windows.exe`. Installs for your user only and adds a desktop and Start menu
   shortcut. The installer isn't signed, so Windows may show "Windows protected your PC": click
   *More info → Run anyway*.
-- **macOS** — `Maturita-…-macOS.dmg`, drag the app to Applications. It isn't signed by Apple: the first
+- **macOS** — `Maturita-…-macOS.dmg`, drag the app to Applications. It is signed ad hoc, not by Apple: the first
   time, open it, then go to *System Settings → Privacy & Security* and click *Open Anyway*. If macOS
   says the app "is damaged", run `xattr -cr "/Applications/Maturita z matematiky.app"` in Terminal.
 - **Linux** — `Maturita-…-Linux.AppImage`: make it executable (`chmod +x`) and run it.

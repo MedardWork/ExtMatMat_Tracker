@@ -278,3 +278,9 @@ Things that bite:
 - **Desktop app release:** bump `version` in `package.json` and both `version` fields at the top of `package-lock.json`,
   merge to `main`, then push the tag `v<version>` (or *Actions → Desktop app → Run workflow* on `main`). The workflow
   builds the three installers and publishes them under Releases. Do it whenever the person asks for a new download.
+- **macOS build:** without an Apple certificate electron-builder signs nothing, and macOS then refuses the app
+  ("is damaged"). `package.json` therefore has `mac.identity: "-"` (ad-hoc) with `hardenedRuntime: false`; keep both.
+  The workflow checks the signature and starts every packaged build with `MATURITA_SMOKE=1` (desktop/main.js: page
+  rendered + database answers, exit code 0/1). Locally: `npx electron-builder --linux dir`, then
+  `MATURITA_SMOKE=1 xvfb-run -a dist/linux-unpacked/maturita-tracker --no-sandbox`. `dev/check.js` uses `file://`,
+  so it does not cover the app shell.
