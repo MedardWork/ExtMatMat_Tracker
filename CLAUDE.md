@@ -64,7 +64,7 @@ Decided with the person, don't reopen:
 
 ### Done
 
-Theory, 107 of 126 topics: a1–a17, b1–b7 (Základy), a18 a19 a20 a21 a22 a23 a24 a25 a26 b8 b9 b10 b11 b12 b13 b14 b15 (Funkcie), a27–a35, b16–b28 (Planimetria), a36 a37 b29–b35 (Stereometria), a38–a42 b36–b42 (KPŠ), c1–c23 (Danish, English).
+Theory, 109 of 126 topics: a1–a17, b1–b7 (Základy), a18 a19 a20 a21 a22 a23 a24 a25 a26 b8 b9 b10 b11 b12 b13 b14 b15 (Funkcie), a27–a35, b16–b28 (Planimetria), a36 a37 b29–b35 (Stereometria), a38–a42 b36–b42 (KPŠ), c1–c25 (Danish, English).
 Tools (each file starts with its options and its `presets`; `topics` in each says where it belongs):
 
 | Tool | For | What it does |
@@ -138,19 +138,17 @@ Nice to have, nothing skipped: `graf` axis ticks in multiples of π (b9 uses deg
 
 All for **Opus**, 2–4 topics per batch, each arrow is one batch:
 
-c24 c25 → c26 c27 c28 → c29 c30 →
+c26 c27 c28 → c29 c30 →
 c31 c32 c33 → c34 c35 c36 → c37 c38 c39 → c40 c41 c42
 
 ### Which tool for which topic
 
-The 19 topics still without theory. Options are listed at the top of each tool's file; its presets on the
+The 17 topics still without theory. Options are listed at the top of each tool's file; its presets on the
 Nástroje page show what it can draw. Tools of earlier topics may be used as well wherever they fit.
 For the Danish topics (`c…`) write in English and give **every** tool `en:true`.
 
 | Topic | Tools: typ and the options that matter |
 |---|---|
-| c24 | `vektory3d` typ `priamka` (`P`, `r`, `t`), typ `gula` (`C`, `R`, `on:{bod:true}`) |
-| c25 | `vektory3d` typ `priamka` with `on:{rovina:true}` (intersection, angle) or `on:{bod:true}` (distance); typ `rovina` with `on:{bod:true}` |
 | c26 | `rozdelenie` typ `tabulka` (`x:[…]`, `p:[…]`) |
 | c27 | `rozdelenie` typ `binom` (`n`, `p`, `a`, `b`; `on:{normal:true}`) |
 | c28 | `rozdelenie` typ `normal` (`mu`, `sigma`, `os`, `a`, `b`; `on:{pravidlo:true}`) |
