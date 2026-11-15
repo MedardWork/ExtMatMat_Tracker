@@ -370,3 +370,6 @@
 .sv .hi-4{fill:var(--l4)} .sv .hi-5{fill:var(--l1)} .sv .hi-6{fill:var(--ink-soft)} .sv .hi-7{fill:var(--l2)}
 .sv .t.hi-t{stroke:none;fill:var(--panel);fill-opacity:1}
 .tw-out .tw-tab{font-size:13px} .tw-out .tw-tab th, .tw-out .tw-tab td{padding:4px 7px}
+.sv .ro-band{fill-opacity:.55}
+.tw-out span.ca{color:var(--va)}
+.sv .re-minor{stroke-opacity:.45}

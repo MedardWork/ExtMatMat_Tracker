@@ -245,7 +245,7 @@ js/state.js                        saved data (v4), migration, load/save, levels
 js/core.js                         UI state, routing (#/…), data-act click handling, toast
 js/theory.js                       theory blocks → HTML, loading theory files
 js/tools/core.js                   tool engine: expressions, sliders and locking, mounting, drawing helpers
-js/tools/{graf,trojuholnik,statistika,postupnost}.js   the tools themselves
+js/tools/<id>.js                   the tools themselves, one file each (the table in CLAUDE.md lists them)
 js/components/editor.js            note editor: toolbar, symbols, live preview, list keys
 js/components/palette.js           quick search / topic picker
 js/components/{countdown,gauge,next}.js   pieces of the overview

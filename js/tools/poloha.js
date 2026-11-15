@@ -163,7 +163,7 @@ defTool("poloha", {
         const tag = (o, s) => `$\\v${COL[o[0]]}{${TEX[o[0]]}} = ${s}$`;
         let o = h.p(`${tag(objs[0], r.n1)}, ${P.hrany ? "hrany kocky" : tag(objs[1], r.n2)}`);
         if(!r.o1 || !r.o2) return o + h.pill(objs.some((x, i) => x[1] === 3 && !(i ? r.o2 : r.o1)) ? "tri body na jednej priamke rovinu neurčujú" : "priamku určujú dva rôzne body", "flat");
-        if(P.hrany) return o + h.p(`Rovnobežné s $p$: $\\vb{${r.pocty.rov}}$`) + h.p(`Rôznobežné s $p$: <b class="po-roz">${r.pocty.roz}</b>`) + h.p(`Mimobežné s $p$: $\\vd{${r.pocty.mim}}$`)
+        if(P.hrany) return o + h.p(`Rovnobežné s $p$: $\\vb{${r.pocty.rov}}$`) + `<div>${h.m("Rôznobežné s $p$: ")}<b class="po-roz">${r.pocty.roz}</b></div>` + h.p(`Mimobežné s $p$: $\\vd{${r.pocty.mim}}$`)
           + h.p("Mimobežná hrana s $p$ nemá spoločný bod a nie je s ňou rovnobežná.");
         const X = r.X && r.vztah !== "mimobezne" ? nameOf(r.X) || `P[${r.X.map(v => tn(v)).join(";\\ ")}]` : "";
         o += h.pill(POLOHA_TXT[typ][r.vztah], r.vztah === "mimobezne" ? "flat" : "ok");

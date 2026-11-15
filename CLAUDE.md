@@ -97,7 +97,20 @@ Tools (each file starts with its options and its `presets`; `topics` in each say
 | `pascal` | a39 b37 | Pascal's triangle (click a number; sum rule, symmetry, row sum), n over k with cancelling, factorial table, binomial theorem (p·x + q)^n |
 | `pravdepodobnost` | a41 b38 b39 | two dice as a 6×6 grid with named events (or marked by the reader), one die, repeated experiment (law of large numbers), independent events as a unit square, “at least one”, geometric probability (segment, circle in square, target, meeting problem) |
 | `histogram` | a42 b42 | frequency table → bar chart + pie chart (drag the bars), raw data sorted into classes → histogram, frequency polygon |
+| `derivacia` | c1 c2 c4–c7 (c3) | JSXGraph: secant → tangent (`secna`), tangent line + graph of f′ (`dotycnica`), rising/falling + stationary points (`priebeh`), Newton's method, limit at a point / at infinity (`limita`, `inf`) |
+| `integral` | c8–c12 | JSXGraph: rectangle sums (`sucty`, `druh`), signed area + antiderivative `F` + area function (`plocha`), area between graphs (`medzi`), solid of revolution (`rotacia`); `simpson()` is global |
+| `smerpole` | c13–c18 | JSXGraph: slope field of y′ = F(x, y) with parameters, solution through the draggable point A, Euler's steps with a table |
+| `rozdelenie` | b42 c26–c28 c30 | binomial bars with P(a ≤ X ≤ b), normal curve with area and 68–95–99.7 bands, random variable from a table, binomial test (critical region, p-value) |
+| `boxplot` | c29 | cumulative curve of grouped data with quartiles/percentile read off, box plot; raw data as draggable dots with a box plot, two sets compared |
+| `regresia` | c31–c36 | draggable data + fitted model (lin, exp, pot, kvad, sin), r², residuals and residual plot, prediction, semi-log / log-log axes; `regFit()` is global |
+| `vektory3d` | c22–c25 | turnable 3D view: cross and dot product, plane (point + normal, or two directions), line (+ plane: intersection, angle; + point: distance), sphere |
 | `konstrukcia` | b28 | ruler-and-compass constructions in 4 steps (`krok`): os, osuhla, kolmica, rovnobezka, dotycnica, sss, sus, usu, ssu, cvt, cvg; counts solutions |
+
+The tools from `premietanie` on were written by Fable on 2026-11-15, all in one go on the person's request
+("dokonči všetky nástroje"), each checked by `dev/check.js` and by eye (every preset). No theory uses them yet
+except b28 (`konstrukcia`). The tools for the Danish topics take **`en:true`** in `cfg`: every text the tool
+prints itself is then English (the frame around a tool, "Vyskúšaj" / "Čo si videl" / "Odomknúť všetko", is the
+app's own and stays Slovak). Checked by mounting every preset with `en:true` and looking for Slovak letters in what the tool printed.
 
 The tools from `kruznica` on were written by Fable on 2026-11-13 and checked by `dev/check.js` and by eye
 (every preset), and theory uses `kruznica` (b8–b11) and every tool of Základy it reached so far (see the theory files). Opus writes the theory; if a tool lacks a small option, add it.
@@ -125,10 +138,13 @@ Nice to have, nothing skipped: `graf` axis ticks in multiples of π (b9 uses deg
 
 1. **Opus**, theory with existing tools, 2–4 topics per batch, in this order:
    b29 (`premietanie`), b31 (`poloha`); KPŠ: a38 (`strom`), a39 (`pascal`), a40 (`strom`), a41 (`pravdepodobnost`), a42 (`histogram`),
-   b36 (`strom`), b37 (`pascal`), b38 b39 (`pravdepodobnost`), b41 (`statistika` with `var`), b42 (`histogram` + `rozdelenie` once it exists).
-2. **Fable**, tools still missing, then Opus for their topics:
-   Danish part (c1–c42): tangent/secant (derivative), area under a
-   curve, slope field + Euler, distributions (binomial, normal), box plot, regression, 3D vectors.
+   b36 (`strom`), b37 (`pascal`), b38 b39 (`pravdepodobnost`), b41 (`statistika` with `var`), b42 (`histogram`, `rozdelenie` typ `binom`).
+   Danish part, in English, every tool with `en:true`: c1 c2 c4 c5 c6 c7 (`derivacia`), c3 (`derivacia` typ `dotycnica` with `der`, to check a
+   derivative found by the rules), c8–c12 (`integral`; c10 with `F`), c13–c18 (`smerpole`; c14 with `params`), c19 c20 (`analyticka` typ
+   `vektory`: `kolmy`, `plocha`, `priemet`), c21 (`analyticka` typ `priamka`; a parametric circle is a `graf` `curve`), c22–c25 (`vektory3d`),
+   c26 c27 c28 c30 (`rozdelenie`), c29 (`boxplot`), c31–c36 (`regresia`, `graf`).
+2. **Fable**: no tool is missing any more. c37–c42 (CAS, spreadsheets, formula booklet, exam wording, part 1 by hand,
+   oral proofs) have no tool of their own by nature: ask the person whether to write them without tools before starting.
 
 ## How to add theory for a topic
 
@@ -193,3 +209,14 @@ Things that bite:
   `--ar` comes from the tool's `aspect` (core.js `toolStart`).
 - Long shell heredocs containing backticks or `${}` trip the command safety check. Put patch scripts
   in a file (Write tool) and run the file.
+- In a patch script, `s.replace(a, b)` with a string `b` treats ``$` `` and `$'` as "text before / after the match" and
+  pastes half the file in. Always pass a function: `s.replace(a, () => b)`.
+- `h.p(…)` goes through the markdown writer and escapes HTML: for a `<span class=…>` in `out` return a plain `<div>…</div>`
+  (and `h.m(…)` for the part with `$maths$`).
+- `cfg.free` belongs to `toolParams` (the list of unlocked sliders). The new board tools (`derivacia`, `integral`, `smerpole`)
+  therefore take **`apart:true`** for axes scaled separately; only `graf` uses `free:true` for that.
+- `fact(n)` and `binom(n, k)` are global (core.js), so are `V3.*` (vectors in space), `solidEdges`, `simpson`, `binomPmf`,
+  `normCdf`, `fiveNum`, `regFit`: a theory `out` can use them to recompute a worked example.
+- `vektory3d`: a line that points straight at the viewer shows as a dot; change `otoc` / `sklon` rather than the line.
+- 2026-11-15: in that session `git push origin HEAD:main` was refused by the session's permission check (only the
+  working branch may be pushed). If it happens again, push the branch and tell the person that `main` still waits.
