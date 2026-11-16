@@ -250,6 +250,8 @@ Things that bite:
 - **Desktop app release:** bump `version` in `package.json` and both `version` fields at the top of `package-lock.json`,
   merge to `main`, then push the tag `v<version>` (or *Actions → Desktop app → Run workflow* on `main`). The workflow
   builds the three installers and publishes them under Releases. Do it whenever the person asks for a new download.
+  From a cloud session a tag push hangs up ("remote end hung up"); start the workflow with the GitHub tool
+  `actions_run_trigger` (`run_workflow`, `desktop.yml`, ref `main`) instead: it tags `v<version>` itself (1.2.0, 2026-11-16).
 - **macOS build:** without an Apple certificate electron-builder signs nothing, and macOS then refuses the app
   ("is damaged"). `package.json` therefore has `mac.identity: "-"` (ad-hoc) with `hardenedRuntime: false`; keep both.
   The workflow checks the signature and starts every packaged build with `MATURITA_SMOKE=1` (desktop/main.js: page
