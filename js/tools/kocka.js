@@ -136,7 +136,8 @@ defTool("kocka", {
         }
         X.forEach((p, i) => {
           const q = proj(f, p);
-          h += SG.dot(q, `h ${col[i]}`, 6.5) + (thumb ? "" : SV.text(q[0] + 9, q[1] - 9, "XYZ"[i], `${col[i]} halo`) + (free(i, st) ? SV.circle(q[0], q[1], 14, "hit", ` data-drag="${i}"`) : ""));
+          const mid = proj(f, dims(P).map(v => v / 2)), dl = Math.hypot(mid[0] - q[0], mid[1] - q[1]) || 1;
+          h += SG.dot(q, `h ${col[i]}`, 6.5) + (thumb ? "" : SV.text(q[0] + (mid[0] - q[0]) / dl * 15, q[1] + (mid[1] - q[1]) / dl * 15 + 5, "XYZ"[i], `mid ${col[i]} halo`) + (free(i, st) ? SV.circle(q[0], q[1], 14, "hit", ` data-drag="${i}"`) : ""));
         });
         return SV.wrap(W, H, h);
       },

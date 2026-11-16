@@ -136,9 +136,9 @@ THEORY.a2 = {
    steps:[
      ["Mesačný úrok a počet splátok.", R`i = \frac{0{,}04}{12} \doteq 0{,}003333,\quad N = 240`],
      ["Dosaď.", R`a = 80\,000 \cdot \frac{i \cdot q^{240}}{q^{240} - 1} \doteq 484{,}78`],
-     ["Spolu zaplatíš.", R`240 \cdot 484{,}78 \doteq 116\,348`]
+     ["Spolu zaplatíš.", R`240 \cdot 484{,}78 \doteq 116\,347`]
    ],
-   res:R`Približne $484{,}78$ € mesačne, úroky spolu asi $36\,348$ €.`},
+   res:R`Približne $484{,}78$ € mesačne, úroky spolu asi $36\,347$ €.`},
   {tool:"urok", kind:"uloha", ask:R`Pôžička 10 000 € pri $6\,\%$ p. a. Nastav najkratšiu dobu $\vd{n}$, pri ktorej je ročná splátka nižšia než 1 500 €.`,
    hint:R`Pri 8 rokoch je splátka asi 1 610 €. Skús o rok viac.`,
    goal:P => P.n === 9,

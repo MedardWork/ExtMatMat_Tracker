@@ -179,7 +179,7 @@ THEORY.a26 = {
    steps:[
      ["Kvocient.", R`\va{q} = 1 + \tfrac{3}{100} = 1{,}03`],
      ["Dosaď.", R`K_5 = 2000 \cdot 1{,}03^5`],
-     ["Vypočítaj na kalkulačke.", R`K_5 \doteq 2000 \cdot 1{,}15927 \doteq 2318{,}55`]
+     ["Vypočítaj na kalkulačke.", R`K_5 \doteq 2000 \cdot 1{,}159274 \doteq 2318{,}55`]
    ],
    res:"O 5 rokov budeš mať približne **2 318,55 €**."},
   {tool:"postupnost", ask:R`Vklad 1 000 €. Meň úrok $\va{p}$ a počet rokov $\vd{n}$. Čísla nad oblúčikmi sú úroky pripísané za jednotlivé roky.`,
