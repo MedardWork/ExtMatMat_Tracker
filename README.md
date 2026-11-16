@@ -259,6 +259,7 @@ js/views/info.js                   #/info
 js/main.js                         theme, global keys, startup
 
 dev/check.js                       opens theory and tool pages in a browser and reports errors
+dev/desktop-check.js               starts the real desktop app and checks pages, saving, export, links, closing
 CLAUDE.md                          notes for continuing the theory work with Claude Code
 
 server/store.js                    the SQLite database: current save, history, daily backups

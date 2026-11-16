@@ -381,8 +381,13 @@ function toolG(b, C, st){
     b, C, V, col,
     fn(f, color, o, dom){
       const F = typeof f === "function" ? x => f(x, st.P) : (e => x => { st.scope.x = x; return e.f(st.scope); })(mathExpr(f, st.names));
-      const args = dom ? [F, V(dom[0]), V(dom[1])] : [F];
-      return b.create("functiongraph", args, Object.assign({}, base, {strokeColor:col(color), strokeWidth:2.6}, o));
+      /* a "curve" with x = t, not a "functiongraph": that one hands the text "x" to JSXGraph's own compiler, which needs eval,
+         and the Content-Security-Policy of server/app.js (Docker, desktop app) forbids eval — the graph then stays empty */
+      const args = dom ? [t => t, F, V(dom[0]), V(dom[1])] : [t => t, F];
+      /* RDPsmoothing and the curve type are what "functiongraph" would have set: same picture, same number of points */
+      const c = b.create("curve", args, Object.assign({}, base, {strokeColor:col(color), strokeWidth:2.6, RDPsmoothing:true}, o));
+      c.visProp.curvetype = "functiongraph";
+      return c;
     },
     hid(x, y){ return b.create("point", [V(x), V(y)], Object.assign({}, base, {visible:false, withLabel:false})); },
     pt(x, y, color, o = {}){

@@ -36,9 +36,18 @@ function smoke(){
     try{
       const r = await win.webContents.executeJavaScript(`new Promise(res => setTimeout(async () => {
         const s = await fetch("/api/state").then(r => r.json()).catch(e => ({app:String(e)}));
-        res({text:document.body.innerText.length, links:document.querySelectorAll("a[href^='#/']").length, app:s.app});
+        const r = {text:document.body.innerText.length, links:document.querySelectorAll("a[href^='#/']").length, app:s.app, curve:0};
+        /* a graph is drawn by JSXGraph, which must manage without eval (the Content-Security-Policy forbids it):
+           open the graph tool and wait for a curve that has points (an empty one is "M 0 0", a straight line about 50 characters) */
+        location.hash = "#/nastroje/graf";
+        for(let i = 0; i < 60 && r.curve < 20; i++){
+          await new Promise(ok => setTimeout(ok, 250));
+          r.curve = Math.max(0, ...[...document.querySelectorAll(".jxgbox svg path")]
+            .filter(p => parseFloat(p.getAttribute("stroke-width")) >= 2.5).map(p => (p.getAttribute("d") || "").length));
+        }
+        res(r);
       }, 1500))`);
-      done(r.text > 200 && r.links > 0 && r.app === "maturita-tracker", JSON.stringify(r));
+      done(r.text > 200 && r.links > 0 && r.app === "maturita-tracker" && r.curve >= 20, JSON.stringify(r));
     }catch(e){ done(false, e.message); }
   });
 }

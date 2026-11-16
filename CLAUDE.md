@@ -213,6 +213,14 @@ Things that bite:
   tiles `SHOTS` pictures into `<dir>/_all.png`. A full `node dev/check.js` takes over 2 minutes.
 - A new tool needs its `<script>` tag in `maturita-matematika-tracker.html` and its styles in
   `css/theory.css`; `dev/check.js` picks it up from `js/tools/` by itself.
+- **No eval anywhere** (2026-11-16): `server/app.js` sends a Content-Security-Policy without `'unsafe-eval'`, so in Docker and
+  in the desktop app `eval` / `new Function` throw, while `file://` and GitHub Pages have no policy. JSXGraph compiles every
+  *string* it is given as a term or coordinate with eval (its JessieCode): `functiongraph` passes the string `"x"` itself, and
+  the graphs came out empty in the app. Hand JSXGraph functions and numbers only; `g.fn` draws a `curve` with `t => t`.
+  `dev/check.js` forbids eval in the page, so this now fails there too.
+- `node dev/desktop-check.js` (after `npm ci`; `xvfb-run -a` in front in a cloud session, `quick` for a few pages) drives the
+  real Electron app: every tool with every preset, saving, reload, export, clipboard, import, outside links, closing.
+  If the Electron binary is missing after `npm ci`, run `node node_modules/electron/install.js`.
 - `rm` with a shell variable in the path is refused by the safety check; write screenshots to a fresh folder.
 - Trig graphs in degrees with `graf`: `f:"sin(b*x*pi/180)"`, `view:[-30, 1.7, 390, -1.7], tick:[90, 1], free:true,
   aspect:"2.2"` (see `b9.js`). Don't name the axis `"x (°)"`, the label covers the 360.
@@ -251,10 +259,10 @@ Things that bite:
   merge to `main`, then push the tag `v<version>` (or *Actions → Desktop app → Run workflow* on `main`). The workflow
   builds the three installers and publishes them under Releases. Do it whenever the person asks for a new download.
   From a cloud session a tag push hangs up ("remote end hung up"); start the workflow with the GitHub tool
-  `actions_run_trigger` (`run_workflow`, `desktop.yml`, ref `main`) instead: it tags `v<version>` itself (1.2.0, 2026-11-16).
+  `actions_run_trigger` (`run_workflow`, `desktop.yml`, ref `main`) instead: it tags `v<version>` itself (1.2.0 and 1.2.1, 2026-11-16).
 - **macOS build:** without an Apple certificate electron-builder signs nothing, and macOS then refuses the app
   ("is damaged"). `package.json` therefore has `mac.identity: "-"` (ad-hoc) with `hardenedRuntime: false`; keep both.
   The workflow checks the signature and starts every packaged build with `MATURITA_SMOKE=1` (desktop/main.js: page
-  rendered + database answers, exit code 0/1). Locally: `npx electron-builder --linux dir`, then
+  rendered + database answers + the graph tool drew a curve, exit code 0/1). Locally: `npx electron-builder --linux dir`, then
   `MATURITA_SMOKE=1 xvfb-run -a dist/linux-unpacked/maturita-tracker --no-sandbox`. `dev/check.js` uses `file://`,
   so it does not cover the app shell.

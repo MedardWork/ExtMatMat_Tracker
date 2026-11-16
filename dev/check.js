@@ -22,6 +22,14 @@ const BASE ="file://" + path.resolve(__dirname, "..", "maturita-matematika-track
   let bad = 0;
   for (const width of [1280, 400]) {
     const page = await (await browser.newContext({ viewport: { width, height: 900 } })).newPage();
+    // server/app.js (Docker, desktop app) sends a Content-Security-Policy without 'unsafe-eval'; file:// has none.
+    // Forbid eval here too, so code that needs it (JSXGraph compiling a string) fails the check. Playwright's own calls pass.
+    await page.addInitScript(() => {
+      const real = window.eval;
+      const no = () => { console.error("eval used: forbidden by the app's Content-Security-Policy"); throw new EvalError("eval is forbidden"); };
+      window.eval = s => /UtilityScript/.test(new Error().stack) ? real(s) : no();
+      window.Function = new Proxy(Function, { construct: no, apply: no });
+    });
     const errs = [];
     page.on("console", m => { if (m.type() === "error") errs.push(m.text()); });
     page.on("pageerror", e => errs.push(e.message + " | " + (e.stack || "").split("\n")[1]));
