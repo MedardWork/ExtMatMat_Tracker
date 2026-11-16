@@ -28,12 +28,12 @@ defTool("integral", {
   desc:"Plocha pod grafom z obdĺžnikov, určitý integrál so znamienkom, plocha medzi dvoma grafmi a objem rotačného telesa.",
   topics:["c8", "c9", "c11", "c12"],
   presets:[
-    {name:"Súčty obdĺžnikov", cfg:{typ:"sucty"}},
-    {name:"Stredy a lichobežníky", cfg:{typ:"sucty", druh:"lichobeznik", n:4}},
-    {name:"Integrál so znamienkom", cfg:{typ:"plocha"}},
-    {name:"Funkcia plochy", cfg:{typ:"plocha", f:"x/2 + 1", a:0, b:3, view:[-1, 7, 6, -1], on:{funkcia:true}}},
-    {name:"Plocha medzi grafmi", cfg:{typ:"medzi"}},
-    {name:"Rotačné teleso", cfg:{typ:"rotacia"}}
+    {name:"Súčty obdĺžnikov", cfg:{typ:"sucty"}, tip:"Pridávaj diely: súčet obsahov obdĺžnikov sa blíži k obsahu pod grafom, teda k integrálu."},
+    {name:"Stredy a lichobežníky", cfg:{typ:"sucty", druh:"lichobeznik", n:4}, tip:"Výška obdĺžnika v strede dielu alebo lichobežník namiesto obdĺžnika dajú lepší odhad pri rovnakom počte dielov."},
+    {name:"Integrál so znamienkom", cfg:{typ:"plocha"}, tip:"Plocha pod osou $x$ sa počíta záporne. Integrál preto nie je to isté ako obsah."},
+    {name:"Funkcia plochy", cfg:{typ:"plocha", f:"x/2 + 1", a:0, b:3, view:[-1, 7, 6, -1], on:{funkcia:true}}, tip:"Posúvaj hornú hranicu: plocha $A(x)$ rastie rýchlosťou $f(x)$. To je základná veta integrálneho počtu."},
+    {name:"Plocha medzi grafmi", cfg:{typ:"medzi"}, tip:"Medze sú priesečníky grafov. Integruje sa rozdiel „horná mínus dolná“."},
+    {name:"Rotačné teleso", cfg:{typ:"rotacia"}, tip:"Otáčaním grafu okolo osi $x$ vzniká teleso z tenkých kotúčov: $V = \\pi \\int f(x)^2\\,dx$."}
   ],
   help:"Funkciu píš ako v nástroji Graf funkcie: `x^2/4 + 1`, `sin(x)`, `sqrt(x)`, `exp(-x)`.",
 

@@ -18,12 +18,12 @@ defTool("strom", {
   desc:"Pravidlo súčinu, variácie, permutácie a kombinácie ako strom: každá vetva je jedna možnosť.",
   topics:["a38", "a40", "b36"],
   presets:[
-    {name:"Pravidlo súčinu", cfg:{typ:"strom", volby:[3, 2, 2], nazvy:["polievka", "hlavné jedlo", "dezert"], mena:[["P1", "P2", "P3"], ["H1", "H2"], ["D1", "D2"]]}},
-    {name:"Variácie", cfg:{typ:"vyber", n:4, k:2, on:{poradie:true}}},
-    {name:"Permutácie", cfg:{typ:"vyber", n:4, k:4, on:{poradie:true}}},
-    {name:"Kombinácie", cfg:{typ:"vyber", n:4, k:2}},
-    {name:"Variácie s opakovaním", cfg:{typ:"vyber", n:3, k:3, prvky:"123", on:{poradie:true, opak:true}}},
-    {name:"Poradia písmen slova", cfg:{typ:"slovo", slovo:"MAMA"}}
+    {name:"Pravidlo súčinu", cfg:{typ:"strom", volby:[3, 2, 2], nazvy:["polievka", "hlavné jedlo", "dezert"], mena:[["P1", "P2", "P3"], ["H1", "H2"], ["D1", "D2"]]}, tip:"Každá cesta stromom je jedna možnosť. Počty možností na jednotlivých úrovniach sa násobia."},
+    {name:"Variácie", cfg:{typ:"vyber", n:4, k:2, on:{poradie:true}}, tip:"Vyberáš $k$ z $n$ a záleží na poradí. Na každej ďalšej úrovni je o jednu možnosť menej."},
+    {name:"Permutácie", cfg:{typ:"vyber", n:4, k:4, on:{poradie:true}}, tip:"Poradia všetkých $n$ prvkov: $n \\cdot (n-1) \\cdots 1 = n!$"},
+    {name:"Kombinácie", cfg:{typ:"vyber", n:4, k:2}, tip:"Keď na poradí nezáleží, každú skupinu strom obsahuje $k!$-krát. Preto sa počet variácií delí $k!$."},
+    {name:"Variácie s opakovaním", cfg:{typ:"vyber", n:3, k:3, prvky:"123", on:{poradie:true, opak:true}}, tip:"Prvky sa môžu opakovať, na každej úrovni je znova $n$ možností: spolu $n^k$."},
+    {name:"Poradia písmen slova", cfg:{typ:"slovo", slovo:"MAMA"}, tip:"Napíš slovo. Rovnaké písmená sa nedajú rozlíšiť, preto sa $n!$ delí faktoriálmi ich počtov."}
   ],
   help:"Kliknutím na **koniec vetvy** ju zvýrazníš a uvidíš, ktorú možnosť predstavuje.",
 

@@ -25,16 +25,16 @@ defTool("graf", {
   desc:"Napíš funkciu, pridaj do nej parametre a sleduj, čo ktorý robí s grafom.",
   topics:["a21", "a22", "b9", "b13"],
   presets:[
-    {name:"Lineárna", cfg:{fns:["k*x+q"], params:{k:{v:1, min:-4, max:4, step:.5, color:"a", note:"smernica"}, q:{v:1, min:-5, max:5, step:.5, color:"b", note:"posun"}}}},
-    {name:"Kvadratická", cfg:{fns:["a*x^2+b*x+c"], params:{a:{v:1, min:-3, max:3, step:.5, color:"a"}, b:{v:-2, min:-6, max:6, step:.5, color:"b"}, c:{v:-3, min:-6, max:6, step:.5, color:"d"}}}},
-    {name:"Vrcholový tvar", cfg:{fns:["a*(x-m)^2+n"], params:{a:{v:1, min:-3, max:3, step:.5, color:"a"}, m:{v:1, min:-5, max:5, step:.5, color:"b"}, n:{v:-2, min:-5, max:5, step:.5, color:"d"}}}},
-    {name:"Dve funkcie", cfg:{fns:["x^2-3", "k*x+1"], params:{k:{v:1, min:-3, max:3, step:.5, color:"a"}}, on:{meet:true}}},
-    {name:"Mocninová", cfg:{fns:["x^n"], params:{n:{v:3, min:-3, max:5, step:1, color:"a"}}}},
-    {name:"Exponenciálna", cfg:{fns:["a^x"], params:{a:{v:2, min:.2, max:4, step:.1, color:"a", note:"základ"}}, view:[-5, 8, 5, -2]}},
-    {name:"Sínus", cfg:{fns:["a*sin(b*x)"], params:{a:{v:1, min:-3, max:3, step:.5, color:"a"}, b:{v:1, min:.5, max:4, step:.5, color:"b"}}, view:[-7, 4, 7, -4]}},
-    {name:"Kosínus", cfg:{fns:["a*cos(b*x)"], params:{a:{v:1, min:-3, max:3, step:.5, color:"a"}, b:{v:1, min:.5, max:4, step:.5, color:"b"}}, view:[-7, 4, 7, -4]}},
-    {name:"Tangens", cfg:{fns:["a*tg(b*x)"], params:{a:{v:1, min:-3, max:3, step:.5, color:"a"}, b:{v:1, min:.5, max:3, step:.5, color:"b"}}, view:[-7, 5, 7, -5]}},
-    {name:"Logaritmická", cfg:{fns:["log(x)", "ln(x)/ln(a)"], params:{a:{v:2, min:.2, max:6, step:.1, color:"a", note:"základ"}}, view:[-1, 4, 10, -4]}}
+    {name:"Lineárna", cfg:{fns:["k*x+q"], params:{k:{v:1, min:-4, max:4, step:.5, color:"a", note:"smernica"}, q:{v:1, min:-5, max:5, step:.5, color:"b", note:"posun"}}}, tip:"Meň $k$ a $q$: smernica otáča priamku, $q$ ju posúva hore a dolu. Funkciu môžeš prepísať na ľubovoľnú inú."},
+    {name:"Kvadratická", cfg:{fns:["a*x^2+b*x+c"], params:{a:{v:1, min:-3, max:3, step:.5, color:"a"}, b:{v:-2, min:-6, max:6, step:.5, color:"b"}, c:{v:-3, min:-6, max:6, step:.5, color:"d"}}}, tip:"Koeficient $a$ otvára parabolu nahor alebo nadol, $c$ je priesečník s osou $y$. Zapni vrchol a priesečníky."},
+    {name:"Vrcholový tvar", cfg:{fns:["a*(x-m)^2+n"], params:{a:{v:1, min:-3, max:3, step:.5, color:"a"}, m:{v:1, min:-5, max:5, step:.5, color:"b"}, n:{v:-2, min:-5, max:5, step:.5, color:"d"}}}, tip:"Vrchol paraboly je priamo v predpise: $[m;\\ n]$. Posúvaj ho a sleduj, ako sa mení rovnica."},
+    {name:"Dve funkcie", cfg:{fns:["x^2-3", "k*x+1"], params:{k:{v:1, min:-3, max:3, step:.5, color:"a"}}, on:{meet:true}}, tip:"Priesečníky grafov sú riešenia rovnice $f(x) = g(x)$. Meň $k$: kedy sa priamka paraboly len dotkne?"},
+    {name:"Mocninová", cfg:{fns:["x^n"], params:{n:{v:3, min:-3, max:5, step:1, color:"a"}}}, tip:"Párny exponent dá graf súmerný podľa osi $y$, nepárny podľa začiatku. Skús aj záporné $n$."},
+    {name:"Exponenciálna", cfg:{fns:["a^x"], params:{a:{v:2, min:.2, max:4, step:.1, color:"a", note:"základ"}}, view:[-5, 8, 5, -2]}, tip:"Pre $a > 1$ funkcia rastie, pre $0 < a < 1$ klesá. Bodom $[0;\\ 1]$ prechádza vždy."},
+    {name:"Sínus", cfg:{fns:["a*sin(b*x)"], params:{a:{v:1, min:-3, max:3, step:.5, color:"a"}, b:{v:1, min:.5, max:4, step:.5, color:"b"}}, view:[-7, 4, 7, -4]}, tip:"$a$ mení výšku vlny (amplitúdu), $b$ jej hustotu: perióda je $\\frac{2\\pi}{b}$."},
+    {name:"Kosínus", cfg:{fns:["a*cos(b*x)"], params:{a:{v:1, min:-3, max:3, step:.5, color:"a"}, b:{v:1, min:.5, max:4, step:.5, color:"b"}}, view:[-7, 4, 7, -4]}, tip:"Kosínus je sínus posunutý o $\\frac{\\pi}{2}$ doľava. Pridaj do druhého riadku $\\sin(x)$ a porovnaj."},
+    {name:"Tangens", cfg:{fns:["a*tg(b*x)"], params:{a:{v:1, min:-3, max:3, step:.5, color:"a"}, b:{v:1, min:.5, max:3, step:.5, color:"b"}}, view:[-7, 5, 7, -5]}, tip:"Tangens má periódu $\\pi$ a v bodoch $\\frac{\\pi}{2} + k\\pi$ nie je definovaný: tam má graf zvislé asymptoty."},
+    {name:"Logaritmická", cfg:{fns:["log(x)", "ln(x)/ln(a)"], params:{a:{v:2, min:.2, max:6, step:.1, color:"a", note:"základ"}}, view:[-1, 4, 10, -4]}, tip:"Základ $a > 1$ dá rastúcu, $0 < a < 1$ klesajúcu funkciu. Každý logaritmus prechádza bodom $[1;\\ 0]$."}
   ],
 
   help:`Funkciu píš ako na kalkulačke: \`2x + 1\`, \`x^2 - 4\`, \`a*(x-m)^2 + n\`, \`sin(x)\`, \`sqrt(x)\`, \`|x - 2|\`, \`1/x\`.

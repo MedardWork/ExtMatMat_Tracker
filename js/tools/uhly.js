@@ -16,9 +16,9 @@ defTool("uhly", {
   desc:"Dve priamky preťaté treťou: vrcholové, susedné, súhlasné a striedavé uhly, a čo sa s nimi stane, keď priamky nie sú rovnobežné.",
   topics:["a27"],
   presets:[
-    {name:"Súhlasné a striedavé", cfg:{on:{suhlasne:true, striedave:true}}},
-    {name:"Vrcholové a susedné", cfg:{on:{vrcholove:true, susedne:true}}},
-    {name:"Nerovnobežné priamky", cfg:{sklon:15, on:{suhlasne:true}}}
+    {name:"Súhlasné a striedavé", cfg:{on:{suhlasne:true, striedave:true}}, tip:"Pri rovnobežkách sú súhlasné uhly rovnaké a striedavé tiež. Zmeň uhol priečky."},
+    {name:"Vrcholové a susedné", cfg:{on:{vrcholove:true, susedne:true}}, tip:"Vrcholové uhly sú rovnaké, susedné dajú spolu $180^\\circ$."},
+    {name:"Nerovnobežné priamky", cfg:{sklon:15, on:{suhlasne:true}}, tip:"Keď priamky nie sú rovnobežné, súhlasné uhly sa líšia práve o sklon dolnej priamky."}
   ],
   fromText:toolTextIn, toText:toolTextOut,
 

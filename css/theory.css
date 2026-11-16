@@ -184,6 +184,7 @@
 .tw-seg button{appearance:none;cursor:pointer;flex:1 1 auto;font:500 13px/1.2 var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:7px 9px}
 .tw-seg button:hover{border-color:var(--ink-soft)}
 .tw-seg button.on{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.tw-seg.many button{flex:0 1 auto;min-width:36px}   /* many short choices keep their own width, the last row is not stretched */
 /* the coordinates of a vector or a point side by side, typed */
 .tw-pm.vec{grid-template-columns:minmax(26px,auto) minmax(0,1fr);padding:7px 11px}
 .tw-pm.vec .tw-pn{grid-row:1;grid-column:1;white-space:nowrap}
@@ -234,6 +235,18 @@
 .tw-full .tw-board > .jxgbox{max-width:min(100%,max(380px,calc((100vh - 280px) * var(--ar,1))))}
 .tw-full .tw-board > .tw-svg{max-width:min(100%,max(380px,calc((100vh - 280px) * var(--ar,100))))}
 .tw-full .tw-side{gap:12px}
+/* controls longer than the screen: the picture stays in view while they scroll */
+/* (tw-pin: the tool draws a picture, not a table) */
+@media (min-width:700px){
+  .tw.tw-full.tw-pin{overflow:clip}
+  .tw-full.tw-pin .tw-board{position:sticky;top:calc(var(--bar-h, 0px) + 8px);align-self:start}
+}
+@media (max-width:699px){
+  .tw.tw-full.tw-pin{overflow:clip}
+  .tw-full.tw-pin .tw-board{position:sticky;top:var(--bar-h, 0px);z-index:3;background:var(--panel);border-bottom:1px solid var(--rule)}
+  .tw-full.tw-pin .tw-board > .jxgbox{max-width:min(100%,calc(40vh * var(--ar,1)))}
+  .tw-full.tw-pin .tw-board > .tw-svg{max-width:min(100%,calc(40vh * var(--ar,100)))}
+}
 .tw-full .tw-pm:not(.check):not(.lock):not(.pick):not(.vec):not(.xy){padding:7px 10px 6px}
 .tw-full .tw-h{background:var(--track)}
 .tw-full .tw-h p{font-weight:500;font-size:14.5px}

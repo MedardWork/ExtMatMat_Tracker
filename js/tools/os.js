@@ -134,11 +134,11 @@ defTool("os", {
     const movable = (id, st) => params[id] && !(params[id].lock && !st.open);
 
     /* on the tool's own page: what kind the two intervals are; how many factors, which of them divides */
-    const KINDS = ["[]", "()", "[)", "(]", "-]", "-)", "[+", "(+"], KIND_L = ["⟨ ; ⟩", "( ; )", "⟨ ; )", "( ; ⟩", "(−∞; ⟩", "(−∞; )", "⟨ ; ∞)", "( ; ∞)"];
+    const KINDS = ["[]", "()", "[)", "(]", "-]", "-)", "[+", "(+"], kindL = (x, y) => [`⟨${x}; ${y}⟩`, `(${x}; ${y})`, `⟨${x}; ${y})`, `(${x}; ${y}⟩`, `(−∞; ${y}⟩`, `(−∞; ${y})`, `⟨${x}; ∞)`, `(${x}; ∞)`];
     const kindOf = s => { s = (s || "[]").replace("<", "[").replace(">", "]"); return KINDS.indexOf(s); };
     const picks = typ === "dva" ? [
-        {name:"Interval A", opts:KIND_L, v:kindOf(cfg.A), set:k => Object.assign({}, cfg, {A:KINDS[k]})},
-        {name:"Interval B", opts:KIND_L, v:kindOf(cfg.B || "()"), set:k => Object.assign({}, cfg, {B:KINDS[k]})}]
+        {name:"Interval A", opts:kindL("a", "b"), v:kindOf(cfg.A), set:k => Object.assign({}, cfg, {A:KINDS[k]})},
+        {name:"Interval B", opts:kindL("c", "d"), v:kindOf(cfg.B || "()"), set:k => Object.assign({}, cfg, {B:KINDS[k]})}]
       : typ === "znamienka" ? [
         {name:"Počet činiteľov", opts:["1", "2", "3"], v:nf - 1, set:k => Object.assign({}, cfg, {n:k + 1, dole:dole.filter(i => i <= k + 1)})},
         {name:"V menovateli", opts:["nič"].concat(["x₁", "x₂", "x₃"].slice(0, nf)), v:dole.length ? dole[0] : 0, set:k => Object.assign({}, cfg, {dole:k ? [k] : []})},

@@ -121,7 +121,7 @@ THEORY.b1 = {
      out:(P, h) => P.a === 1 ? h.pill("základ 1 nie je dovolený", "down") : h.calc(R`y = \log_{\va{${h.tn(P.a)}}} x`)}},
   {ex:R`Vypočítaj $\log_2 10$ (kalkulačkou) a $\log_4 8$ (bez kalkulačky).`,
    steps:[
-     ["Preveď na dekadický.", R`\log_2 10 = \frac{\log 10}{\log 2} = \frac{1}{0{,}301} \doteq 3{,}32`],
+     ["Preveď na dekadický.", R`\log_2 10 = \frac{\log 10}{\log 2} \doteq \frac{1}{0{,}301} \doteq 3{,}32`],
      ["Preveď na základ 2.", R`\log_4 8 = \frac{\log_2 8}{\log_2 4} = \frac{3}{2}`]
    ],
    res:R`$\log_2 10 \doteq 3{,}32$, $\log_4 8 = \dfrac{3}{2}$.`},

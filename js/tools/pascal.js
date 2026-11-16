@@ -15,12 +15,12 @@ defTool("pascal", {
   desc:"Faktoriál, kombinačné číslo s krátením, Pascalov trojuholník a binomická veta.",
   topics:["a39", "b37"],
   presets:[
-    {name:"Pascalov trojuholník", cfg:{typ:"trojuholnik", on:{sucet:true}}},
-    {name:"Súmernosť a súčet riadku", cfg:{typ:"trojuholnik", n:6, k:2, on:{symetria:true, riadok:true}}},
-    {name:"Kombinačné číslo", cfg:{typ:"cislo"}},
-    {name:"Faktoriál", cfg:{typ:"faktorial"}},
-    {name:"Binomická veta", cfg:{typ:"binom", ab:true}},
-    {name:"Rozvoj (2x + 3)^4", cfg:{typ:"binom", n:4, p:2, q:3}}
+    {name:"Pascalov trojuholník", cfg:{typ:"trojuholnik", on:{sucet:true}}, tip:"Každé číslo je súčet dvoch nad ním. Klikni na číslo: je to kombinačné číslo $\\binom{n}{k}$."},
+    {name:"Súmernosť a súčet riadku", cfg:{typ:"trojuholnik", n:6, k:2, on:{symetria:true, riadok:true}}, tip:"Riadok je súmerný, lebo vybrať $k$ prvkov je to isté ako vybrať $n - k$, ktoré zostanú. Súčet riadku je $2^n$."},
+    {name:"Kombinačné číslo", cfg:{typ:"cislo"}, tip:"Vo vzorci sa veľa vykráti: v čitateli zostane $k$ činiteľov od $n$ nadol."},
+    {name:"Faktoriál", cfg:{typ:"faktorial"}, tip:"Faktoriál rastie veľmi rýchlo. Platí $n! = n \\cdot (n - 1)!$ a $0! = 1$."},
+    {name:"Binomická veta", cfg:{typ:"binom", ab:true}, tip:"Koeficienty rozvoja $(a + b)^n$ sú čísla $n$-tého riadku Pascalovho trojuholníka."},
+    {name:"Rozvoj (2x + 3)^4", cfg:{typ:"binom", n:4, p:2, q:3}, tip:"Každý člen je kombinačné číslo krát mocniny oboch sčítancov. Posuvníkom $k$ vyber jeden člen."}
   ],
   fromText:toolTextIn, toText:toolTextOut,
 

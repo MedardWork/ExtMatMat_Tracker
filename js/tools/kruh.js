@@ -17,12 +17,12 @@ defTool("kruh", {
   desc:"Oblúk, výsek a odsek, tetiva, dotyčnice z bodu a stredový a obvodový uhol vrátane Tálesovej vety.",
   topics:["a31", "a34", "b18", "b8"],
   presets:[
-    {name:"Oblúk a výsek", cfg:{typ:"vysek"}},
-    {name:"Odsek", cfg:{typ:"vysek", alfa:120, on:{odsek:true, tetiva:true}}},
-    {name:"Tetiva", cfg:{typ:"tetiva"}},
-    {name:"Dotyčnice", cfg:{typ:"dotycnica"}},
-    {name:"Stredový a obvodový uhol", cfg:{typ:"uhly"}},
-    {name:"Tálesova veta", cfg:{typ:"uhly", omega:180, lock:["omega"]}}
+    {name:"Oblúk a výsek", cfg:{typ:"vysek"}, tip:"Dĺžka oblúka aj obsah výseku sú taká časť z celého kruhu, akú tvorí uhol z $360^\\circ$."},
+    {name:"Odsek", cfg:{typ:"vysek", alfa:120, on:{odsek:true, tetiva:true}}, tip:"Odsek je výsek bez trojuholníka. Pri uhle $180^\\circ$ je z neho polkruh."},
+    {name:"Tetiva", cfg:{typ:"tetiva"}, tip:"Polovica tetivy, jej vzdialenosť od stredu a polomer tvoria pravouhlý trojuholník."},
+    {name:"Dotyčnice", cfg:{typ:"dotycnica"}, tip:"Dotyčnica je kolmá na polomer v bode dotyku. Oba úseky dotyčníc z jedného bodu sú rovnako dlhé."},
+    {name:"Stredový a obvodový uhol", cfg:{typ:"uhly"}, tip:"Ťahaj vrchol $V$ po kružnici: obvodový uhol nad tým istým oblúkom sa nemení a je polovicou stredového."},
+    {name:"Tálesova veta", cfg:{typ:"uhly", omega:180, lock:["omega"]}, tip:"Nad priemerom je stredový uhol $180^\\circ$, preto je každý obvodový uhol pravý."}
   ],
   fromText:toolTextIn, toText:toolTextOut,
 

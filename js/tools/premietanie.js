@@ -21,13 +21,13 @@ defTool("premietanie", {
   desc:"Stavba z kociek alebo teleso vo voľnom rovnobežnom premietaní a jeho nárys, pôdorys a bokorys.",
   topics:["b29"],
   presets:[
-    {name:"Stavba z kociek", cfg:{typ:"kocky"}},
-    {name:"Prázdna podložka", cfg:{typ:"kocky", vysky:[[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]}},
-    {name:"Postav podľa pohľadov", cfg:{typ:"kocky", vysky:[[0, 0, 0], [0, 0, 0], [0, 0, 0]], on:{obraz:false}, ciel:{narys:[2, 3, 1], bokorys:[1, 3, 2]}}},
-    {name:"Kváder: uhol a skrátenie", cfg:{typ:"teleso", teleso:"kvader"}},
-    {name:"Ihlan", cfg:{typ:"teleso", teleso:"ihlan"}},
-    {name:"Valec", cfg:{typ:"teleso", teleso:"valec"}},
-    {name:"Kužeľ", cfg:{typ:"teleso", teleso:"kuzel"}}
+    {name:"Stavba z kociek", cfg:{typ:"kocky"}, tip:"Klikaj na políčka pôdorysu: pridávaš kocky na seba. Sleduj, ako sa mení nárys a bokorys."},
+    {name:"Prázdna podložka", cfg:{typ:"kocky", vysky:[[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]}, tip:"Postav vlastnú stavbu. Číslo v pôdoryse hovorí, koľko kociek stojí na políčku."},
+    {name:"Postav podľa pohľadov", cfg:{typ:"kocky", vysky:[[0, 0, 0], [0, 0, 0], [0, 0, 0]], on:{obraz:false}, ciel:{narys:[2, 3, 1], bokorys:[1, 3, 2]}}, tip:"Stavba je skrytá, vidíš len jej tri pohľady. Postav takú, ktorá im vyhovuje."},
+    {name:"Kváder: uhol a skrátenie", cfg:{typ:"teleso", teleso:"kvader"}, tip:"Hrany idúce dozadu sa kreslia pod uhlom $\\omega$ a skrátené koeficientom $q$. Bežne $\\omega = 45^\\circ$, $q = \\frac{1}{2}$."},
+    {name:"Ihlan", cfg:{typ:"teleso", teleso:"ihlan"}, tip:"V náryse a bokoryse je ihlan trojuholník, v pôdoryse štvorec s uhlopriečkami."},
+    {name:"Valec", cfg:{typ:"teleso", teleso:"valec"}, tip:"Podstava valca sa vo voľnom rovnobežnom premietaní kreslí ako elipsa."},
+    {name:"Kužeľ", cfg:{typ:"teleso", teleso:"kuzel"}, tip:"Nárys kužeľa je rovnoramenný trojuholník, pôdorys kruh so stredom."}
   ],
   help:"V stavbe z kociek **klikaj na políčka pôdorysu**: každý klik pridá kocku, po najvyššej veži sa políčko vyprázdni.",
 

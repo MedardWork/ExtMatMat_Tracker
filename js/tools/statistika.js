@@ -35,12 +35,12 @@ defTool("statistika", {
   desc:"Hodnoty ako bodky na číselnej osi. Potiahni jednu a sleduj, čo sa pohne a čo zostane.",
   topics:["b40", "b41"],
   presets:[
-    {name:"Malý súbor", cfg:{data:[2, 3, 3, 4, 5, 6, 8]}},
-    {name:"Odľahlá hodnota", cfg:{data:[3, 4, 4, 5, 5, 6, 19], max:20}},
-    {name:"Známky v triede", cfg:{data:[1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 4, 5], min:1, max:5}},
-    {name:"Párny počet", cfg:{data:[1, 3, 4, 8, 9, 10]}},
-    {name:"Rozptyl: hodnoty pri sebe", cfg:{data:[4, 5, 5, 6, 6, 6, 7, 7, 8], on:{mean:true, var:true}}},
-    {name:"Rozptyl: hodnoty ďaleko", cfg:{data:[1, 2, 3, 5, 6, 7, 9, 10, 11], on:{mean:true, var:true}, max:12}}
+    {name:"Malý súbor", cfg:{data:[2, 3, 3, 4, 5, 6, 8]}, tip:"Ťahaj bodky alebo napíš vlastné hodnoty. Priemer je ťažisko, medián prostredná hodnota, modus najčastejšia."},
+    {name:"Odľahlá hodnota", cfg:{data:[3, 4, 4, 5, 5, 6, 19], max:20}, tip:"Odtiahni poslednú bodku ešte ďalej. Priemer sa posúva za ňou, medián zostáva na mieste."},
+    {name:"Známky v triede", cfg:{data:[1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 4, 5], min:1, max:5}, tip:"Pri známkach má zmysel aj modus: najčastejšia známka. Pridaj pár pätiek a sleduj priemer."},
+    {name:"Párny počet", cfg:{data:[1, 3, 4, 8, 9, 10]}, tip:"Pri párnom počte hodnôt je medián priemer dvoch prostredných a nemusí byť hodnotou zo súboru."},
+    {name:"Rozptyl: hodnoty pri sebe", cfg:{data:[4, 5, 5, 6, 6, 6, 7, 7, 8], on:{mean:true, var:true}}, tip:"Rozptyl meria, ako ďaleko sú hodnoty od priemeru. Tu sú blízko, rozptyl je malý."},
+    {name:"Rozptyl: hodnoty ďaleko", cfg:{data:[1, 2, 3, 5, 6, 7, 9, 10, 11], on:{mean:true, var:true}, max:12}, tip:"Rovnaký priemer ako v predošlej ukážke, ale hodnoty sú rozhádzané: rozptyl aj smerodajná odchýlka sú väčšie."}
   ],
 
   /* data: 2 3 3 4 5 / os: 0 10 / ukaz: priemer, median, modus */

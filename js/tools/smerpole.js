@@ -17,12 +17,12 @@ defTool("smerpole", {
   desc:"Diferenciálna rovnica y′ = F(x, y) ako pole smerníc, riešenie cez zvolený bod a Eulerove kroky.",
   topics:["c13", "c14", "c16", "c17"],
   presets:[
-    {name:"y′ = x − y", cfg:{f:"x - y"}},
-    {name:"Exponenciálny rast y′ = k·y", cfg:{f:"k*y", params:{k:{v:.5, min:-1, max:1, step:.1, color:"b"}}, start:[0, 1]}},
-    {name:"y′ = b − a·y", cfg:{f:"b - a*y", params:{b:{v:2, min:0, max:4, step:.5, color:"b"}, a:{v:1, min:.5, max:2, step:.5, color:"d"}}, start:[0, 0], view:[-1, 5, 7, -1]}},
-    {name:"Logistický rast", cfg:{f:"a*y*(M - y)", params:{a:{v:.3, min:.1, max:.6, step:.05, color:"b"}, M:{v:4, min:2, max:5, step:.5, color:"d"}}, start:[0, .5], view:[-1, 6, 9, -1]}},
-    {name:"Eulerova metóda", cfg:{f:"x - y", start:[0, 1], view:[-1, 4, 5, -1], on:{euler:true}}},
-    {name:"Kružnice y′ = −x/y", cfg:{f:"-x/y", start:[0, 3], on:{riesenie:false}}}
+    {name:"y′ = x − y", cfg:{f:"x - y"}, tip:"Každá čiarka má smernicu, ktorú predpisuje rovnica. Riešenie cez bod $A$ sa k nim všade primyká. Ťahaj $A$."},
+    {name:"Exponenciálny rast y′ = k·y", cfg:{f:"k*y", params:{k:{v:.5, min:-1, max:1, step:.1, color:"b"}}, start:[0, 1]}, tip:"Rýchlosť rastu je úmerná veľkosti. Riešením je $y = c \\cdot e^{kx}$. Skús záporné $k$."},
+    {name:"y′ = b − a·y", cfg:{f:"b - a*y", params:{b:{v:2, min:0, max:4, step:.5, color:"b"}, a:{v:1, min:.5, max:2, step:.5, color:"d"}}, start:[0, 0], view:[-1, 5, 7, -1]}, tip:"Nech začneš kdekoľvek, riešenie sa ustáli na hodnote $\\frac{b}{a}$, kde je derivácia nulová."},
+    {name:"Logistický rast", cfg:{f:"a*y*(M - y)", params:{a:{v:.3, min:.1, max:.6, step:.05, color:"b"}, M:{v:4, min:2, max:5, step:.5, color:"d"}}, start:[0, .5], view:[-1, 6, 9, -1]}, tip:"Najprv rast ako exponenciála, potom spomalenie pri hornej hranici $M$. Najrýchlejší je v polovici."},
+    {name:"Eulerova metóda", cfg:{f:"x - y", start:[0, 1], view:[-1, 4, 5, -1], on:{euler:true}}, tip:"Krátke úsečky v smere poľa. Zmenši krok $h$ a lomená čiara sa priblíži k presnému riešeniu."},
+    {name:"Kružnice y′ = −x/y", cfg:{f:"-x/y", start:[0, 3], on:{riesenie:false}}, tip:"Smer poľa je všade kolmý na spojnicu so začiatkom, riešeniami sú kružnice."}
   ],
   help:"Pravú stranu píš s premennými `x` a `y`: `x - y`, `k*y`, `y*(1 - y)`, `-x/y`. Bod **A** je začiatočná podmienka, ťahaj ho.",
 
@@ -36,7 +36,7 @@ defTool("smerpole", {
     const eulerOn = !!(cfg.on && cfg.on.euler) || env.full || (cfg.toggles || []).includes("euler");
     const params = toolParams(Object.assign({}, user, {
       pole:ck(T("Smerové pole", "Slope field"), null, true), riesenie:ck(T("Riešenie cez bod A", "Solution through A"), "a", true), euler:ck(T("Eulerova metóda", "Euler's method"), "d", false),
-      h:eulerOn ? {v:.5, min:.1, max:1, step:.1, color:"d", note:T("krok", "step")} : null, n:eulerOn ? {v:4, min:1, max:12, step:1, color:"d", note:T("počet krokov", "steps"), plain:true} : null
+      h:eulerOn ? {v:.5, min:.1, max:1, step:.1, color:"d", note:T("krok", "step"), when:P => !!P.euler} : null, n:eulerOn ? {v:4, min:1, max:12, step:1, color:"d", note:T("počet krokov", "steps"), plain:true, when:P => !!P.euler} : null
     }), cfg, env);
     const F = (x, y, P) => { const s = Object.create(P); s.x = x; s.y = y; return E.f(s); };
     const p0 = cfg.start || [0, 1];

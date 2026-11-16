@@ -19,13 +19,13 @@ defTool("utvary", {
   desc:"Obdĺžnik, rovnobežník, trojuholník, lichobežník, kosoštvorec a pravidelný mnohouholník: obvod, obsah a prečo vzorec funguje.",
   topics:["a33", "a35"],
   presets:[
-    {name:"Rovnobežník", cfg:{typ:"rovnobeznik", on:{premena:true}}},
-    {name:"Trojuholník", cfg:{typ:"trojuholnik", on:{premena:true}}},
-    {name:"Lichobežník", cfg:{typ:"lichobeznik", on:{premena:true}}},
-    {name:"Kosoštvorec", cfg:{typ:"kosostvorec", on:{premena:true}}},
-    {name:"Deltoid", cfg:{typ:"deltoid", on:{premena:true}}},
-    {name:"Obdĺžnik", cfg:{typ:"obdlznik"}},
-    {name:"Pravidelný mnohouholník", cfg:{typ:"mnohouholnik"}}
+    {name:"Rovnobežník", cfg:{typ:"rovnobeznik", on:{premena:true}}, tip:"Odrezaný trojuholník presuň na druhú stranu: vznikne obdĺžnik so stranami $a$ a $v$."},
+    {name:"Trojuholník", cfg:{typ:"trojuholnik", on:{premena:true}}, tip:"Trojuholník je polovica rovnobežníka. Posúvaj vrchol: kým sa nemení výška, nemení sa obsah."},
+    {name:"Lichobežník", cfg:{typ:"lichobeznik", on:{premena:true}}, tip:"Dva rovnaké lichobežníky dajú rovnobežník so základňou $a + c$, preto $S = \\frac{(a + c) \\cdot v}{2}$."},
+    {name:"Kosoštvorec", cfg:{typ:"kosostvorec", on:{premena:true}}, tip:"Uhlopriečky sú na seba kolmé a delia kosoštvorec na štyri pravouhlé trojuholníky."},
+    {name:"Deltoid", cfg:{typ:"deltoid", on:{premena:true}}, tip:"Aj deltoid má kolmé uhlopriečky, preto má rovnaký vzorec pre obsah ako kosoštvorec."},
+    {name:"Obdĺžnik", cfg:{typ:"obdlznik"}, tip:"Obvod je súčet všetkých strán, obsah súčin dvoch susedných."},
+    {name:"Pravidelný mnohouholník", cfg:{typ:"mnohouholnik"}, tip:"Pravidelný $n$-uholník sa skladá z $n$ rovnoramenných trojuholníkov. Zvyšuj $n$: blíži sa ku kruhu."}
   ],
   fromText:toolTextIn, toText:toolTextOut,
 

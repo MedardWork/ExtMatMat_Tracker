@@ -70,7 +70,7 @@ THEORY.b2 = {
   {ex:R`Počet baktérií sa každú hodinu zdvojnásobí. Za koľko hodín vzrastie zo 100 na 1 000?`,
    steps:[
      ["Rovnica.", R`100 \cdot 2^t = 1\,000 \;\Rightarrow\; 2^t = 10`],
-     ["Zlogaritmuj.", R`t = \frac{\log 10}{\log 2} = \frac{1}{0{,}301} \doteq 3{,}32`]
+     ["Zlogaritmuj.", R`t = \frac{\log 10}{\log 2} \doteq \frac{1}{0{,}301} \doteq 3{,}32`]
    ],
    res:"Približne za 3 hodiny a 20 minút."},
   {tool:"graf", kind:"uloha", ask:R`Nastav pravú stranu $\vb{c}$ tak, aby mala rovnica $3^x = c$ riešenie $x = 2$.`,

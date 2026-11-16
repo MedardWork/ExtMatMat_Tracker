@@ -25,14 +25,14 @@ defTool("poloha", {
   desc:"Dve priamky, priamka a rovina alebo dve roviny určené vrcholmi kocky: vzájomná poloha, odchýlka a vzdialenosť.",
   topics:["b31", "b33", "b34"],
   presets:[
-    {name:"Mimobežky", cfg:{typ:"priamky", p:"AB", q:"CG"}},
-    {name:"Rovnobežky", cfg:{typ:"priamky", p:"AB", q:"HG"}},
-    {name:"Rôznobežky", cfg:{typ:"priamky", p:"AG", q:"BH"}},
-    {name:"Hrany a priamka AB", cfg:{typ:"priamky", p:"AB", q:"CG", on:{hrany:true}}},
-    {name:"Priamka kolmá na rovinu", cfg:{typ:"rovina", p:"AG", r:"BDE"}},
-    {name:"Priamka rovnobežná s rovinou", cfg:{typ:"rovina", p:"EG", r:"ABC"}},
-    {name:"Rôznobežné roviny", cfg:{typ:"roviny", r:"ABG", s:"BCE"}},
-    {name:"Rovnobežné roviny", cfg:{typ:"roviny", r:"BDE", s:"CFH"}}
+    {name:"Mimobežky", cfg:{typ:"priamky", p:"AB", q:"CG"}, tip:"Mimobežky nemajú spoločný bod a nie sú rovnobežné. Klikaním na vrcholy alebo písaním (napr. AG) zvoľ iné priamky."},
+    {name:"Rovnobežky", cfg:{typ:"priamky", p:"AB", q:"HG"}, tip:"Rovnobežné priamky ležia v jednej rovine a nepretnú sa. Ich vzdialenosť sa meria po kolmici."},
+    {name:"Rôznobežky", cfg:{typ:"priamky", p:"AG", q:"BH"}, tip:"Telesové uhlopriečky sa pretínajú v strede kocky. Aký uhol zvierajú?"},
+    {name:"Hrany a priamka AB", cfg:{typ:"priamky", p:"AB", q:"CG", on:{hrany:true}}, tip:"Z 12 hrán kocky sú s priamkou $AB$ tri rovnobežné, štyri rôznobežné a štyri mimobežné."},
+    {name:"Priamka kolmá na rovinu", cfg:{typ:"rovina", p:"AG", r:"BDE"}, tip:"Telesová uhlopriečka $AG$ je kolmá na rovinu $BDE$. Zmeň rovinu a kolmosť sa stratí."},
+    {name:"Priamka rovnobežná s rovinou", cfg:{typ:"rovina", p:"EG", r:"ABC"}, tip:"Priamka rovnobežná s rovinou s ňou nemá spoločný bod. Vzdialenosť je všade rovnaká."},
+    {name:"Rôznobežné roviny", cfg:{typ:"roviny", r:"ABG", s:"BCE"}, tip:"Dve rôznobežné roviny sa pretínajú v priamke. Uhol medzi nimi je uhol ich normál."},
+    {name:"Rovnobežné roviny", cfg:{typ:"roviny", r:"BDE", s:"CFH"}, tip:"Roviny $BDE$ a $CFH$ delia telesovú uhlopriečku na tri rovnaké časti."}
   ],
   help:"**Klikaj na vrcholy**: postupne nimi určíš prvý a potom druhý útvar (priamku dvoma bodmi, rovinu troma). Krúžok ukazuje bod, ktorý sa zmení ďalším klikom.",
 
@@ -114,6 +114,20 @@ defTool("poloha", {
       params, aspect:`${W}/${H}`,
       hint:cfg.klikaj === false ? null : "**Klikaj** na vrcholy: určíš nimi priamky a roviny.",
       init(st){ st.data = {sel:start.split(""), next:Math.max(0, slots.findIndex((s, i) => !fixed(i)))}; },
+      /* the tool's own page: the objects can be typed by their corners too (AG, BDE) */
+      inputs:objs.map((o, k) => {
+        const from = objs.slice(0, k).reduce((s, x) => s + x[1], 0), sym = {p:"p", q:"q", r:"ϱ", s:"σ"}[o[0]];
+        return {
+          label:o[1] === 2 ? `Priamka ${sym} (dva vrcholy)` : `Rovina ${sym} (tri vrcholy)`, value:"", read:st => st.data.sel.slice(from, from + o[1]).join(""),
+          apply(text, st){
+            const t = String(text).toUpperCase().replace(/[^A-H]/g, "");
+            if(t.length !== o[1] || new Set(t).size !== o[1]) return {error:`Napíš ${o[1] === 2 ? "dva" : "tri"} rôzne vrcholy kocky (A až H), napríklad ${o[2]}.`};
+            t.split("").forEach((c, i) => { st.data.sel[from + i] = c; });
+            toolUpdate(st);
+            return null;
+          }
+        };
+      }),
       svg(P, st){
         const r = calc(st), thumb = st.env.thumb, sel = st.data.sel;
         const pp = n => proj(PT[n]), seg3 = (a, b, c) => SG.seg(proj(a), proj(b), c);

@@ -21,13 +21,13 @@ defTool("derivacia", {
   desc:"Sečnica prechádza do dotyčnice, rovnica dotyčnice, rast a klesanie, Newtonova metóda a limita.",
   topics:["c1", "c2", "c4", "c5", "c6", "c7"],
   presets:[
-    {name:"Sečnica a dotyčnica", cfg:{typ:"secna"}},
-    {name:"Rovnica dotyčnice", cfg:{typ:"dotycnica"}},
-    {name:"Graf derivácie", cfg:{typ:"dotycnica", f:"sin(x)", view:[-7, 3, 7, -3], on:{der:true}}},
-    {name:"Rast, klesanie, extrémy", cfg:{typ:"priebeh", on:{der:true}}},
-    {name:"Newtonova metóda", cfg:{typ:"newton"}},
-    {name:"Limita v bode", cfg:{typ:"limita"}},
-    {name:"Limita v nekonečne", cfg:{typ:"limita", inf:true, f:"(2x + 1)/(x + 2)", view:[-1, 4, 30, -1], apart:true, tick:[5, 1], aspect:"16/10"}}
+    {name:"Sečnica a dotyčnica", cfg:{typ:"secna"}, tip:"Zmenšuj $h$: bod $B$ sa blíži k $A$ a sečnica prechádza do dotyčnice. Jej smernica je derivácia."},
+    {name:"Rovnica dotyčnice", cfg:{typ:"dotycnica"}, tip:"Dotyčnica v bode $x_0$ má smernicu $f'(x_0)$. Funkciu môžeš prepísať."},
+    {name:"Graf derivácie", cfg:{typ:"dotycnica", f:"sin(x)", view:[-7, 3, 7, -3], on:{der:true}}, tip:"Kde $f$ rastie, je $f'$ kladná. Kde má $f$ vrchol, pretína $f'$ os $x$."},
+    {name:"Rast, klesanie, extrémy", cfg:{typ:"priebeh", on:{der:true}}, tip:"Znamienko derivácie určuje, či funkcia rastie alebo klesá. Stacionárne body sú tam, kde $f'(x) = 0$."},
+    {name:"Newtonova metóda", cfg:{typ:"newton"}, tip:"Z bodu na grafe choď po dotyčnici k osi $x$. Každý krok je bližšie ku koreňu."},
+    {name:"Limita v bode", cfg:{typ:"limita"}, tip:"Zmenšuj $\\delta$: hodnoty funkcie z oboch strán sa blížia k tomu istému číslu, hoci v bode samom nie je definovaná."},
+    {name:"Limita v nekonečne", cfg:{typ:"limita", inf:true, f:"(2x + 1)/(x + 2)", view:[-1, 4, 30, -1], apart:true, tick:[5, 1], aspect:"16/10"}, tip:"Zväčšuj $x$: graf sa pritíska k vodorovnej asymptote."}
   ],
   help:"Funkciu píš ako v nástroji Graf funkcie: `x^3/3 - x`, `sin(x)`, `sqrt(x)`, `exp(-x)`, `ln(x)`, `(x^2 - 1)/(x - 1)`.",
 

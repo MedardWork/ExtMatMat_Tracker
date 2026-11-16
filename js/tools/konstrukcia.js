@@ -21,17 +21,17 @@ defTool("konstrukcia", {
   desc:"Základné konštrukcie a konštrukcie trojuholníka krok za krokom, s počtom riešení.",
   topics:["b28"],
   presets:[
-    {name:"Os úsečky", cfg:{typ:"os"}},
-    {name:"Os uhla", cfg:{typ:"osuhla"}},
-    {name:"Kolmica z bodu", cfg:{typ:"kolmica"}},
-    {name:"Rovnobežka bodom", cfg:{typ:"rovnobezka"}},
-    {name:"Dotyčnice z bodu", cfg:{typ:"dotycnica"}},
-    {name:"Trojuholník sss", cfg:{typ:"sss"}},
-    {name:"Trojuholník sus", cfg:{typ:"sus"}},
-    {name:"Trojuholník usu", cfg:{typ:"usu"}},
-    {name:"Trojuholník Ssu: počet riešení", cfg:{typ:"ssu"}},
-    {name:"Trojuholník c, v, t", cfg:{typ:"cvt"}},
-    {name:"Trojuholník c, v, γ", cfg:{typ:"cvg"}}
+    {name:"Os úsečky", cfg:{typ:"os"}, tip:"Krokuj tlačidlami. Dve kružnice s rovnakým polomerom sa pretnú v bodoch rovnako vzdialených od $A$ aj $B$."},
+    {name:"Os uhla", cfg:{typ:"osuhla"}, tip:"Body na osi uhla sú od oboch ramien rovnako ďaleko."},
+    {name:"Kolmica z bodu", cfg:{typ:"kolmica"}, tip:"Kružnica so stredom $P$ vytne na priamke úsečku. Jej os prechádza bodom $P$ a je na priamku kolmá."},
+    {name:"Rovnobežka bodom", cfg:{typ:"rovnobezka"}, tip:"Tri oblúky s rovnakým polomerom vytvoria kosoštvorec $APCB$. Jeho protiľahlé strany sú rovnobežné."},
+    {name:"Dotyčnice z bodu", cfg:{typ:"dotycnica"}, tip:"Body dotyku ležia na Tálesovej kružnici nad úsečkou $SM$, lebo uhol pri nich je pravý."},
+    {name:"Trojuholník sss", cfg:{typ:"sss"}, tip:"Tretí vrchol leží na dvoch kružniciach naraz. Zmeň strany tak, aby sa kružnice nepretli."},
+    {name:"Trojuholník sus", cfg:{typ:"sus"}, tip:"Dve strany a uhol medzi nimi určujú trojuholník jednoznačne."},
+    {name:"Trojuholník usu", cfg:{typ:"usu"}, tip:"Strana a dva priľahlé uhly: tretí vrchol je priesečník ramien."},
+    {name:"Trojuholník Ssu: počet riešení", cfg:{typ:"ssu"}, tip:"Uhol oproti kratšej strane nemusí stačiť. Meň $a$: kružnica pretne rameno dvakrát, raz alebo vôbec."},
+    {name:"Trojuholník c, v, t", cfg:{typ:"cvt"}, tip:"Vrchol $C$ leží na rovnobežke vo vzdialenosti $v$ a zároveň na kružnici s polomerom $t$ okolo stredu strany $c$."},
+    {name:"Trojuholník c, v, γ", cfg:{typ:"cvg"}, tip:"Všetky body, z ktorých vidno stranu $c$ pod uhlom $\\gamma$, ležia na kružnicovom oblúku."}
   ],
   fromText:toolTextIn, toText:toolTextOut,
 

@@ -69,13 +69,13 @@ defTool("kruznica", {
   desc:"Bod na kružnici s polomerom 1. Uhol v stupňoch aj radiánoch, sínus, kosínus a tangens ako úsečky a graf, ktorý sa z nich odvíja.",
   topics:["b8", "b9", "b10", "b11"],
   presets:[
-    {name:"Sínus a kosínus", cfg:{on:{sin:true, cos:true, graf:true}}},
-    {name:"Oblúková miera", cfg:{uhol:60, on:{rad:true, body:true}}},
-    {name:"Tangens", cfg:{on:{tg:true, graf:true}}},
-    {name:"Znamienka", cfg:{uhol:130, on:{sin:true, cos:true, znam:true}}},
-    {name:"Rovnica sin x = c", cfg:{eq:"sin", on:{sin:true, graf:true}}},
-    {name:"Rovnica cos x = c", cfg:{eq:"cos", on:{cos:true, graf:true}}},
-    {name:"Viac periód", cfg:{uhol:{v:30, min:-360, max:720}, on:{sin:true, graf:true}}}
+    {name:"Sínus a kosínus", cfg:{on:{sin:true, cos:true, graf:true}}, tip:"Ťahaj bod po kružnici. Kosínus je jeho $x$-ová súradnica, sínus $y$-ová."},
+    {name:"Oblúková miera", cfg:{uhol:60, on:{rad:true, body:true}}, tip:"Uhol v radiánoch je dĺžka oblúka na jednotkovej kružnici. Celá kružnica má $2\\pi$."},
+    {name:"Tangens", cfg:{on:{tg:true, graf:true}}, tip:"Tangens odčítaš na dotyčnici v bode $[1;\\ 0]$. Čo sa s ním deje, keď sa uhol blíži k $90^\\circ$?"},
+    {name:"Znamienka", cfg:{uhol:130, on:{sin:true, cos:true, znam:true}}, tip:"Prejdi bodom všetky štyri kvadranty a sleduj, kde je sínus a kde kosínus záporný."},
+    {name:"Rovnica sin x = c", cfg:{eq:"sin", on:{sin:true, graf:true}}, tip:"Vodorovná priamka vo výške $c$ pretne kružnicu v dvoch bodoch: rovnica má v jednej perióde dve riešenia."},
+    {name:"Rovnica cos x = c", cfg:{eq:"cos", on:{cos:true, graf:true}}, tip:"Zvislá priamka $x = c$ pretne kružnicu v dvoch bodoch súmerných podľa osi $x$."},
+    {name:"Viac periód", cfg:{uhol:{v:30, min:-360, max:720}, on:{sin:true, graf:true}}, tip:"Graf vzniká odvíjaním kružnice. Po celej otočke sa hodnoty opakujú."}
   ],
   help:"Bod na kružnici potiahni alebo napíš uhol k posuvníku. Uhol môže byť aj záporný alebo väčší než 360°.",
   textKeys:["eq"],

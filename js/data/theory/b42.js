@@ -76,7 +76,7 @@ THEORY.b42 = {
    steps:[
      [R`$n = 10$, $p = 0{,}25$, $k = 3$.`, R`\binom{10}{3} \cdot 0{,}25^3 \cdot 0{,}75^7`],
      ["Výpočet.", R`120 \cdot 0{,}015625 \cdot 0{,}13348 \doteq 0{,}250`],
-     ["Aspoň jedna: opačný jav je „ani jedna“ ([[b38]]).", R`1 - 0{,}75^{10} \doteq 1 - 0{,}0563 = 0{,}944`]
+     ["Aspoň jedna: opačný jav je „ani jedna“ ([[b38]]).", R`1 - 0{,}75^{10} \doteq 1 - 0{,}0563 \doteq 0{,}944`]
    ],
    res:R`Práve 3: $\doteq 0{,}250$, aspoň jedna: $\doteq 0{,}944$.`},
   {tool:"rozdelenie", kind:"uloha", ask:R`Tipovanie testu: $n = 10$, $p = 0{,}25$. Nastav $a$ a $b$ tak, aby graf ukazoval pravdepodobnosť, že žiak má **najviac 2** správne odpovede.`,

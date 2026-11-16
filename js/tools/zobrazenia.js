@@ -17,13 +17,13 @@ defTool("zobrazenia", {
   desc:"Útvar a jeho obraz: osová a stredová súmernosť, posunutie, otočenie a rovnoľahlosť na štvorcovej sieti.",
   topics:["b26", "b27"],
   presets:[
-    {name:"Osová súmernosť", cfg:{typ:"osova"}},
-    {name:"Šikmá os", cfg:{typ:"osova", uhol:45}},
-    {name:"Stredová súmernosť", cfg:{typ:"stredova"}},
-    {name:"Posunutie", cfg:{typ:"posunutie"}},
-    {name:"Otočenie", cfg:{typ:"otocenie"}},
-    {name:"Rovnoľahlosť", cfg:{typ:"rovnolahlost"}},
-    {name:"Záporný koeficient", cfg:{typ:"rovnolahlost", k:-1.5}}
+    {name:"Osová súmernosť", cfg:{typ:"osova"}, tip:"Os je osou každej úsečky $XX'$. Posuň bod $S$, nakloň os alebo napíš vlastné vrcholy útvaru."},
+    {name:"Šikmá os", cfg:{typ:"osova", uhol:45}, tip:"Aj pri šikmej osi je spojnica vzoru a obrazu na os kolmá a os ju pretína v strede."},
+    {name:"Stredová súmernosť", cfg:{typ:"stredova"}, tip:"Stred $S$ je stredom každej úsečky $XX'$. Je to to isté ako otočenie o $180^\\circ$."},
+    {name:"Posunutie", cfg:{typ:"posunutie"}, tip:"Každý bod sa posunie o ten istý vektor. Útvar nemení tvar, veľkosť ani natočenie."},
+    {name:"Otočenie", cfg:{typ:"otocenie"}, tip:"Každý bod zostáva rovnako ďaleko od stredu $S$. Kladný uhol otáča proti smeru hodinových ručičiek."},
+    {name:"Rovnoľahlosť", cfg:{typ:"rovnolahlost"}, tip:"Obraz leží na polpriamke $SX$ a je $k$-krát ďalej od stredu. Dĺžky sa násobia $|k|$."},
+    {name:"Záporný koeficient", cfg:{typ:"rovnolahlost", k:-1.5}, tip:"Pri zápornom $k$ leží obraz na opačnej strane od stredu. Pre $k = -1$ je to stredová súmernosť."}
   ],
   fromText:toolTextIn, toText:toolTextOut,
 
@@ -55,6 +55,14 @@ defTool("zobrazenia", {
 
     return {
       params, aspect:`${W}/${H}`,
+      inputs:[{
+        label:"Vrcholy útvaru (x y; x y; …)", wide:true, value:"", read:() => pts.map(p => `${fmtN(p[0])} ${fmtN(p[1])}`).join("; "),
+        apply(text){
+          const t = String(text).split(";").map(s => s.trim()).filter(Boolean).map(s => s.split(/\s+/).map(toolParse));
+          if(!t.length || t.length > 8 || t.some(p => p.length !== 2 || p.some(isNaN))) return {error:"Napíš 1 až 8 bodov ako dvojice oddelené bodkočiarkou, napríklad 1 1; 4 1; 2 3."};
+          return Object.assign({}, cfg, {tvar:t});
+        }
+      }],
       hint:typ !== "posunutie" && !(params.sx.lock && params.sy.lock) ? "Bod **S** sa dá ťahať." : null,
       svg(P, st){
         const thumb = st.env.thumb, f = map(P), img = pts.map(f), s = [P.sx || 0, P.sy || 0], sp = px(s);

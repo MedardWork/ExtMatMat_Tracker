@@ -26,12 +26,12 @@ defTool("rozdelenie", {
   desc:"Binomické a normálne rozdelenie, náhodná veličina zadaná tabuľkou a test hypotézy o podiele.",
   topics:["b42", "c26", "c27", "c28", "c30"],
   presets:[
-    {name:"Binomické rozdelenie", cfg:{typ:"binom"}},
-    {name:"Binomické a normálne", cfg:{typ:"binom", n:30, p:.4, a:10, b:14, on:{normal:true}}},
-    {name:"Normálne rozdelenie", cfg:{typ:"normal"}},
-    {name:"Pravidlo 68–95–99,7", cfg:{typ:"normal", on:{pravidlo:true}}},
-    {name:"Náhodná veličina", cfg:{typ:"tabulka"}},
-    {name:"Test hypotézy", cfg:{typ:"test"}}
+    {name:"Binomické rozdelenie", cfg:{typ:"binom"}, tip:"Stĺpec je pravdepodobnosť, že z $n$ pokusov vyjde práve toľko úspechov. Hranicami „od“ a „do“ sčítaš viac stĺpcov."},
+    {name:"Binomické a normálne", cfg:{typ:"binom", n:30, p:.4, a:10, b:14, on:{normal:true}}, tip:"Pri veľkom $n$ má binomické rozdelenie tvar zvona s $\\mu = np$ a $\\sigma = \\sqrt{np(1 - p)}$."},
+    {name:"Normálne rozdelenie", cfg:{typ:"normal"}, tip:"Pravdepodobnosť je obsah pod krivkou medzi hranicami. $\\mu$ krivku posúva, $\\sigma$ ju rozťahuje."},
+    {name:"Pravidlo 68–95–99,7", cfg:{typ:"normal", on:{pravidlo:true}}, tip:"V pásme $\\mu \\pm \\sigma$ leží asi 68 % hodnôt, v $\\mu \\pm 2\\sigma$ asi 95 % a v $\\mu \\pm 3\\sigma$ takmer všetky."},
+    {name:"Náhodná veličina", cfg:{typ:"tabulka"}, tip:"Napíš hodnoty a ich pravdepodobnosti (súčet 1). Stredná hodnota je vážený priemer."},
+    {name:"Test hypotézy", cfg:{typ:"test"}, tip:"Ak pozorovaný počet padne do kritickej oblasti, hypotézu zamietame. Meň hladinu významnosti."}
   ],
 
   make(cfg, env){

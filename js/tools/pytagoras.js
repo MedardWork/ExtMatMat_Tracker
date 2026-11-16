@@ -15,10 +15,10 @@ defTool("pytagoras", {
   desc:"Pravouhlý trojuholník so štvorcami nad stranami, výška na preponu a Euklidove vety, a rozpoznanie druhu trojuholníka zo strán.",
   topics:["a29", "a30", "b16"],
   presets:[
-    {name:"Pytagorova veta", cfg:{typ:"veta", on:{stvorce:true}}},
-    {name:"Euklidove vety", cfg:{typ:"euklid", on:{obsahy:true}}},
-    {name:"Výška a Tálesova kružnica", cfg:{typ:"euklid", on:{kruznica:true}}},
-    {name:"Druh trojuholníka", cfg:{typ:"druh"}}
+    {name:"Pytagorova veta", cfg:{typ:"veta", on:{stvorce:true}}, tip:"Obsahy štvorcov nad odvesnami dajú spolu obsah štvorca nad preponou. Skús trojice 3, 4, 5 a 5, 12, 13."},
+    {name:"Euklidove vety", cfg:{typ:"euklid", on:{obsahy:true}}, tip:"Výška delí preponu na úseky $c_a$ a $c_b$. Štvorec nad odvesnou má rovnaký obsah ako obdĺžnik z prepony a priľahlého úseku."},
+    {name:"Výška a Tálesova kružnica", cfg:{typ:"euklid", on:{kruznica:true}}, tip:"Vrchol pravého uhla leží na kružnici nad preponou. Pre výšku platí $v^2 = c_a \\cdot c_b$."},
+    {name:"Druh trojuholníka", cfg:{typ:"druh"}, tip:"Porovnaj $c^2$ s $a^2 + b^2$: rovnosť dá pravouhlý trojuholník, menej ostrouhlý, viac tupouhlý."}
   ],
   fromText:toolTextIn, toText:toolTextOut,
 
@@ -26,13 +26,16 @@ defTool("pytagoras", {
     const typ = ["veta", "euklid", "druh"].includes(cfg.typ) ? cfg.typ : "veta";
     const sl = (v, color, name, note, max = 8) => ({v, min:1, max, step:.5, color, name, note});
     const ck = (v, name, color) => ({type:"check", v, name, color});
-    const defs = typ === "veta" ? {a:sl(3, "a", "a", "odvesna"), b:sl(4, "b", "b", "odvesna"), stvorce:ck(true, "Štvorce nad stranami")}
+    /* veta: co = 1 looks for a leg instead (from the other leg a and the hypotenuse cc); a choice on the tool's own page */
+    const defs = typ === "veta" ? {co:{type:"pick", v:0, name:"Hľadám", opts:["preponu c", "odvesnu b"]}, a:sl(3, "a", "a", "odvesna"),
+        b:Object.assign(sl(4, "b", "b", "odvesna"), {when:P => !P.co}), cc:Object.assign(sl(5, "d", "c", "prepona", 12), {when:P => P.co === 1}), stvorce:ck(true, "Štvorce nad stranami")}
       : typ === "euklid" ? {c:sl(10, "d", "c", "prepona", 14), ca:{v:3.6, min:.4, max:13.6, step:.2, color:"a", name:"cₐ", note:"úsek pri strane a"},
           obsahy:ck(false, "Štvorec nad preponou rozdelený výškou"), kruznica:ck(false, "Tálesova kružnica", "c")}
       : {a:sl(3, "a", "a", null, 12), b:sl(4, "b", "b", null, 12), c:sl(5, "d", "c", null, 12)};
     const params = toolParams(defs, cfg, env);
     const W = 560, H = 330;
     const calc = P => {
+      if(typ === "veta" && P.co === 1){ const b = P.cc > P.a ? Math.sqrt(P.cc * P.cc - P.a * P.a) : NaN; return {a:P.a, b, c:P.cc, S:P.a * b / 2, leg:true}; }
       if(typ === "veta") return {a:P.a, b:P.b, c:Math.hypot(P.a, P.b), S:P.a * P.b / 2};
       if(typ === "euklid"){
         const c = P.c, ca = Math.max(.2, Math.min(c - .2, P.ca)), cb = c - ca;
@@ -48,7 +51,9 @@ defTool("pytagoras", {
       svg(P, st){
         const r = calc(P), thumb = st.env.thumb, T = (p, s, c) => thumb ? "" : SV.text(p[0], p[1] + 5, s, `mid halo ${c}`);
         let h = "";
-        if(typ === "veta"){
+        if(typ === "veta" && !isFinite(r.b)){
+          h += thumb ? "" : SV.text(W / 2, H / 2, "Prepona musí byť dlhšia než odvesna.", "mid csoft");
+        } else if(typ === "veta"){
           const {a, b} = r, f = svFit(W, H, P.stvorce ? [-b, -a, a + b, a + b] : [-.6, -.8, a + .6, b + .6], 16);
           const C = f.p([0, 0]), B = f.p([a, 0]), A = f.p([0, b]);
           if(P.stvorce){
@@ -94,6 +99,9 @@ defTool("pytagoras", {
         h.py = r;
         if(cfg.out) return cfg.out(P, h, st);
         const eq = x => Math.abs(x - Math.round(x * 100) / 100) < 1e-9 ? "=" : "\\doteq";
+        if(typ === "veta" && r.leg) return !isFinite(r.b) ? h.pill("prepona je najdlhšia strana: musí byť dlhšia než odvesna", "flat")
+          : h.big(`\\vb{b}^2 = \\vd{c}^2 - \\va{a}^2`) + h.calc(`\\vd{${tn(r.c)}}^2 - \\va{${tn(r.a)}}^2 = ${tn(r.c * r.c)} - ${tn(r.a * r.a)} = ${tn(r.b * r.b)}`)
+            + h.calc(`\\vb{b} = \\sqrt{${tn(r.b * r.b)}} ${eq(r.b)} \\vb{${tn(r.b)}}`) + h.p(`Odvesnu dostaneš **odčítaním** štvorcov, nie sčítaním. Obsah: $S = \\dfrac{a \\cdot b}{2} ${eq(r.S)} ${tn(r.S)}$`);
         if(typ === "veta") return h.big(`\\va{a}^2 + \\vb{b}^2 = \\vd{c}^2`) + h.calc(`\\va{${tn(r.a)}}^2 + \\vb{${tn(r.b)}}^2 = ${tn(r.a * r.a)} + ${tn(r.b * r.b)} = ${tn(r.c * r.c)}`)
           + h.calc(`\\vd{c} = \\sqrt{${tn(r.c * r.c)}} ${eq(r.c)} \\vd{${tn(r.c)}}`) + h.p(`Obsah: $S = \\dfrac{a \\cdot b}{2} = ${tn(r.S)}$`);
         if(typ === "euklid") return h.calc(`v^2 = \\va{c_a} \\cdot \\vb{c_b} = ${tn(r.ca)} \\cdot ${tn(r.cb)} = ${tn(r.ca * r.cb)} \\Rightarrow v ${eq(r.v)} ${tn(r.v)}`)

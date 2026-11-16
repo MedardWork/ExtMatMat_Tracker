@@ -108,7 +108,10 @@ defTool("analyticka", {
     /* a line through two points as a·x + b·y + c = 0 with tidy whole coefficients when possible */
     const lineOf = (x1, y1, x2, y2) => {
       let a = y1 - y2, b = x2 - x1, c = -(a * x1 + b * y1);
-      const whole = [a, b, c].every(v => Math.abs(v - Math.round(v)) < 1e-9);
+      /* decimal coefficients (points off the grid) are scaled up to whole ones when a small factor does it */
+      const k10 = [1, 2, 4, 5, 10, 20, 25, 50, 100, 1000].find(k => [a, b, c].every(v => Math.abs(v * k - Math.round(v * k)) < 1e-7));
+      if(k10 > 1){ a *= k10; b *= k10; c *= k10; }
+      const whole = [a, b, c].every(v => Math.abs(v - Math.round(v)) < 1e-7);
       if(whole){ const g = [a, b, c].map(v => Math.abs(Math.round(v))).reduce((p, q) => { while(q){ [p, q] = [q, p % q]; } return p; }, 0) || 1; a = Math.round(a) / g; b = Math.round(b) / g; c = Math.round(c) / g; }
       if(a < 0 || (a === 0 && b < 0)){ a = -a; b = -b; c = -c; }
       return {a, b, c, u:[x2 - x1, y2 - y1], n:[a, b], ok:Math.abs(a) + Math.abs(b) > 1e-9, k:b ? -a / b : NaN, q:b ? -c / b : NaN};
@@ -155,10 +158,12 @@ defTool("analyticka", {
       apply(text, st){
         const l = lineFromText(text);
         if(l.error) return l;
-        const [q1, q2] = linePoints(l.a, l.b, l.c);
-        return Object.assign({}, cfg, {pts:Object.assign({}, livePts(st), {[p1]:q1, [p2]:q2})});
+        const [q1, q2] = linePoints(l.a, l.b, l.c), pts = Object.assign({}, livePts(st), {[p1]:q1, [p2]:q2});
+        return Object.assign({}, cfg, {pts, snap:gridOf(pts)});
       }
     });
+    /* points are pulled to the grid when they are made: off-grid ones need a fine grid to stay where they were put */
+    const gridOf = pts => Object.values(pts).every(p => p.every(v => Math.abs(v - Math.round(v)) < 1e-9)) ? 1 : .001;
     const livePts = st => { const o = {}; for(const n in points) o[n] = st ? [st.P[n + "x"], st.P[n + "y"]] : points[n].slice(0, 2); return o; };
     const sq = (v, s) => Math.abs(v) < 1e-9 ? `${s}²` : `(${s} ${v < 0 ? "+" : "−"} ${fmtN(Math.abs(v), 3)})²`;
     const inputs = typ === "priamka" ? [lineIn("AB", "A", "B", r => r)]
@@ -170,7 +175,8 @@ defTool("analyticka", {
             const c = circleFromText(text);
             if(c.error) return c;
             st.P.r = c.r;   /* values are kept across the rebuild, so the new radius goes in first */
-            return Object.assign({}, cfg, {r:{v:c.r, max:Math.max(6, Math.ceil(c.r))}, pts:Object.assign({}, livePts(st), {S:[c.m, c.n]})});
+            const pts = Object.assign({}, livePts(st), {S:[c.m, c.n]});
+            return Object.assign({}, cfg, {r:{v:c.r, max:Math.max(6, Math.ceil(c.r))}, pts, snap:gridOf(pts)});
           }
         }, lineIn("AB", "A", "B", r => r.l)] : null;
 

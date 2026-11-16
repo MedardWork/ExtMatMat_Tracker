@@ -586,7 +586,7 @@ function toolCtl(st){
   let h = "";
   if(w.hint) h += `<div class="tw-drag">${TW_HAND}<span>${inline(w.hint)}</span></div>`;
   if(st.env.full && w.picks) w.picks.forEach((pk, i) => {
-    h += `<div class="tw-pm pick" role="group" aria-label="${esc(pk.name || "")}">${pk.name ? `<span class="tw-pn plain">${esc(pk.name)}</span>` : ""}<div class="tw-seg">${pk.opts.map((o, k) =>
+    h += `<div class="tw-pm pick" role="group" aria-label="${esc(pk.name || "")}">${pk.name ? `<span class="tw-pn plain">${esc(pk.name)}</span>` : ""}<div class="tw-seg${pk.opts.length > 5 ? " many" : ""}">${pk.opts.map((o, k) =>
       `<button type="button" id="tw-${st.n}-cp${i}-${k}" data-cp="${i}" data-v="${k}" aria-pressed="${pk.v === k}"${pk.v === k ? ' class="on"' : ""}>${esc(o)}</button>`).join("")}</div></div>`;
   });
   const rows = st.env.full || st.root.classList.contains("tw-note"), ids = Object.keys(w.params);
@@ -602,7 +602,7 @@ function toolCtl(st){
       h += `<label class="tw-pm check${cls}" for="${fid}"><input type="checkbox" id="${fid}" data-p="${id}"${st.P[id] ? " checked" : ""}>${name}</label>`;
     } else if(p.type === "pick"){
       if(locked) continue;
-      h += `<div class="tw-pm pick" role="group" aria-label="${esc(p.name || id)}">${p.name ? `<span class="tw-pn plain">${esc(p.name)}</span>` : ""}<div class="tw-seg">${p.opts.map((o, k) =>
+      h += `<div class="tw-pm pick" role="group" aria-label="${esc(p.name || id)}">${p.name ? `<span class="tw-pn plain">${esc(p.name)}</span>` : ""}<div class="tw-seg${p.opts.length > 5 ? " many" : ""}">${p.opts.map((o, k) =>
         `<button type="button" id="${fid}-k${k}" data-pk="${id}" data-v="${k}" aria-pressed="${st.P[id] === k}"${st.P[id] === k ? ' class="on"' : ""}>${esc(o)}</button>`).join("")}</div></div>`;
     } else if(p.row && rows && !locked){
       /* a vector or a point in space: its coordinates side by side, typed */
@@ -662,6 +662,7 @@ function toolFoot(st){
 async function toolStart(st){
   const w = st.w;
   st.boardEl.className = w.board ? "jxgbox" : "tw-svg";
+  st.root.classList.toggle("tw-pin", !!(st.env.full && (w.board || w.aspect)));   /* a picture stays in view while its controls scroll */
   st.boardEl.style.aspectRatio = (w.board ? w.board.aspect : w.aspect) || "";
   { const ar = (w.board ? w.board.aspect : w.aspect) || ""; if(ar) st.boardEl.style.setProperty("--ar", ar); else st.boardEl.style.removeProperty("--ar"); }
   if(w.board){

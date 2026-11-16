@@ -63,7 +63,7 @@ function drawToolPage(host){
       <button class="btn ghost small" data-act="tool-copy" title="Skopíruje blok, ktorý môžeš vložiť do poznámky">Skopírovať do poznámky</button>
       <span class="muted small">Vlož do ľubovoľnej poznámky a nástroj sa v nej zobrazí s týmito hodnotami.</span>
     </div>
-    ${t.help ? `<details class="tool-help"><summary>Ako sa to píše</summary><div class="md">${md(t.help)}</div></details>` : ""}
+    ${t.help ? `<details class="tool-help"><summary>Ako sa nástroj ovláda</summary><div class="md">${md(t.help)}</div></details>` : ""}
     ${used.length ? `<section class="tool-used"><h2>Použité v teórii</h2><div class="chips">${used.map(id =>
       `<span class="chip"><a href="#/tema/${id}/teoria"><i class="dot l${lv(id)}"></i>${esc(shortName(BY_ID[id]))}</a></span>`).join("")}</div></section>` : ""}
   </div>`;

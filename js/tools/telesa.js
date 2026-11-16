@@ -40,16 +40,16 @@ defTool("telesa", {
   desc:"Kocka, kváder, hranol, ihlan, valec, kužeľ a guľa: rozmery, objem, povrch a sieť telesa.",
   topics:["a36", "a37", "b35"],
   presets:[
-    {name:"Kváder", cfg:{typ:"kvader"}},
-    {name:"Kocka", cfg:{typ:"kocka"}},
-    {name:"Hranol", cfg:{typ:"hranol"}},
-    {name:"Ihlan", cfg:{typ:"ihlan"}},
-    {name:"Valec", cfg:{typ:"valec"}},
-    {name:"Kužeľ", cfg:{typ:"kuzel"}},
-    {name:"Guľa", cfg:{typ:"gula"}},
-    {name:"Sieť ihlana", cfg:{typ:"ihlan", on:{siet:true}}},
-    {name:"Sieť kužeľa", cfg:{typ:"kuzel", on:{siet:true}}},
-    {name:"Siete kocky", cfg:{typ:"kocka", siete:true, on:{siet:true}}}
+    {name:"Kváder", cfg:{typ:"kvader"}, tip:"Objem je súčin troch rozmerov, povrch súčet šiestich stien. Čiarkovane je telesová uhlopriečka."},
+    {name:"Kocka", cfg:{typ:"kocka"}, tip:"Zdvojnásob hranu: povrch vzrastie štyrikrát, objem osemkrát."},
+    {name:"Hranol", cfg:{typ:"hranol"}, tip:"Objem každého hranola je obsah podstavy krát výška. Zmeň počet strán podstavy."},
+    {name:"Ihlan", cfg:{typ:"ihlan"}, tip:"Ihlan má tretinu objemu hranola s rovnakou podstavou a výškou. Na povrch potrebuješ výšku bočnej steny."},
+    {name:"Valec", cfg:{typ:"valec"}, tip:"Valec je „hranol“ s kruhovou podstavou: $V = \\pi r^2 v$. Plášť je po rozvinutí obdĺžnik."},
+    {name:"Kužeľ", cfg:{typ:"kuzel"}, tip:"Kužeľ má tretinu objemu valca. Strana $s$ je prepona trojuholníka s odvesnami $r$ a $v$."},
+    {name:"Guľa", cfg:{typ:"gula"}, tip:"Objem rastie s treťou mocninou polomeru, povrch s druhou."},
+    {name:"Sieť ihlana", cfg:{typ:"ihlan", on:{siet:true}}, tip:"Sieť tvorí podstava a toľko zhodných trojuholníkov, koľko má podstava strán."},
+    {name:"Sieť kužeľa", cfg:{typ:"kuzel", on:{siet:true}}, tip:"Plášť kužeľa je kruhový výsek s polomerom $s$ a oblúkom dlhým ako obvod podstavy."},
+    {name:"Siete kocky", cfg:{typ:"kocka", siete:true, on:{siet:true}}, tip:"Kocka má 11 rôznych sietí. Rovnakou farbou sú steny, ktoré budú po zložení oproti sebe."}
   ],
   fromText:toolTextIn, toText:toolTextOut,
 
@@ -61,7 +61,7 @@ defTool("telesa", {
       : typ === "hranol" || typ === "ihlan" ? {n:N, a:sl(3, "a", "hrana podstavy", 6), v:sl(5, "b", "výška")}
       : typ === "gula" ? {r:sl(3, "a", "polomer", 5)} : {r:sl(3, "a", "polomer", 5), v:sl(5, "b", "výška")};
     if(typ !== "gula") defs.siet = {type:"check", v:false, name:"Sieť telesa"};
-    if(typ === "kocka" && (cfg.siete || env.full)) defs.s = {v:1, min:1, max:12, step:1, color:"d", name:"s", note:"sieť č. (12 = tvar T)"};
+    if(typ === "kocka" && (cfg.siete || env.full)) defs.s = {v:1, min:1, max:12, step:1, color:"d", name:"s", note:"sieť č. (12 = tvar T)", when:P => !!P.siet};
     const params = toolParams(defs, cfg, env);
     const W = 560, H = 340, K = .5 * Math.SQRT1_2, PI = Math.PI;
     const ngon = (n, a) => { const R = a / (2 * Math.sin(PI / n)), out = []; for(let i = 0; i < n; i++){ const t = -PI / 2 - PI / n + 2 * PI * i / n; out.push([R * Math.cos(t), R * Math.sin(t)]); } return out; };

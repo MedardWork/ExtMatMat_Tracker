@@ -14,10 +14,10 @@ defTool("podobnost", {
   desc:"Trojuholník a jeho k-násobná kópia: strany sa násobia k, obsah k², uhly zostávajú. A úloha s tieňom stromu.",
   topics:["a32", "b27"],
   presets:[
-    {name:"Koeficient podobnosti", cfg:{typ:"trojuholniky"}},
-    {name:"Obsahy", cfg:{typ:"trojuholniky", k:2, on:{obsah:true}}},
-    {name:"Zhodné (k = 1)", cfg:{typ:"trojuholniky", k:1}},
-    {name:"Tieň stromu", cfg:{typ:"tien"}}
+    {name:"Koeficient podobnosti", cfg:{typ:"trojuholniky"}, tip:"Všetky dĺžky sa násobia koeficientom $k$, uhly sa nemenia."},
+    {name:"Obsahy", cfg:{typ:"trojuholniky", k:2, on:{obsah:true}}, tip:"Dĺžky sa násobia $k$, obsah až $k^2$. Pri $k = 2$ je obsah štvornásobný."},
+    {name:"Zhodné (k = 1)", cfg:{typ:"trojuholniky", k:1}, tip:"Zhodnosť je podobnosť s koeficientom 1. Zmenši $k$ pod 1: obraz je menší než vzor."},
+    {name:"Tieň stromu", cfg:{typ:"tien"}, tip:"Slnečné lúče sú rovnobežné, preto tyč so svojím tieňom a strom so svojím tvoria podobné trojuholníky."}
   ],
   fromText:toolTextIn, toText:toolTextOut,
 

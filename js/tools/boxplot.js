@@ -27,10 +27,10 @@ defTool("boxplot", {
   desc:"Kvartily a percentily odčítané z krivky kumulatívnych početností a krabicový graf z údajov.",
   topics:["c29"],
   presets:[
-    {name:"Sumárna krivka", cfg:{typ:"skupiny", on:{kvartily:true, box:true}}},
-    {name:"Percentil z krivky", cfg:{typ:"skupiny", p:90}},
-    {name:"Krabicový graf z údajov", cfg:{typ:"data"}},
-    {name:"Dva súbory", cfg:{typ:"data", data:[12, 14, 15, 15, 17, 18, 20, 21, 24], data2:[9, 13, 16, 17, 18, 19, 19, 22, 27], mena:["A", "B"], min:8, max:28}}
+    {name:"Sumárna krivka", cfg:{typ:"skupiny", on:{kvartily:true, box:true}}, tip:"Krivka ukazuje, koľko percent hodnôt je menších než dané číslo. Kvartily odčítaš pri 25 %, 50 % a 75 %."},
+    {name:"Percentil z krivky", cfg:{typ:"skupiny", p:90}, tip:"Posuvníkom zvoľ percento: od zvislej osi vodorovne ku krivke a zvislo dolu."},
+    {name:"Krabicový graf z údajov", cfg:{typ:"data"}, tip:"Krabica je medzi kvartilmi, čiara v nej je medián. Ťahaj bodky alebo napíš vlastné hodnoty."},
+    {name:"Dva súbory", cfg:{typ:"data", data:[12, 14, 15, 15, 17, 18, 20, 21, 24], data2:[9, 13, 16, 17, 18, 19, 19, 22, 27], mena:["A", "B"], min:8, max:28}, tip:"Dva krabicové grafy nad jednou osou: porovnaj mediány a šírku krabíc."}
   ],
 
   make(cfg, env){
@@ -68,7 +68,20 @@ defTool("boxplot", {
       params, aspect:`${W}/${H}`,
       hint:typ === "data" ? T("Bodky sa dajú **ťahať** po osi.", "The dots can be **dragged** along the axis.") : null,
       init(st){ st.data = typ === "data" ? {d:raw.slice()} : null; },
-      inputs:typ === "data" ? [{label:T("Hodnoty (oddelené medzerou)", "Values (separated by spaces)"), wide:true, value:"", read:st => (st.data ? st.data.d : raw).map(v => fmtN(v, 4)).join(" "),
+      inputs:typ === "skupiny" ? [
+        {label:T("Hranice intervalov", "Interval ends"), wide:true, value:"", read:() => edges.map(v => fmtN(v, 4)).join(" "),
+          apply(text){
+            const e = String(text).trim().split(/[\s;]+/).filter(Boolean).map(toolParse).slice(0, 12);
+            if(e.length < 2 || e.some(isNaN) || e.some((v, i) => i && v <= e[i - 1])) return {error:T("Napíš aspoň dve rastúce čísla, napríklad 150 160 170 180.", "Type at least two increasing numbers.")};
+            return Object.assign({}, cfg, {hranice:e, pocty:e.slice(1).map((_, i) => freq[i] != null ? freq[i] : 1)});
+          }},
+        {label:T("Početnosti v intervaloch", "Frequencies in the intervals"), wide:true, value:"", read:() => freq.join(" "),
+          apply(text){
+            const c = String(text).trim().split(/[\s;]+/).filter(Boolean).map(toolParse);
+            if(c.length !== edges.length - 1 || c.some(v => !(v >= 0)) || !c.some(v => v > 0)) return {error:T(`Napíš ${edges.length - 1} nezáporných čísel, ku každému intervalu jedno.`, `Type ${edges.length - 1} non-negative numbers.`)};
+            return Object.assign({}, cfg, {pocty:c});
+          }}]
+      : typ === "data" ? [{label:T("Hodnoty (oddelené medzerou)", "Values (separated by spaces)"), wide:true, value:"", read:st => (st.data ? st.data.d : raw).map(v => fmtN(v, 4)).join(" "),
         apply(text){ const d = text.split(/[\s;]+/).map(t => toolParse(t.replace(/,$/, ""))).filter(v => !isNaN(v)).slice(0, 40); return d.length ? Object.assign({}, cfg, {data:d, min:Math.min(lo, Math.floor(Math.min(...d))), max:Math.max(hi, Math.ceil(Math.max(...d)))}) : {error:T("Napíš aspoň jednu hodnotu.", "Type at least one value.")}; }}] : null,
       svg(P, st){
         const thumb = st.env.thumb, b = five(st);

@@ -21,7 +21,7 @@ THEORY.c9 = {
    cfg:{typ:"sucty", en:true}},
   {tool:"integral", kind:"uloha", ask:R`Now the height is taken in the **middle** of each strip. Find the smallest $n$ for which the sum differs from the integral by less than 0,1.`,
    hint:"The midpoint sum is much better than the left one: try small n.",
-   take:R`$n = 4$ is enough (error about 0,08), while the left sum needs about 80 strips for the same accuracy.`,
+   take:R`$n = 4$ is enough (error about 0,08), while the left sum needs 80 strips to get below 0,1.`,
    goal:(P, st) => !!I(st) && Math.abs(I(st).S - I(st).I) < .1,
    cfg:{typ:"sucty", en:true, druh:"stred", n:{v:1}}},
   {ex:R`Find the area between the graph of $f(x) = x^2 + 1$, the $x$-axis and the lines $x = 0$, $x = 2$.`,

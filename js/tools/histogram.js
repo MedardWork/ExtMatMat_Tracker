@@ -17,11 +17,11 @@ defTool("histogram", {
   desc:"Tabuľka početností ako stĺpcový a kruhový graf, triedenie údajov do intervalov a histogram.",
   topics:["a42", "b42"],
   presets:[
-    {name:"Známky: stĺpce a kruh", cfg:{typ:"pocetnosti", nazov:"známka", on:{stlpce:true, kruh:true}}},
-    {name:"Kruhový graf", cfg:{typ:"pocetnosti", hodnoty:["pešo", "bicykel", "autobus", "auto"], pocty:[6, 3, 9, 6], nazov:"doprava", on:{kruh:true, stlpce:false, rel:true}}},
-    {name:"Relatívne početnosti", cfg:{typ:"pocetnosti", nazov:"známka", on:{stlpce:true, rel:true}}},
-    {name:"Triedenie do intervalov", cfg:{typ:"triedenie"}},
-    {name:"Polygón početností", cfg:{typ:"triedenie", on:{polygon:true}}}
+    {name:"Známky: stĺpce a kruh", cfg:{typ:"pocetnosti", nazov:"známka", on:{stlpce:true, kruh:true}}, tip:"Ťahaj vrchy stĺpcov alebo napíš vlastné hodnoty a početnosti. Uhol výseku je podiel z $360^\\circ$."},
+    {name:"Kruhový graf", cfg:{typ:"pocetnosti", hodnoty:["pešo", "bicykel", "autobus", "auto"], pocty:[6, 3, 9, 6], nazov:"doprava", on:{kruh:true, stlpce:false, rel:true}}, tip:"Kruhový graf ukazuje podiely z celku. Relatívna početnosť je početnosť delená počtom všetkých."},
+    {name:"Relatívne početnosti", cfg:{typ:"pocetnosti", nazov:"známka", on:{stlpce:true, rel:true}}, tip:"Relatívne početnosti dajú spolu vždy 100 %. Hodia sa na porovnanie súborov rôznej veľkosti."},
+    {name:"Triedenie do intervalov", cfg:{typ:"triedenie"}, tip:"Napíš vlastné údaje. Meň šírku triedy: príliš úzke triedy dajú zubatý histogram, príliš široké skryjú tvar."},
+    {name:"Polygón početností", cfg:{typ:"triedenie", on:{polygon:true}}, tip:"Polygón spája stredy horných strán stĺpcov. Priemer z tried je len odhad."}
   ],
   help:"Vrchy stĺpcov sa dajú **ťahať**. Pri triedení meň šírku triedy a sleduj, ako sa tvar histogramu mení.",
 
@@ -59,7 +59,19 @@ defTool("histogram", {
       params, aspect:`${W}/${H}`,
       hint:typ === "pocetnosti" && cfg.drag !== false ? "Vrchy stĺpcov sa dajú **ťahať**." : null,
       init(st){ st.data = typ === "pocetnosti" ? {c:labels.map((_, i) => c0[i] || 0)} : null; },
-      inputs:typ === "triedenie" ? [{label:"Údaje (oddelené medzerou)", wide:true, value:raw.map(v => fmtN(v, 4)).join(" "),
+      inputs:typ === "pocetnosti" ? [
+        {label:`Hodnoty (${cfg.nazov || "kategórie"})`, wide:true, value:"", read:() => labels.join(labels.some(l => /\s/.test(l)) ? "; " : " "),
+          apply(text, st){
+            const l = (/;/.test(text) ? text.split(";") : text.trim().split(/\s+/)).map(s => s.trim()).filter(Boolean).slice(0, 8);
+            return l.length < 2 ? {error:"Napíš aspoň dve hodnoty oddelené medzerou (alebo bodkočiarkou)."} : Object.assign({}, cfg, {hodnoty:l, pocty:l.map((_, i) => st.data.c[i] || 0), max:null});
+          }},
+        {label:"Početnosti", wide:true, value:"", read:st => (st.data ? st.data.c : c0).join(" "),
+          apply(text){
+            const c = String(text).trim().split(/[\s;]+/).filter(Boolean).map(t => Math.round(toolParse(t)));
+            if(c.length !== labels.length || c.some(v => !(v >= 0))) return {error:`Napíš ${labels.length} nezáporných čísel, ku každej hodnote jedno.`};
+            return Object.assign({}, cfg, {pocty:c, max:null});
+          }}]
+      : typ === "triedenie" ? [{label:"Údaje (oddelené medzerou)", wide:true, value:raw.map(v => fmtN(v, 4)).join(" "),
         apply(text){ const d = text.split(/[\s;]+/).map(t => toolParse(t.replace(/,$/, ""))).filter(v => !isNaN(v)).slice(0, 80); return d.length > 1 ? {typ:"triedenie", data:d, on:cfg.on} : {error:"Napíš aspoň dve hodnoty."}; }}] : null,
       svg(P, st){
         const r = calc(P, st), thumb = st.env.thumb;

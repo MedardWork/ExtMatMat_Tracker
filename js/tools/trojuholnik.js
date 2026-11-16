@@ -68,12 +68,12 @@ defTool("trojuholnik", {
   desc:"Ťahaj vrcholy a zapínaj ťažnice, výšky, stredné priečky, opísanú a vpísanú kružnicu.",
   topics:["a28"],
   presets:[
-    {name:"Ťažnice", cfg:{on:{taznice:true}}},
-    {name:"Výšky", cfg:{on:{vysky:true}}},
-    {name:"Stredné priečky", cfg:{on:{priecky:true, strany:true}}},
-    {name:"Opísaná kružnica", cfg:{on:{opisana:true}}},
-    {name:"Vpísaná kružnica", cfg:{on:{vpisana:true}}},
-    {name:"Strany a uhly", cfg:{on:{strany:true, uhly:true}}}
+    {name:"Ťažnice", cfg:{on:{taznice:true}}, tip:"Ťahaj vrcholy alebo napíš tri strany. Ťažnice sa pretínajú v ťažisku, ktoré každú delí v pomere $2 : 1$."},
+    {name:"Výšky", cfg:{on:{vysky:true}}, tip:"V tupouhlom trojuholníku padnú dve výšky mimo neho a priesečník výšok leží vonku. Skús to."},
+    {name:"Stredné priečky", cfg:{on:{priecky:true, strany:true}}, tip:"Stredná priečka je rovnobežná s tretou stranou a má polovicu jej dĺžky."},
+    {name:"Opísaná kružnica", cfg:{on:{opisana:true}}, tip:"Stred opísanej kružnice leží na osiach strán. V pravouhlom trojuholníku je v strede prepony."},
+    {name:"Vpísaná kružnica", cfg:{on:{vpisana:true}}, tip:"Stred vpísanej kružnice leží na osiach uhlov a je od všetkých strán rovnako ďaleko."},
+    {name:"Strany a uhly", cfg:{on:{strany:true, uhly:true}}, tip:"Oproti väčšej strane leží väčší uhol. Súčet uhlov je vždy $180^\\circ$."}
   ],
 
   /* A: 1 1 / B: 9 1 / C: 4 7 / ukaz: taznice, vysky */
@@ -110,6 +110,23 @@ defTool("trojuholnik", {
 
     return {
       params, points, snap:cfg.snap || .5,
+      /* the tool's own page: a triangle given by its three sides (c lies flat, A at the left) */
+      inputs:[{
+        label:"Strany a, b, c (napíš tri dĺžky)", wide:true, value:"",
+        read:st => { const d = geo(st); return d.ok ? [d.a, d.b, d.c].map(v => fmtN(v, 2)).join("  ") : ""; },
+        apply(text, st){
+          const v = String(text).trim().split(/[\s;]+/).map(toolParse);
+          if(v.length !== 3 || v.some(x => !(x > 0))) return {error:"Napíš tri kladné dĺžky oddelené medzerou, napríklad 5 6 7."};
+          const [a, b, c] = v;
+          if(a + b <= c || a + c <= b || b + c <= a) return {error:"Z týchto dĺžok trojuholník nevznikne: súčet dvoch strán musí byť väčší než tretia."};
+          const x = (b * b + c * c - a * a) / (2 * c), y = Math.sqrt(Math.max(0, b * b - x * x)), r4 = t => Math.round(t * 1e4) / 1e4;
+          const w = Math.max(c, x) - Math.min(0, x), m = Math.max(w, y * 1.3) * .14;
+          st.view = null;   /* the picture is fitted to the new triangle */
+          /* points are pulled to the grid when they are made: a finer grid keeps the typed lengths exact */
+          const fine = [c, x, y].some(t => Math.abs(t * 2 - Math.round(t * 2)) > 1e-9);
+          return Object.assign({}, cfg, {on:null, snap:fine ? .0001 : .5, pts:{A:[0, 0], B:[r4(c), 0], C:[r4(x), r4(y)]}, view:[Math.min(0, x) - m, y + m, Math.max(c, x) + m, -m]});
+        }
+      }],
       hint:fixed.length === 3 ? null : fixed.length ? `Vrchol ${["A", "B", "C"].filter(n => !fixed.includes(n)).map(n => `**${n}**`).join(" a ")} sa dá ťahať.` : "Vrcholy **A**, **B**, **C** ťahaj alebo im vpíš súradnice.",
       board:{bbox:cfg.view || [-1.5, 8.5, 11.5, -1.5], axis:false, aspect:"13/10"},
       draw(g, P, st){

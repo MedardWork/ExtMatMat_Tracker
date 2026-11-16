@@ -37,11 +37,11 @@ defTool("postupnost", {
   desc:"Členy postupnosti ako stĺpce. Meň prvý člen, diferenciu alebo kvocient a sleduj n-tý člen a súčet.",
   topics:["a25", "a26"],
   presets:[
-    {name:"Aritmetická", cfg:{typ:"ar", on:{vals:true, steps:true}}},
-    {name:"Geometrická", cfg:{typ:"geo", on:{vals:true, steps:true}}},
-    {name:"Klesajúca geometrická", cfg:{typ:"geo", a1:{v:64, min:-100, max:100, step:1}, q:{v:.5}, on:{vals:true, sum:true}}},
-    {name:"Súčet po dvojiciach", cfg:{typ:"ar", a1:{v:1}, d:{v:1}, n:{v:10}, on:{vals:true, sum:true, pairs:true}}},
-    {name:"Vlastný vzorec", cfg:{typ:"vzorec", f:"n^2 - 2n", on:{vals:true}}}
+    {name:"Aritmetická", cfg:{typ:"ar", on:{vals:true, steps:true}}, tip:"Každý člen je o $d$ väčší než predošlý, vrcholy stĺpcov ležia na priamke. Klikni na stĺpec a vyberieš $n$."},
+    {name:"Geometrická", cfg:{typ:"geo", on:{vals:true, steps:true}}, tip:"Každý člen je $q$-násobok predošlého. Skús $q$ medzi 0 a 1 a záporné $q$."},
+    {name:"Klesajúca geometrická", cfg:{typ:"geo", a1:{v:64, min:-100, max:100, step:1}, q:{v:.5}, on:{vals:true, sum:true}}, tip:"Pri $|q| < 1$ sa členy blížia k nule a súčty sa ustália. Pridávaj členy a sleduj súčet."},
+    {name:"Súčet po dvojiciach", cfg:{typ:"ar", a1:{v:1}, d:{v:1}, n:{v:10}, on:{vals:true, sum:true, pairs:true}}, tip:"Prvý a posledný člen dajú spolu to isté ako druhý a predposledný. Odtiaľ je vzorec pre súčet."},
+    {name:"Vlastný vzorec", cfg:{typ:"vzorec", f:"n^2 - 2n", on:{vals:true}}, tip:"Napíš vzorec pre $n$-tý člen, napríklad $n^2$, $2^n$ alebo $1/n$, a pozri si prvé členy a ich súčty."}
   ],
   help:`Kliknutím na stĺpec vyberieš $n$. Každé číslo pri posuvníku sa dá prepísať.
 
