@@ -19,7 +19,7 @@ A tracker for preparing for the Slovak external maths maturita (plus Danish Mate
   it, update this file, commit, push. No questions needed.
 - **A batch** is one stretch between two arrows in that list (usually 2–4 topics, plus the new tool they
   need). Finish and push one batch before starting the next.
-- `main` holds everything listed under *Done* (last merged 2026-11-15). Start from `main`. If this file or a
+- `main` holds everything listed under *Done* (last merged 2026-11-16). Start from `main`. If this file or a
   theory file listed under *Done* is missing on the session's branch, the branch is behind: fast-forward
   it to `origin/main` first.
 - Before finishing: move the topics from *Next* to *Done* here, add anything new that bit, commit, push
@@ -118,6 +118,31 @@ The tools from `kruznica` on were written by Fable on 2026-11-13 and checked by 
 Size to aim for, from the last batch: 3–4 subtopics per topic, 3–4 tools per subtopic (one of them a
 task), 2–4 worked examples per subtopic, about 150 lines per theory file.
 
+### Tools on their own page (2026-11-16, Fable)
+
+The person found the tools awkward to use standalone. What the engine (`js/tools/core.js`) offers for that now,
+use it when a tool gets a new option:
+
+- `when:P => …` on a param: the control is listed only while it holds (a slider that belongs to a switch).
+- `type:"pick", opts:[…]` on a param: one of several as buttons, value = index; locked like a switch (theory: `toggles:["co"]`).
+- `picks:[{name, opts, v, set(k, st) → cfg}]` on the widget: a choice that rebuilds the tool from another config and
+  keeps the data (model in `regresia`, event in `pravdepodobnost`, cube/cuboid in `kocka`, interval kinds in `os`). Full page only.
+- `row:"a", rowName, rowNote` on params: on the full page neighbours share one line of typed fields (`vektory3d`).
+- `inputs` take `keys:["∩", "∪"]` (buttons that type a symbol) and `apply(text, st)`; an input with `read(st)` follows the picture.
+- The `tip:"…"` of a preset is shown above the tool as "Vyskúšaj". Every preset has one; write one for a new preset.
+- Number fields step with ↑ ↓ (Shift: ten steps). The picture stays in view while the controls scroll (`tw-pin`).
+- Points are pulled to the grid when a board is built: a rebuild with off-grid points needs a fine `snap` (see `gridOf` in `analyticka`).
+
+New functions: `percenta` looks for the base / percent / original value (`co`), `pytagoras` for a leg, `analyticka` reads a line
+or a circle typed as an equation, `trojuholnik` takes three sides, `zobrazenia` the corners of the shape, `histogram` and
+`boxplot` their categories, counts and interval ends, `poloha` lines and planes typed by corners (AG, BDE).
+
+**Theory check, same day:** `node dev/mathcheck.js` recomputes every numeric equality written in theory (about 1 200) and,
+with letters, tries identities at random values (about 3 000; `SYM=1` lists the ones that are not identities, mostly
+equations). All 126 topics pass; fixed were three "=" that only held after rounding and one rounded prediction in c35.
+Read in full: a1–a4 and b31–c42; of a5–b5 the formula boxes, warnings and tool conclusions. Not read: a18–a37, b6–b30
+(only machine-checked): the person stopped the reading to save usage. Run `mathcheck` after writing or changing theory.
+
 ### Visuals skipped for lack of a tool (flagged, add later)
 
 Checked 2026-11-14 for every topic written that day (b8–b11, a1–a17, b1–b7, a27–a37, b16–b28, b30,
@@ -182,6 +207,8 @@ Things that bite:
   colour classes (`s ca`, `bg cb`, `t mid` …, CSS in theory.css "plain-SVG kit"), `svFit` for a plane in the
   picture, `svgDrag` / `svgPoint` for dragging and clicks, `toolTextIn` / `toolTextOut` for notes. A tool
   that shows a table returns `<div class="tw-tab">…` from `svg()`. `"c_a"` in `SV.text` writes a subscript.
+- A full `node dev/check.js` in the background crawls (the container sleeps between calls): run it in the foreground in
+  halves with a 10-minute timeout instead.
 - `node dev/check.js <tool>` clicks through every preset of the tool. `node dev/tile.js <dir> [prefix]`
   tiles `SHOTS` pictures into `<dir>/_all.png`. A full `node dev/check.js` takes over 2 minutes.
 - A new tool needs its `<script>` tag in `maturita-matematika-tracker.html` and its styles in

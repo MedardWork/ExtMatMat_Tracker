@@ -50,16 +50,16 @@ THEORY.c35 = {
    cfg:{model:"exp", en:true, data:[[0, 2.1], [1, 2.9], [2, 4.4], [3, 8.2], [4, 9.3], [5, 13.4]], on:{rezidua:true}}},
   {ex:R`CAS gives $y = 2{,}055 \cdot 1{,}454^x$ for the data above. Predict $y$ at $x = 7$, and find when $y$ reaches 50.`,
    steps:[
-     ["Prediction.", R`2{,}055 \cdot 1{,}454^7 \approx 28{,}3`],
+     ["Prediction.", R`2{,}055 \cdot 1{,}454^7 \approx 28{,}2`],
      ["Solve.", R`2{,}055 \cdot 1{,}454^x = 50 \Rightarrow x = \frac{\ln(50 / 2{,}055)}{\ln 1{,}454} \approx 8{,}5`]
    ],
-   res:"y ≈ 28,3 at x = 7; y = 50 at about x = 8,5 (both outside the data: extrapolation)."},
+   res:"y ≈ 28,2 at x = 7; y = 50 at about x = 8,5 (both outside the data: extrapolation)."},
   {tool:"regresia", kind:"uloha", ask:R`Switch on the prediction and set $x = 7$ to check the example.`,
    hint:"Tick the prediction and move the slider x to 7.",
-   take:R`the model predicts about 28,3. Outside the measured range such numbers are only as good as the model.`,
+   take:R`the model predicts about 28,3: the tool keeps every digit of the parameters, while the rounded $2{,}055 \cdot 1{,}454^7$ gives 28,2. Outside the measured range such numbers are only as good as the model.`,
    goal:P => !!P.predpoved && Math.abs(P.x - 7) < 1e-6,
    cfg:{model:"exp", en:true, data:EXP, toggles:["predpoved"]}},
-  {warn:R`Round only at the end: with $a = 1{,}45$ instead of $1{,}454$ the prediction at $x = 7$ drops from 28,3 to 27,7.`}
+  {warn:R`Round only at the end: with $a = 1{,}45$ instead of $1{,}454$ the prediction at $x = 7$ drops from 28,2 to 27,7.`}
 ]
 
   }

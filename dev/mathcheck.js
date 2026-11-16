@@ -3,15 +3,21 @@
 //   node dev/mathcheck.js            all topics in THEORY_LIST
 //   node dev/mathcheck.js a2 c11     these topics
 //   ALL=1 node dev/mathcheck.js      also list "=" that only holds after rounding (should be \doteq)
+// Sides with letters are tried too: "(x + 3)^2 - 9 = x^2 + 6x" is evaluated at a few random values of x.
+// An equation to be solved (2x + 3 = x - 5) is not an identity either, so those lines are listed apart,
+// only with SYM=1, and need a human eye:   SYM=1 node dev/mathcheck.js a15
 // It reads formulas only (tex fields and $…$ in texts), never the tools' configs. What it cannot read as
 // numbers it skips, so silence means "nothing found", not "everything proved". Lines it prints need a look:
 // some are real slips, some are notation it misreads (1 % = 10 ‰, a ratio 2 : 3 = 4 : 6 is fine).
+// "last digit": the rounded value is one off in its last place; fine when an already rounded number was used.
 const fs = require("fs");
 const path = require("path");
 const DIR = path.resolve(__dirname, "../js/data/theory");
 
 /* ---------- TeX → number ---------- */
-function tokens(src){
+const GREEK = ["alpha", "beta", "gamma", "delta", "varphi", "phi", "omega", "lambda", "mu", "sigma", "varrho", "rho", "tau", "theta", "varepsilon", "epsilon"];
+const CALLED = "fghFGHPNTAsyLVODdESM";   /* letters that are functions when a bracket follows: f(x), P(A), d(X, p) */
+function tokens(src, letters){
   let s = src.replace(/\\(?:left|right|displaystyle|bigl|bigr|Bigl|Bigr|big|Big|,|;|!|:|quad|qquad|mathbf|mathrm|boldsymbol|v[abcd](?![a-zA-Z])|dots|ldots|%|€)/g, m => /\\(?:quad|qquad)/.test(m) ? " " : /\\,/.test(m) ? " " : " ");
   s = s.replace(/(\d) (?=\d{3}(?!\d))/g, "$1").replace(/ /g, " ");          // 1\,200 → 1200
   s = s.replace(/\\text\{[^{}]*\}/g, " ").replace(/\\ /g, " ").replace(/[€‰%°]/g, " ").replace(/\\(?:circ)\b/g, "°");
@@ -23,7 +29,21 @@ function tokens(src){
     if(/\s/.test(c)){ i++; continue; }
     let m;
     if((m = s.slice(i).match(/^\d+(?:\.\d+)?/))){ out.push({t:"n", v:Number(m[0]), d:(m[0].split(".")[1] || "").length}); i += m[0].length; continue; }
-    if((m = s.slice(i).match(/^\\[a-zA-Z]+/))){ out.push({t:"c", v:m[0].slice(1)}); i += m[0].length; continue; }
+    if((m = s.slice(i).match(/^\\[a-zA-Z]+/))){
+      if(letters && GREEK.includes(m[0].slice(1))){ out.push({t:"v", v:m[0]}); i += m[0].length; continue; }
+      out.push({t:"c", v:m[0].slice(1)}); i += m[0].length; continue;
+    }
+    if(letters && /[a-zA-Z]/.test(c)){
+      const rest = s.slice(i + 1);
+      if(c === "e" && /^\s*\^/.test(rest)){ out.push({t:"n", v:Math.E, d:0}); i++; continue; }   // e^x
+      const sub = rest.match(/^_(?:\{([^{}]*)\}|([a-zA-Z0-9]))/);
+      const name = c + (sub ? "_" + (sub[1] || sub[2]) : "");
+      i += 1 + (sub ? sub[0].length : 0);
+      if(/^\s*'/.test(s.slice(i))) return null;                                        // f'
+      if(CALLED.includes(c) && /^\s*(\(|\\left\()/.test(s.slice(i))) return null;       // f(x)
+      out.push({t:"v", v:name});
+      continue;
+    }
     if("+-*/:^(){}[]|!°_".includes(c)){ out.push({t:"o", v:c}); i++; continue; }
     if(c === "−"){ out.push({t:"o", v:"-"}); i++; continue; }
     if(c === "·"){ out.push({t:"c", v:"cdot"}); i++; continue; }
@@ -33,8 +53,9 @@ function tokens(src){
   return out;
 }
 const FN = {sin:Math.sin, cos:Math.cos, tg:Math.tan, tan:Math.tan, cotg:x => 1 / Math.tan(x), ln:Math.log, log:Math.log10, arcsin:Math.asin, arccos:Math.acos, arctg:Math.atan, arctan:Math.atan};
-function evalTex(src){
-  const tk = tokens(src);
+function evalTex(src, env){
+  const tk = tokens(src, !!env);
+  let hasVar = false;
   if(!tk || !tk.length) return null;
   let p = 0, decimals = 0, deg = false, plain = true;
   const peek = () => tk[p], isO = v => tk[p] && tk[p].t === "o" && tk[p].v === v, isC = v => tk[p] && tk[p].t === "c" && tk[p].v === v;
@@ -56,7 +77,7 @@ function evalTex(src){
       if(!t) return a;
       if(isC("cdot") || isC("times") || isO("*")){ p++; plain = false; a *= unary(); }
       else if(isO("/") || isO(":") || isC("div")){ p++; plain = false; a /= unary(); }
-      else if(t.t === "n" || isO("(") || isO("{") || isO("|") && !bars || (t.t === "c" && (t.v in FN || ["frac", "dfrac", "tfrac", "sqrt", "pi", "binom"].includes(t.v)))){ plain = false; a *= power(); }
+      else if(t.t === "n" || t.t === "v" || isO("(") || isO("{") || isO("|") && !bars || (t.t === "c" && (t.v in FN || ["frac", "dfrac", "tfrac", "sqrt", "pi", "binom"].includes(t.v)))){ plain = false; a *= power(); }
       else return a;
     }
   }
@@ -79,6 +100,7 @@ function evalTex(src){
     const t = tk[p++];
     if(!t) fail();
     if(t.t === "n"){ decimals = Math.max(decimals, t.d); return t.v; }
+    if(t.t === "v"){ hasVar = true; plain = false; if(!(t.v in env)) env[t.v] = .7 + ((env.$seed = (env.$seed * 9301 + 49297) % 233280) / 233280) * 2.1; return env[t.v]; }
     if(t.t === "o"){
       if(t.v === "("){ const v = sum(); if(!isO(")")) fail(); p++; return v; }
       if(t.v === "{"){ const v = sum(); if(!isO("}")) fail(); p++; return v; }
@@ -116,7 +138,7 @@ function evalTex(src){
   try{
     const v = sum();
     if(p < tk.length || !isFinite(v)) return null;
-    return {v, decimals, plain};
+    return {v, decimals, plain, hasVar};
   }catch(e){ return null; }
 }
 
@@ -172,7 +194,18 @@ function check(id){
       const vals = parts.map(evalTex);
       for(let i = 0; i + 1 < parts.length; i++){
         const a = vals[i], b = vals[i + 1], op = seps[i];
-        if(!a || !b) continue;
+        if(!a || !b){
+          /* letters: an identity must hold at every value tried */
+          if(seps[i] !== "=") continue;
+          const envs = [11, 23, 37, 53].map(k => ({$seed:k})), L = envs.map(e => evalTex(parts[i], e)), Rr = envs.map(e => evalTex(parts[i + 1], e));
+          if(L.some(x => !x) || Rr.some(x => !x) || !L[0].hasVar && !Rr[0].hasVar) continue;
+          check.sym = (check.sym || 0) + 1;
+          if(L.every((x, k) => Math.abs(x.v - Rr[k].v) <= 1e-7 * Math.max(1, Math.abs(x.v), Math.abs(Rr[k].v)))) continue;
+          const single = t => /^\s*-?\s*(?:\\v[abcd]\{)?\s*(?:[a-zA-Z](?:_\{?[^{}]*\}?)?|\\[a-zA-Z]+)\s*\}?\s*$/.test(t);
+          if(process.env.SYM && L[0].hasVar && Rr[0].hasVar && !single(parts[i]) && !single(parts[i + 1]))
+            found.push(`${id}  not an identity (an equation?):  ${parts[i].trim()}  =  ${parts[i + 1].trim()}   — ${where}`);
+          continue;
+        }
         check.pairs = (check.pairs || 0) + 1;
         const tol = 1e-9 * Math.max(1, Math.abs(a.v), Math.abs(b.v)), diff = Math.abs(a.v - b.v);
         const unit = Math.pow(10, -b.decimals), unitA = Math.pow(10, -a.decimals);
@@ -187,6 +220,7 @@ function check(id){
           const u = b.plain ? unit : a.plain ? unitA : Math.max(unit, unitA);
           if(diff > u * 1.01 + tol && diff > Math.abs(b.v) * 0.06) bad = "FAR OFF";
           else if(diff > u * 1.01 + tol && op === "\\doteq") bad = "rounded wrongly";
+          else if(diff > u * .51 + tol) bad = "last digit";   /* a rounded intermediate result often explains it */
         } else if(op === "<" && !(a.v < b.v) || op === ">" && !(a.v > b.v) || /^\\le/.test(op) && !(a.v <= b.v + tol) || /^\\ge/.test(op) && !(a.v >= b.v - tol)) bad = "INEQUALITY FALSE";
         else if(/^\\ne/.test(op) && diff <= tol) bad = "≠ BUT EQUAL";
         if(bad) found.push(`${id}  ${bad}:  ${parts[i].trim()}  ${op}  ${parts[i + 1].trim()}   [${fmt(a.v)} vs ${fmt(b.v)}]   — ${where}`);
@@ -201,4 +235,4 @@ const ids = process.argv.slice(2).length ? process.argv.slice(2)
   : eval(fs.readFileSync(path.join(DIR, "index.js"), "utf8") + ";THEORY_LIST");
 let n = 0;
 ids.forEach(id => { let f; try{ f = check(id); }catch(e){ console.log(id + "  could not be read: " + e.message); return; } f.forEach(l => console.log(l)); n += f.length; });
-console.log((n ? `\n${n} place(s) to look at` : "nothing found") + ` (${check.pairs || 0} comparisons made)`);
+console.log((n ? `\n${n} place(s) to look at` : "nothing found") + ` (${check.pairs || 0} numeric comparisons, ${check.sym || 0} with letters)`);
