@@ -130,6 +130,8 @@ use it when a tool gets a new option:
 - `row:"a", rowName, rowNote` on params: on the full page neighbours share one line of typed fields (`vektory3d`).
 - `inputs` take `keys:["∩", "∪"]` (buttons that type a symbol) and `apply(text, st)`; an input with `read(st)` follows the picture.
 - The `tip:"…"` of a preset is shown above the tool as "Vyskúšaj". Every preset has one; write one for a new preset.
+- "Pôvodné hodnoty" goes back to the config the tool was mounted with (`st.cfg0`): it also undoes a typed-in function,
+  equation or data and a `picks` choice, not only the sliders.
 - Number fields step with ↑ ↓ (Shift: ten steps). The picture stays in view while the controls scroll (`tw-pin`).
 - Points are pulled to the grid when a board is built: a rebuild with off-grid points needs a fine `snap` (see `gridOf` in `analyticka`).
 

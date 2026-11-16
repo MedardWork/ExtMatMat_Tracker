@@ -709,6 +709,7 @@ function mountTool(el){
   }
   const env = {full:el.classList.contains("tw-full"), thumb:el.classList.contains("tw-thumb")};
   const st = {n:++toolSeq, root:el, tool, blk, env, cfg:blk.cfg || {}, open:env.full, board:null, jp:{}, h:Object.create(TW_H)};
+  st.cfg0 = st.cfg;   /* what "Pôvodné hodnoty" goes back to after a function was typed in or another choice made */
   try{ st.w = tool.make(st.cfg, env); }
   catch(e){ body.innerHTML = `<div class="tw-fail">Túto ukážku sa nepodarilo pripraviť.</div>`; console.error(e); return; }
   body.innerHTML = env.thumb ? `<div class="tw-board"><div></div></div>`
@@ -723,6 +724,7 @@ function mountTool(el){
   if(!env.thumb){
     toolInputs(st); toolCtl(st); toolFoot(st);
     const applyInput = debounce(inp => {
+      if(!inp.isConnected) return;   /* the fields were written anew meanwhile (reset) */
       const x = st.w.inputs[Number(inp.dataset.wi)];
       const r = x.apply(inp.value, st);
       const err = $(`[data-we="${inp.dataset.wi}"]`, st.inputsEl);
@@ -822,6 +824,8 @@ function mountTool(el){
       }
       if(btn.dataset.wf === "open") st.open = !st.open;
       st.view = null;
+      /* a typed-in function, equation or data, or another choice (picks) replaced the config: reset brings the first one back */
+      if(btn.dataset.wf === "reset" && st.cfg !== st.cfg0){ toolRemake(st, st.cfg0); toolInputs(st); return; }
       toolDefaults(st);
       toolCtl(st); toolFoot(st);
       if(st.board) toolBoard(st);
