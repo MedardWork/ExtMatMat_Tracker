@@ -785,6 +785,7 @@ function mountTool(el){
       }
     });
     body.addEventListener("focusin", e => { if(e.target.classList.contains("tw-num")) e.target.select(); });
+    body.addEventListener("mousedown", e => { if(e.target.closest("[data-wk]")) e.preventDefault(); });   /* a symbol key must not take the focus from its field */
     body.addEventListener("click", e => {
       const act = e.target.closest("[data-wa]");
       if(act){ st.w.actions[Number(act.dataset.wa)].run(st); if(toolHasWhen(st)) toolCtlRedraw(st); toolUpdate(st); return; }
@@ -798,8 +799,9 @@ function mountTool(el){
       if(pick){ st.P[pick.dataset.pk] = Number(pick.dataset.v); toolCtlRedraw(st); toolUpdate(st); return; }
       const key = e.target.closest("[data-wk]");
       if(key){
-        const inp = $(`[data-wi="${key.dataset.wk}"]`, st.inputsEl), at = inp.selectionStart == null ? inp.value.length : inp.selectionStart;
-        inp.setRangeText(key.dataset.k, at, inp.selectionEnd == null ? at : inp.selectionEnd, "end");
+        /* at the caret while the field has the focus, at the end otherwise */
+        const inp = $(`[data-wi="${key.dataset.wk}"]`, st.inputsEl), on = document.activeElement === inp, at = on ? inp.selectionStart : inp.value.length;
+        inp.setRangeText(key.dataset.k, at, on ? inp.selectionEnd : at, "end");
         inp.focus(); applyInput(inp);
         return;
       }

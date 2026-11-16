@@ -62,16 +62,16 @@ defTool("mnoziny", {
   desc:"Dve alebo tri množiny ako kruhy. Vyfarbi prienik, zjednotenie, rozdiel či doplnok, alebo počítaj prvky v jednotlivých častiach.",
   topics:["a6", "a41"],
   presets:[
-    {name:"Prienik", cfg:{vyraz:"A ∩ B"}},
-    {name:"Zjednotenie", cfg:{vyraz:"A ∪ B"}},
-    {name:"Rozdiel", cfg:{vyraz:"A − B"}},
-    {name:"Doplnok", cfg:{vyraz:"(A ∪ B)'"}},
-    {name:"Tri množiny", cfg:{n:3, vyraz:"(A ∪ B) ∩ C'"}},
-    {name:"Vyfarbi sám", cfg:{n:3, klikaj:true}},
-    {name:"Počty prvkov", cfg:{typ:"pocty"}},
-    {name:"Počty, tri množiny", cfg:{typ:"pocty", n:3}}
+    {name:"Prienik", cfg:{vyraz:"A ∩ B"}, tip:"Prienik sú prvky, ktoré patria do oboch množín naraz. Prepíš výraz a diagram sa vyfarbí podľa neho."},
+    {name:"Zjednotenie", cfg:{vyraz:"A ∪ B"}, tip:"Zjednotenie sú prvky, ktoré patria aspoň do jednej z množín."},
+    {name:"Rozdiel", cfg:{vyraz:"A − B"}, tip:"Rozdiel $A \\setminus B$ sú prvky $A$, ktoré nie sú v $B$. Skús opačné poradie."},
+    {name:"Doplnok", cfg:{vyraz:"(A ∪ B)'"}, tip:"Doplnok je všetko mimo množiny. Porovnaj $(A \\cup B)'$ s $A' \\cap B'$: vyfarbí sa to isté."},
+    {name:"Tri množiny", cfg:{n:3, vyraz:"(A ∪ B) ∩ C'"}, tip:"Tri kruhy delia rovinu na 8 častí. Napíš vlastný výraz so znakmi z tlačidiel."},
+    {name:"Vyfarbi sám", cfg:{n:3, klikaj:true}, tip:"Klikaj na časti diagramu. Ak políčko výrazu necháš prázdne, farbíš sám."},
+    {name:"Počty prvkov", cfg:{typ:"pocty"}, tip:"Diagram sa vypĺňa od prieniku von. Od počtu prvkov množiny odčítaj to, čo je už zapísané v prieniku."},
+    {name:"Počty, tri množiny", cfg:{typ:"pocty", n:3}, tip:"Začni číslom v strede (všetky tri naraz), potom prieniky dvojíc a nakoniec zvyšky množín."}
   ],
-  help:"Výraz píš písmenami `A`, `B`, `C`: zjednotenie `u`, prienik `n`, rozdiel `-`, doplnok apostrofom, napríklad `(A u B) n C'`. Pri ukážke **Vyfarbi sám** klikaj na časti diagramu.",
+  help:"Výraz píš písmenami `A`, `B`, `C`: zjednotenie `u`, prienik `n`, rozdiel `-`, doplnok apostrofom, napríklad `(A u B) n C'`. Znaky vložíš aj tlačidlami pod políčkom. Keď políčko vyprázdniš, farbíš časti diagramu **kliknutím**.",
   textKeys:["vyraz", "hladaj"],
   fromText(kv){ const c = toolTextIn.call(this, kv); if(c.n !== 3) delete c.n; if(!c.vyraz && c.typ !== "pocty") c.klikaj = true; return c; },
   toText:toolTextOut,
@@ -111,12 +111,14 @@ defTool("mnoziny", {
       params, aspect:`${W}/${H}`,
       hint:click ? "Časti diagramu vyfarbíš **kliknutím**." : null,
       init(st){ if(click) st.data = {pick:[]}; },
+      picks:[{name:"Počet množín", opts:["dve", "tri"], v:n - 2, set:k => Object.assign({}, cfg, {n:k + 2}, typ === "operacie" && !k && /C/.test(cfg.vyraz || "") ? {vyraz:null, klikaj:true} : null)}],
       inputs:typ === "operacie" ? [{
-        label:"Množina (A, B, C; u, n, -, ')", wide:true, value:cfg.vyraz || "",
+        label:"Výraz (prázdne políčko: farbíš sám)", wide:true, value:cfg.vyraz || "", keys:["A", "B", "C", "∩", "∪", "−", "'", "(", ")"],
         apply(text){
           if(!String(text).trim()) return Object.assign({}, cfg, {vyraz:null, klikaj:true});
-          const e = setExpr(text, n);
-          return e.ok ? Object.assign({}, cfg, {vyraz:text, klikaj:false}) : {error:e.err};
+          /* a C in the expression brings the third set with it */
+          const nn = /C/.test(text) ? 3 : n, e = setExpr(text, nn);
+          return e.ok ? Object.assign({}, cfg, {vyraz:text, klikaj:false, n:nn}) : {error:e.err};
         }
       }] : null,
 

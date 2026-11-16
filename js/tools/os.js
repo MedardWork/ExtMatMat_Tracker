@@ -58,13 +58,13 @@ defTool("os", {
   desc:"Intervaly, ich prienik a zjednotenie, absolútna hodnota ako vzdialenosť a znamienka súčinu alebo podielu.",
   topics:["a6", "a12", "a13", "a14", "a16", "b4", "b5"],
   presets:[
-    {name:"Interval", cfg:{typ:"interval"}},
-    {name:"Dva intervaly", cfg:{typ:"dva", on:{prienik:true, zjednotenie:true}}},
-    {name:"Absolútna hodnota", cfg:{typ:"abs"}},
-    {name:"Znamienka súčinu", cfg:{typ:"znamienka"}},
-    {name:"Znamienka podielu", cfg:{typ:"znamienka", n:3, dole:[3], x1:-2, x2:1, x3:3, on:{rovne:true}}}
+    {name:"Interval", cfg:{typ:"interval"}, tip:"Ťahaj krúžky a prepínaj, či koniec do intervalu patrí. Plný krúžok a hranatá zátvorka idú spolu."},
+    {name:"Dva intervaly", cfg:{typ:"dva", on:{prienik:true, zjednotenie:true}}, tip:"Tlačidlami zvoľ druh oboch intervalov. Prienik je to, čo majú spoločné, zjednotenie všetko, čo pokrývajú."},
+    {name:"Absolútna hodnota", cfg:{typ:"abs"}, tip:"$|x - s|$ je vzdialenosť čísla $x$ od stredu $s$. Nerovnica vyberá čísla bližšie (alebo ďalej) než $r$."},
+    {name:"Znamienka súčinu", cfg:{typ:"znamienka"}, tip:"Nulové body rozdelia os na úseky. V každom má súčin stále znamienko, ktoré zistíš z tabuľky."},
+    {name:"Znamienka podielu", cfg:{typ:"znamienka", n:3, dole:[3], x1:-2, x2:1, x3:3, on:{rovne:true}}, tip:"Podiel sa rieši ako súčin, len nulový bod menovateľa do riešenia nikdy nepatrí."}
   ],
-  help:"Krúžky na osi sa dajú ťahať. Plný krúžok znamená, že číslo do množiny patrí, prázdny, že nepatrí.",
+  help:"Krúžky na osi sa dajú ťahať. Plný krúžok znamená, že číslo do množiny patrí, prázdny, že nepatrí. Druh intervalov, počet činiteľov a menovateľ vyberáš tlačidlami.",
   fromText:toolTextIn, toText:toolTextOut,
 
   make(cfg, env){
@@ -133,8 +133,18 @@ defTool("os", {
     const H = AX + 34 + (tableRows ? tableRows * 28 + 14 : 0);
     const movable = (id, st) => params[id] && !(params[id].lock && !st.open);
 
+    /* on the tool's own page: what kind the two intervals are; how many factors, which of them divides */
+    const KINDS = ["[]", "()", "[)", "(]", "-]", "-)", "[+", "(+"], KIND_L = ["⟨ ; ⟩", "( ; )", "⟨ ; )", "( ; ⟩", "(−∞; ⟩", "(−∞; )", "⟨ ; ∞)", "( ; ∞)"];
+    const kindOf = s => { s = (s || "[]").replace("<", "[").replace(">", "]"); return KINDS.indexOf(s); };
+    const picks = typ === "dva" ? [
+        {name:"Interval A", opts:KIND_L, v:kindOf(cfg.A), set:k => Object.assign({}, cfg, {A:KINDS[k]})},
+        {name:"Interval B", opts:KIND_L, v:kindOf(cfg.B || "()"), set:k => Object.assign({}, cfg, {B:KINDS[k]})}]
+      : typ === "znamienka" ? [
+        {name:"Počet činiteľov", opts:["1", "2", "3"], v:nf - 1, set:k => Object.assign({}, cfg, {n:k + 1, dole:dole.filter(i => i <= k + 1)})},
+        {name:"V menovateli", opts:["nič"].concat(["x₁", "x₂", "x₃"].slice(0, nf)), v:dole.length ? dole[0] : 0, set:k => Object.assign({}, cfg, {dole:k ? [k] : []})},
+        {name:"Pred výrazom", opts:["+", "−"], v:cfg.minus ? 1 : 0, set:k => Object.assign({}, cfg, {minus:!!k})}] : null;
     return {
-      params, aspect:`${W}/${H}`,
+      params, picks, aspect:`${W}/${H}`,
       hint:Object.keys(params).some(id => params[id].type !== "check" && !params[id].lock) ? "Krúžky na osi sa dajú **ťahať**." : null,
 
       svg(P, st){

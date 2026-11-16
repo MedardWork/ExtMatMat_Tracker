@@ -27,10 +27,10 @@ defTool("sustavy", {
   desc:"To isté číslo v desiatkovej, dvojkovej, šestnástkovej alebo inej sústave. Rády, postupné delenie a rímske číslice.",
   topics:["a4"],
   presets:[
-    {name:"Dvojková", cfg:{n:45, b:2, on:{rady:true, delenie:true}}},
-    {name:"Šestnástková", cfg:{n:{v:254, max:4095}, b:16, on:{rady:true, delenie:true}}},
-    {name:"Osmičková", cfg:{n:100, b:8, on:{rady:true, delenie:true}}},
-    {name:"Rímske číslice", cfg:{n:{v:1994, max:3999}, b:10, on:{rim:true}}}
+    {name:"Dvojková", cfg:{n:45, b:2, on:{rady:true, delenie:true}}, tip:"Napíš číslo v desiatkovej sústave alebo priamo jeho dvojkový zápis. Zvyšky po delení dvoma, čítané zdola, dajú číslice."},
+    {name:"Šestnástková", cfg:{n:{v:254, max:4095}, b:16, on:{rady:true, delenie:true}}, tip:"Číslice 10 až 15 sa píšu písmenami A až F. Skús napísať FF alebo 1A3."},
+    {name:"Osmičková", cfg:{n:100, b:8, on:{rady:true, delenie:true}}, tip:"Zmeň základ sústavy posuvníkom: to isté číslo má v každej sústave iný zápis."},
+    {name:"Rímske číslice", cfg:{n:{v:1994, max:3999}, b:10, on:{rim:true}}, tip:"Číslo sa skladá z tisícok, stoviek, desiatok a jednotiek. Menšia číslica pred väčšou sa odčíta."}
   ],
   help:"Číslo aj základ sa dajú prepísať. Do poľa **Zápis v sústave** môžeš napísať číslo priamo v zvolenej sústave, napríklad `101101` alebo `FE`.",
   fromText:toolTextIn, toText:toolTextOut,

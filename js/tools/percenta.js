@@ -3,7 +3,10 @@
    all as bars. Plain SVG.
    cfg:
      typ      "cast"     z (base), p (percent) → the part;  promile:true counts in ‰
+                         co: 0 | 1 | 2   what is looked for: the part, the base (from the part cz and p) or the percent
               "zmena"    z, p (change in %), switch druha + q (a second change, applied to the new value)
+                         co: 0 | 1 | 2   the new value, the original one (from the new value nv and p) or the change in %
+                         (co is a choice on the tool's own page; in theory give toggles:["co"] to offer it)
               "pomer"    c (the whole) shared a : b (: k with n:3)
               "umera"    x1 → y1, x2 → ?   switch nepriama (inverse proportion)
      z, p, q, c, a, b, k, x1, y1, x2     a number or {v, min, max, step, lock, name, note}
@@ -16,15 +19,16 @@ defTool("percenta", {
   desc:"Základ, percentá a časť ako pruh. Zmena o percentá, delenie v pomere a trojčlenka.",
   topics:["a1"],
   presets:[
-    {name:"Časť zo základu", cfg:{typ:"cast"}},
-    {name:"Zmena o percentá", cfg:{typ:"zmena"}},
-    {name:"Zdraženie a zľava", cfg:{typ:"zmena", z:100, p:20, q:-20, on:{druha:true}}},
-    {name:"Delenie v pomere", cfg:{typ:"pomer"}},
-    {name:"Pomer troch", cfg:{typ:"pomer", n:3, c:120, a:1, b:2, k:3}},
-    {name:"Priama úmernosť", cfg:{typ:"umera"}},
-    {name:"Nepriama úmernosť", cfg:{typ:"umera", x1:3, y1:12, x2:4, on:{nepriama:true}}},
-    {name:"Promile", cfg:{typ:"cast", promile:true, z:5000, p:3}}
+    {name:"Časť zo základu", cfg:{typ:"cast"}, tip:"Tlačidlami vyber, čo hľadáš: časť, základ alebo počet percent. Zvyšné dve hodnoty nastav alebo napíš."},
+    {name:"Zmena o percentá", cfg:{typ:"zmena"}, tip:"Zvýšenie o $p\\,\\%$ je násobenie číslom $1 + \\frac{p}{100}$. Vieš hľadať aj pôvodnú hodnotu alebo o koľko percent sa hodnota zmenila."},
+    {name:"Zdraženie a zľava", cfg:{typ:"zmena", z:100, p:20, q:-20, on:{druha:true}}, tip:"Zdraženie o 20 % a potom zľava 20 % nevráti pôvodnú cenu: druhé percentá sa počítajú z nového základu."},
+    {name:"Delenie v pomere", cfg:{typ:"pomer"}, tip:"Celok rozdeľ na $a + b$ rovnakých dielov. Jeden dostane $a$ dielov, druhý $b$."},
+    {name:"Pomer troch", cfg:{typ:"pomer", n:3, c:120, a:1, b:2, k:3}, tip:"Pri troch členoch pomeru je postup rovnaký: najprv spočítaj, koľko dielov je spolu."},
+    {name:"Priama úmernosť", cfg:{typ:"umera"}, tip:"Koľkokrát vzrastie $x$, toľkokrát vzrastie $y$. Podiel $\\frac{y}{x}$ sa nemení."},
+    {name:"Nepriama úmernosť", cfg:{typ:"umera", x1:3, y1:12, x2:4, on:{nepriama:true}}, tip:"Viac robotníkov, menej dní: súčin $x \\cdot y$ sa nemení."},
+    {name:"Promile", cfg:{typ:"cast", promile:true, z:5000, p:3}, tip:"Promile je tisícina základu, teda desatina percenta."}
   ],
+  help:"Každú hodnotu môžeš prepísať v políčku pri posuvníku. Pri percentách vyber tlačidlami **Hľadám**, ktorá z troch hodnôt je neznáma.",
   fromText:toolTextIn, toText:toolTextOut,
 
   make(cfg, env){
@@ -32,13 +36,17 @@ defTool("percenta", {
     const full = cfg.promile ? 1000 : 100, sign = cfg.promile ? "‰" : "%", unit = cfg.unit ? " " + cfg.unit : "";
     const ck = (v, name, color) => ({type:"check", v, name, color});
     const defs = typ === "cast" ? {
-      z:{v:80, min:0, max:500, step:5, color:"b", note:"základ"},
-      p:{v:25, min:0, max:cfg.promile ? 1000 : 150, step:1, color:"a", note:cfg.promile ? "promile" : "percentá"}
+      co:{type:"pick", v:0, name:"Hľadám", opts:["časť", "základ", cfg.promile ? "promile" : "percentá"]},
+      z:{v:80, min:0, max:500, step:5, color:"b", note:"základ", when:P => P.co !== 1},
+      p:{v:25, min:0, max:cfg.promile ? 1000 : 150, step:1, color:"a", note:cfg.promile ? "promile" : "percentá", when:P => P.co !== 2},
+      cz:{v:20, min:0, max:500, step:1, color:"d", name:"č", note:"časť", when:P => P.co > 0}
     } : typ === "zmena" ? {
-      z:{v:200, min:0, max:1000, step:10, color:"b", note:"pôvodná hodnota"},
-      p:{v:15, min:-100, max:100, step:1, color:"a", note:"zmena v %"},
-      q:{v:-15, min:-100, max:100, step:1, color:"d", note:"druhá zmena v %"},
-      druha:ck(false, "Druhá zmena po prvej", "d")
+      co:{type:"pick", v:0, name:"Hľadám", opts:["novú hodnotu", "pôvodnú hodnotu", "zmenu v %"]},
+      z:{v:200, min:0, max:1000, step:10, color:"b", note:"pôvodná hodnota", when:P => P.co !== 1},
+      p:{v:15, min:-100, max:100, step:1, color:"a", note:"zmena v %", when:P => P.co !== 2},
+      nv:{v:230, min:0, max:1500, step:10, color:"d", name:"n", note:"nová hodnota", when:P => P.co > 0},
+      druha:Object.assign(ck(false, "Druhá zmena po prvej", "d"), {when:P => !P.co}),
+      q:{v:-15, min:-100, max:100, step:1, color:"d", note:"druhá zmena v %", when:P => !!P.druha && !P.co}
     } : typ === "pomer" ? {
       c:{v:60, min:0, max:600, step:1, color:"c", note:"celok"},
       a:{v:2, min:1, max:12, step:1, color:"a"}, b:{v:3, min:1, max:12, step:1, color:"b"},
@@ -49,8 +57,19 @@ defTool("percenta", {
     };
     const params = toolParams(defs, cfg, env);
     const calc = P => {
-      if(typ === "cast") return {cast:P.z * P.p / full, jedno:P.z / full};
-      if(typ === "zmena"){ const novy = P.z * (1 + P.p / 100), po = novy * (1 + P.q / 100); return {novy, zmena:novy - P.z, po, spolu:P.z ? (po / P.z - 1) * 100 : 0}; }
+      if(typ === "cast"){
+        let z = P.z, p = P.p, cast = z * p / full;
+        if(P.co === 1){ cast = P.cz; z = p ? cast * full / p : NaN; }
+        else if(P.co === 2){ cast = P.cz; p = z ? cast / z * full : NaN; }
+        return {z, p, cast, jedno:z / full};
+      }
+      if(typ === "zmena"){
+        let z = P.z, p = P.p, novy = z * (1 + p / 100);
+        if(P.co === 1){ novy = P.nv; z = p > -100 ? novy / (1 + p / 100) : NaN; }
+        else if(P.co === 2){ novy = P.nv; p = z ? (novy / z - 1) * 100 : NaN; }
+        const po = novy * (1 + P.q / 100);
+        return {z, p, novy, zmena:novy - z, po, spolu:z ? (po / z - 1) * 100 : 0, dr:!!P.druha && !P.co};
+      }
       if(typ === "pomer"){ const parts = [P.a, P.b].concat(params.k ? [P.k] : []), sum = parts.reduce((s, v) => s + v, 0); return {parts, sum, diel:P.c / sum, casti:parts.map(v => v * P.c / sum)}; }
       const k = P.x2 / P.x1;
       return {k, y2:P.nepriama ? P.y1 / k : P.y1 * k};
@@ -63,18 +82,23 @@ defTool("percenta", {
       svg(P, st){
         const r = calc(P), thumb = st.env.thumb, T = (x, y, s, c) => thumb ? "" : SV.text(x, y, s, c);
         let h = "";
-        if(typ === "cast"){
-          const top = Math.max(full, P.p), X = v => L + v / top * (R - L), y = 52, bh = 44;
-          h += SV.rect(L, y, X(full) - L, bh, "bg cb") + SV.rect(L, y, X(P.p) - L, bh, "bg ca") + SV.rect(L, y, X(P.p) - L, bh, "s ca")
+        if(typ === "cast" && isFinite(r.z) && isFinite(r.p)){
+          const pz = {z:r.z, p:Math.round(r.p * 100) / 100};
+          const top = Math.max(full, pz.p), X = v => L + v / top * (R - L), y = 52, bh = 44;
+          h += SV.rect(L, y, X(full) - L, bh, "bg cb") + SV.rect(L, y, X(pz.p) - L, bh, "bg ca") + SV.rect(L, y, X(pz.p) - L, bh, "s ca")
             + SV.rect(L, y, X(full) - L, bh, "s cb w1");
           for(let i = 0; i <= 10; i++){
             const v = full * i / 10, x = X(v), big = i % 5 === 0;
             h += SV.line(x, y + bh, x, y + bh + (big ? 9 : 5), "s csoft w1");
-            if(big) h += T(x, y + bh + 24, `${fmtN(v)} ${sign}`, "mid sm csoft") + T(x, y + bh + 40, money(P.z * i / 10), "mid sm cb");
+            if(big) h += T(x, y + bh + 24, `${fmtN(v)} ${sign}`, "mid sm csoft") + T(x, y + bh + 40, money(pz.z * i / 10), "mid sm cb");
           }
-          if(P.p > 0) h += SV.line(X(P.p), y - 10, X(P.p), y + bh, "s ca") + T(X(P.p), y - 16, `${fmtN(P.p)} ${sign} = ${money(r.cast)}`, `ca ${X(P.p) > 380 ? "end" : X(P.p) < 120 ? "" : "mid"}`);
+          if(pz.p > 0) h += SV.line(X(pz.p), y - 10, X(pz.p), y + bh, "s ca") + T(X(pz.p), y - 16, `${fmtN(pz.p)} ${sign} = ${money(r.cast)}`, `ca ${X(pz.p) > 380 ? "end" : X(pz.p) < 120 ? "" : "mid"}`);
+        } else if(typ === "cast"){
+          h += T(W / 2, 80, "Z týchto hodnôt sa výsledok určiť nedá.", "mid csoft");
+        } else if(typ === "zmena" && !(isFinite(r.z) && isFinite(r.p))){
+          h += T(W / 2, 100, "Z týchto hodnôt sa výsledok určiť nedá.", "mid csoft");
         } else if(typ === "zmena"){
-          const vals = [P.z, r.novy].concat(P.druha ? [r.po] : []), top = Math.max(...vals, 1), X = v => L + v / top * (R - L - 70), bh = 34;
+          const vals = [r.z, r.novy].concat(r.dr ? [r.po] : []), top = Math.max(...vals, 1), X = v => L + v / top * (R - L - 70), bh = 34;
           const row = (y, base, now, cls, label, pct) => {
             let s = SV.rect(L, y, X(Math.min(base, now)) - L, bh, "bg cb") + SV.rect(L, y, X(Math.min(base, now)) - L, bh, "s cb w1");
             if(now > base) s += SV.rect(X(base), y, X(now) - X(base), bh, `bg ${cls}`) + SV.rect(X(base), y, X(now) - X(base), bh, `s ${cls}`);
@@ -84,9 +108,9 @@ defTool("percenta", {
             else s += T(L + 6, y - 6, label, "sm cb");
             return s;
           };
-          h += row(24, P.z, P.z, "cb", "pôvodná hodnota") + row(84, P.z, r.novy, "ca", "po zmene", P.p);
-          if(P.druha) h += row(144, r.novy, r.po, "cd", "po druhej zmene", P.q);
-          h += SV.line(X(P.z), 16, X(P.z), P.druha ? 182 : 122, "s cb w1 dots");
+          h += row(24, r.z, r.z, "cb", "pôvodná hodnota") + row(84, r.z, r.novy, "ca", "po zmene", Math.round(r.p * 100) / 100);
+          if(r.dr) h += row(144, r.novy, r.po, "cd", "po druhej zmene", P.q);
+          h += SV.line(X(r.z), 16, X(r.z), r.dr ? 182 : 122, "s cb w1 dots");
         } else if(typ === "pomer"){
           const n = r.sum, w = (R - L) / n, y = 40, bh = 46, col = ["ca", "cb", "cd"];
           let i = 0;
@@ -117,10 +141,28 @@ defTool("percenta", {
         h.pc = r;
         if(cfg.out) return cfg.out(P, h, st);
         let o = "";
-        if(typ === "cast"){
+        const pc = cfg.promile ? "\\text{‰}" : "\\%", eq = (v, d = 2) => Math.abs(v * 10 ** d - Math.round(v * 10 ** d)) < 1e-7 ? "=" : "\\doteq";
+        if((typ === "cast" || typ === "zmena") && !(isFinite(r.z) && isFinite(r.p))) return h.pill(typ === "cast" ? (P.co === 1 ? `z 0 ${sign} sa základ vypočítať nedá` : "základ nesmie byť 0") : (P.co === 1 ? "po znížení o 100 % nezostane nič: pôvodná hodnota sa určiť nedá" : "pôvodná hodnota nesmie byť 0"), "flat");
+        if(typ === "cast" && P.co === 1){
+          o += h.calc(`1\\,${pc} = \\dfrac{\\vd{${tn(P.cz)}}}{\\va{${tn(P.p)}}} ${eq(r.jedno, 4)} ${tn(r.jedno, 4)}`);
+          o += h.calc(`${full}\\,${pc} = ${full} \\cdot ${tn(r.jedno, 4)} ${eq(r.z)} \\vb{${tn(r.z)}}`);
+          o += h.p(`Základ je $\\vb{${tn(r.z)}}${unit}$: z časti najprv vypočítaj jedno ${cfg.promile ? "promile" : "percento"}.`);
+        } else if(typ === "cast" && P.co === 2){
+          o += h.calc(`\\dfrac{\\vd{${tn(P.cz)}}}{\\vb{${tn(P.z)}}} \\cdot ${full} ${eq(r.p)} \\va{${tn(r.p)}}\\,${pc}`);
+          o += h.p(`Časť vydeľ základom a vynásob ${full === 100 ? "stomi" : "tisícimi"}.`);
+          if(r.p > full) o += h.pill(`viac než ${full} ${sign}: časť je väčšia než základ`, "flat");
+        } else if(typ === "cast"){
           o += h.calc(`1\\,${cfg.promile ? "\\text{‰}" : "\\%"} = \\dfrac{\\vb{${tn(P.z)}}}{${full}} = ${tn(r.jedno, 4)}`);
           o += h.calc(`\\va{${tn(P.p)}}\\,${cfg.promile ? "\\text{‰}" : "\\%"} = \\va{${tn(P.p)}} \\cdot ${tn(r.jedno, 4)} = ${tn(r.cast)}`);
           if(P.p > full) o += h.pill(`viac než ${full} ${sign}: časť je väčšia než základ`, "flat");
+        } else if(typ === "zmena" && P.co === 1){
+          const f = tn(1 + P.p / 100, 4);
+          o += h.calc(`\\vb{z} \\cdot \\va{${f}} = \\vd{${tn(P.nv)}}`);
+          o += h.calc(`\\vb{z} = \\dfrac{\\vd{${tn(P.nv)}}}{\\va{${f}}} ${eq(r.z)} \\vb{${tn(r.z)}}`);
+          o += h.p(`Pôvodnú hodnotu dostaneš **delením** číslom $\\va{${f}}$. Odčítať $${tn(Math.abs(P.p))}\\,\\%$ z novej hodnoty je chyba: percentá sa počítajú z pôvodnej.`);
+        } else if(typ === "zmena" && P.co === 2){
+          o += h.calc(`\\dfrac{\\vd{${tn(P.nv)}}}{\\vb{${tn(P.z)}}} ${eq(r.novy / r.z, 4)} \\va{${tn(r.novy / r.z, 4)}}`);
+          o += h.p(`Hodnota sa ${r.p >= 0 ? "zvýšila" : "znížila"} o $\\va{${tn(Math.abs(r.p))}\\,\\%}$ (zmena $${tn(r.zmena)}$ z pôvodných $${tn(P.z)}$).`);
         } else if(typ === "zmena"){
           const f = p => tn(1 + p / 100, 4);
           o += h.calc(`\\vb{${tn(P.z)}} \\cdot \\va{${f(P.p)}} = ${tn(r.novy)}`);

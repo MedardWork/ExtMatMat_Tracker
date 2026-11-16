@@ -26,21 +26,22 @@ defTool("rozklad", {
   desc:"Číslo rozložené na prvočísla postupným delením. Pre dve čísla najväčší spoločný deliteľ a najmenší spoločný násobok.",
   topics:["a5"],
   presets:[
-    {name:"Jedno číslo", cfg:{a:84, on:{delitele:true}}},
-    {name:"NSD a nsn", cfg:{a:84, b:120, on:{dva:true}}},
-    {name:"Euklidov algoritmus", cfg:{a:{v:1071, max:5000}, b:{v:462, max:5000}, on:{dva:true, euklid:true}}},
-    {name:"Nesúdeliteľné", cfg:{a:35, b:48, on:{dva:true}}}
+    {name:"Jedno číslo", cfg:{a:84, on:{delitele:true}}, tip:"Napíš ľubovoľné číslo. Delí sa vždy najmenším prvočíslom, ktorým sa ešte dá, až kým nezostane 1."},
+    {name:"NSD a nsn", cfg:{a:84, b:120, on:{dva:true}}, tip:"Do najväčšieho spoločného deliteľa idú spoločné prvočísla s menším exponentom, do najmenšieho spoločného násobku všetky s väčším."},
+    {name:"Euklidov algoritmus", cfg:{a:{v:1071, max:5000}, b:{v:462, max:5000}, on:{dva:true, euklid:true}}, tip:"Pri veľkých číslach je rýchlejšie deliť so zvyškom. Posledný nenulový zvyšok je najväčší spoločný deliteľ."},
+    {name:"Nesúdeliteľné", cfg:{a:35, b:48, on:{dva:true}}, tip:"Čísla bez spoločného prvočísla majú $D = 1$ a ich najmenší spoločný násobok je súčin."}
   ],
+  help:"Čísla napíš do políčok pri posuvníkoch, môžu byť aj väčšie než rozsah posuvníka.",
   fromText:toolTextIn, toText:toolTextOut,
 
   make(cfg, env){
     const ck = (v, name, color) => ({type:"check", v, name, color});
     const params = toolParams({
       a:{v:84, min:2, max:999, step:1, color:"a"},
-      b:{v:120, min:2, max:999, step:1, color:"b"},
+      b:{v:120, min:2, max:999, step:1, color:"b", when:P => !!P.dva},
       dva:ck(false, "Druhé číslo: NSD a nsn"),
       delitele:ck(false, "Všetci delitelia čísla a", "a"),
-      euklid:ck(false, "Euklidov algoritmus", "d")
+      euklid:Object.assign(ck(false, "Euklidov algoritmus", "d"), {when:P => !!P.dva})
     }, cfg, env);
     if(!params.dva.v && !env.full && !(cfg.toggles || []).includes("dva") && !cfg.note) params.b.hide = params.b.lock = true;
     const calc = P => {

@@ -16,11 +16,11 @@ defTool("plochy", {
   desc:"Štvorec so stranou a + b rozrezaný na časti. Vidíš, odkiaľ sa berie 2ab, prečo a² − b² = (a − b)(a + b) a čo znamená doplniť na štvorec.",
   topics:["a10", "a15"],
   presets:[
-    {name:"(a + b)²", cfg:{typ:"sucet"}},
-    {name:"(a − b)²", cfg:{typ:"rozdiel"}},
-    {name:"a² − b²", cfg:{typ:"stvorce"}},
-    {name:"(a + b)(c + d)", cfg:{typ:"sucin"}},
-    {name:"Doplnenie na štvorec", cfg:{typ:"doplnenie"}}
+    {name:"(a + b)²", cfg:{typ:"sucet"}, tip:"Štvorec so stranou $a + b$ sa skladá zo štyroch častí. Dva obdĺžniky $ab$ sú člen, na ktorý sa najčastejšie zabúda."},
+    {name:"(a − b)²", cfg:{typ:"rozdiel"}, tip:"Od štvorca $a^2$ odoberáš dva pásy $ab$. Rohový štvorček $b^2$ si tým odobral dvakrát, preto sa pripočíta späť."},
+    {name:"a² − b²", cfg:{typ:"stvorce"}, tip:"Z veľkého štvorca vyrežeš malý. Zvyšok sa dá preskladať na obdĺžnik so stranami $a - b$ a $a + b$."},
+    {name:"(a + b)(c + d)", cfg:{typ:"sucin"}, tip:"Obdĺžnik rozdelený na štyri: každý člen prvej zátvorky sa násobí každým členom druhej."},
+    {name:"Doplnenie na štvorec", cfg:{typ:"doplnenie"}, tip:"Výraz $x^2 + px$ je štvorec a dva pásy. Do úplného štvorca chýba roh $\\left(\\frac{p}{2}\\right)^2$."}
   ],
   fromText:toolTextIn, toText:toolTextOut,
 

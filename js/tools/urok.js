@@ -17,12 +17,13 @@ defTool("urok", {
   desc:"Vklad, pravidelné sporenie a pôžička rok po roku: úrok, stav účtu, splátka, úmor a zostatok dlhu.",
   topics:["a2", "a26"],
   presets:[
-    {name:"Vklad", cfg:{typ:"vklad"}},
-    {name:"Jednoduché a zložené", cfg:{typ:"vklad", n:10, p:8, on:{jednoduche:true}}},
-    {name:"Pravidelné sporenie", cfg:{typ:"sporenie"}},
-    {name:"Pôžička", cfg:{typ:"pozicka"}},
-    {name:"Hypotéka mesačne", cfg:{typ:"pozicka", k:{v:80000, max:300000, step:1000}, p:4, n:20, on:{mesacne:true}}}
+    {name:"Vklad", cfg:{typ:"vklad"}, tip:"Každý rok sa úročí aj úrok z minulých rokov. Stav účtu je geometrická postupnosť s kvocientom $1 + \\frac{p}{100}$."},
+    {name:"Jednoduché a zložené", cfg:{typ:"vklad", n:10, p:8, on:{jednoduche:true}}, tip:"Jednoduché úrokovanie pridáva každý rok rovnako, zložené čoraz viac. Predĺž počet rokov a sleduj rozdiel."},
+    {name:"Pravidelné sporenie", cfg:{typ:"sporenie"}, tip:"Vklad na začiatku každého roka. Prvý vklad sa úročí najdlhšie, posledný len rok."},
+    {name:"Pôžička", cfg:{typ:"pozicka"}, tip:"Splátka je stále rovnaká, ale spočiatku z nej väčšinu zhltne úrok. Sleduj stĺpce úrok a úmor."},
+    {name:"Hypotéka mesačne", cfg:{typ:"pozicka", k:{v:80000, max:300000, step:1000}, p:4, n:20, on:{mesacne:true}}, tip:"Zmeň úrok o jeden percentuálny bod a pozri, o koľko sa zmení mesačná splátka a celkové preplatenie."}
   ],
+  help:"Sumu, úrok aj počet rokov môžeš napísať do políčok. Tabuľka pri dlhšom čase skryje stredné riadky.",
   fromText:toolTextIn, toText:toolTextOut,
 
   make(cfg, env){

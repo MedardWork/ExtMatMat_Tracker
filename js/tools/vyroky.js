@@ -50,15 +50,15 @@ defTool("vyroky", {
   desc:"Zložený výrok rozobraný po stĺpcoch. Uvidíš, kedy platí, či je tautológiou a či sú dva výroky ekvivalentné.",
   topics:["a7", "a8", "a9"],
   presets:[
-    {name:"Implikácia", cfg:{vyraz:"A ⇒ B"}},
-    {name:"Spojky", cfg:{vyraz:"A ∧ B; A ∨ B; A ⇒ B; A ⇔ B", kroky:false}},
-    {name:"Obmena implikácie", cfg:{vyraz:"A ⇒ B; ¬B ⇒ ¬A"}},
-    {name:"Negácia implikácie", cfg:{vyraz:"¬(A ⇒ B); A ∧ ¬B"}},
-    {name:"De Morgan", cfg:{vyraz:"¬(A ∧ B); ¬A ∨ ¬B"}},
-    {name:"Tri výroky", cfg:{vyraz:"(A ∧ B) ⇒ C"}},
-    {name:"Tautológia", cfg:{vyraz:"(A ⇒ B) ∨ (B ⇒ A)"}}
+    {name:"Implikácia", cfg:{vyraz:"A ⇒ B"}, tip:"Implikácia je nepravdivá jedine vtedy, keď predpoklad platí a záver nie. Prepni pravdivosť $A$ a $B$ a sleduj vyznačený riadok."},
+    {name:"Spojky", cfg:{vyraz:"A ∧ B; A ∨ B; A ⇒ B; A ⇔ B", kroky:false}, tip:"Štyri základné spojky vedľa seba. V ktorých riadkoch sa líši „alebo“ od ekvivalencie?"},
+    {name:"Obmena implikácie", cfg:{vyraz:"A ⇒ B; ¬B ⇒ ¬A"}, tip:"Obmena má rovnaký stĺpec ako pôvodná implikácia, preto sú ekvivalentné. Skús namiesto nej obrátenú $B \\Rightarrow A$."},
+    {name:"Negácia implikácie", cfg:{vyraz:"¬(A ⇒ B); A ∧ ¬B"}, tip:"Negácia implikácie nie je implikácia: je to „predpoklad platí a záver nie“."},
+    {name:"De Morgan", cfg:{vyraz:"¬(A ∧ B); ¬A ∨ ¬B"}, tip:"Pri negovaní sa „a“ mení na „alebo“ a naopak. Over druhé pravidlo: $\\lnot(A \\lor B)$ a $\\lnot A \\land \\lnot B$."},
+    {name:"Tri výroky", cfg:{vyraz:"(A ∧ B) ⇒ C"}, tip:"Tri výroky dajú $2^3 = 8$ riadkov. Stĺpce medzivýsledkov ukazujú, ako sa hodnota skladá."},
+    {name:"Tautológia", cfg:{vyraz:"(A ⇒ B) ∨ (B ⇒ A)"}, tip:"Tautológia má v poslednom stĺpci samé jednotky. Napíš vlastný výrok a zisti, či je tautológiou."}
   ],
-  help:"Výroky označ veľkými písmenami. Spojky: `!` alebo `¬` negácia, `&` a zároveň, `|` alebo, `=>` implikácia, `<=>` ekvivalencia. Viac výrokov na porovnanie oddeľ bodkočiarkou: `A => B; !B => !A`.",
+  help:"Výroky označ veľkými písmenami. Spojky vložíš tlačidlami pod políčkom alebo z klávesnice: `!` negácia, `&` a zároveň, `|` alebo, `=>` implikácia, `<=>` ekvivalencia. Viac výrokov na porovnanie oddeľ bodkočiarkou: `A => B; !B => !A`.",
   textKeys:["vyraz"],
   fromText:toolTextIn, toText:toolTextOut,
 
@@ -94,7 +94,7 @@ defTool("vyroky", {
     return {
       params,
       inputs:[{
-        label:"Výrok (viac výrokov oddeľ bodkočiarkou)", wide:true, value:cfg.vyraz || "A ⇒ B",
+        label:"Výrok (viac výrokov oddeľ bodkočiarkou)", wide:true, value:cfg.vyraz || "A ⇒ B", keys:["¬", "∧", "∨", "⇒", "⇔", "(", ")", ";"],
         error:list.find(e => !e.ok) ? list.find(e => !e.ok).err : "",
         apply(text){
           const bad = String(text).split(";").map(x => x.trim()).filter(Boolean).map(logicExpr).find(e => !e.ok);
