@@ -4,6 +4,19 @@ A tracker for preparing for the Slovak external maths maturita (plus Danish Mate
 `<script>` tags sharing one global scope, no build step, must keep working from `file://`, from
 `server/main.js` (Docker, desktop app) and on GitHub Pages. README.md has the full layout.
 
+## Two repos: private and public (from 2026-11-18)
+
+- **MedardWork/ExtMatMat_Tracker_Privat** (private) is where all work happens: commit and push here, release here.
+  Its `js/data/plan.js` holds the person's own study plan (dates, events, names of friends): **private, never public**.
+- **MedardWork/ExtMatMat_Tracker** (public, GitHub Pages) gets the same code with `js/data/plan.js` replaced by
+  `dev/public/plan.js` (`PLAN_DEFAULT = null`: everyone makes a plan with an AI). **Never push the private history
+  there** (old commits contain the plan). Publish only with `dev/publish-public.sh`: it makes one commit on top of the
+  public `main` from the current tree with the plan swapped, and pushes it. Then start the public release the same way
+  as the private one (`actions_run_trigger` on ExtMatMat_Tracker). Publish when the person asks for it
+  (first time 2026-11-18, version 1.5.1).
+- Everything except `js/data/plan.js` is identical in both repos, so keep personal things out of code, docs and
+  commit messages that may be published: CLAUDE.md and README.md are public too.
+
 ## The person
 
 - Write to them in **Slovak**. Code comments, commits and docs stay in English.
@@ -11,7 +24,7 @@ A tracker for preparing for the Slovak external maths maturita (plus Danish Mate
   screenshots only when a check can't answer the question, keep command output short.
 - Commit and push to the working branch after every finished topic or batch (the container is
   ephemeral and sessions get cut off). After every finished batch or bigger change, also merge to
-  `main` without asking (the person, 2026-11-14: they check the result on GitHub Pages).
+  `main` of this private repo without asking (the person, 2026-11-14; Pages no longer applies, see above).
 
 ## Starting a session
 
@@ -117,6 +130,48 @@ The tools from `kruznica` on were written by Fable on 2026-11-13 and checked by 
 
 Size to aim for, from the last batch: 3–4 subtopics per topic, 3–4 tools per subtopic (one of them a
 task), 2–4 worked examples per subtopic, about 150 lines per theory file.
+
+### Calendar (2026-11-18)
+
+Header tab **Kalendár** (`#/kalendar[/m|t[/<iso>[/p]]]`), from the person's "Maturitný plán z matematiky" page.
+Reworked the same day on their request:
+
+- **Témy, week**: an hour grid 7–23 h; each day is its template (`days`) with that day's `changes` applied
+  (a party, an evening out, a day trip, the diagnostic test). The week's topics fill its maths blocks
+  in order, 1 block = half a session; what does not fit goes into reserve blocks (`flex` on Po / weekend /
+  holiday days, as the plan's rules say); what still does not fit is listed in the week head (`PLAN_OVER`). Phones get the same week as a list of days. **Month** shows chips per day.
+- **Poznámky** replaces the old Denník tab (journal.js is gone; `#/dennik…` routes land here): a note per day
+  (`state.log` entry `k:"day"`) and per topic per day (`k:"t"`, links[0].t), saved as you type; the topics of a
+  day are the planned ones plus those rated (`slvAt`) or noted that day. Entries without `k` are the old ones.
+  The topic page's "Dnes v denníku" box writes the `k:"t"` note of today.
+- **Overview** (js/components/plancards.js): today by the plan, next in the plan's order (replaced "Čo ďalej"),
+  last study day (replaced "Pokračuj"), pace, milestones, rules.
+- No separate ticks: a topic is done at level "ide to" or more, started at "neviem"/"slabo"; a review (`PLAN_REVIEW`)
+  is done once the diary has a note about its topic from that week on; test scores live in `state.plan.tests`
+  (merged per test by `at`, see `tidy` and `mergeStates` in state.js).
+
+**The plan is data (2026-11-18).** The person never edits it by hand: they copy it for an AI in Info → *Plán v kalendári*,
+ask for a change and paste the answer back; so the format is made to be easy for the next Claude to read and edit.
+
+- `js/data/plan.js` holds `PLAN_DEFAULT`, a JSON object in the format `"maturita-plan-1"` (weeks with ordered items
+  `{id, sessions, name?}`, tests, day templates `days`, `weekdays` / `periods` choosing the template, one-day `changes`,
+  events, day_texts, milestones, rules). A pasted plan lives in `state.plan.def` (null = the default) with `at` and
+  `hist` (the 10 plans it replaced); a full backup carries it, a plan-only paste changes only it.
+- `js/planmodel.js`: `compilePlan(def)` builds the `PLAN_*` tables the calendar and the overview read (internal short keys:
+  items `{id, w, s, n}`, `PLAN_REVIEW` = "opak:<topic>" items); `ensurePlan()` in `render`/`refresh` recompiles when the def
+  changes. `validatePlan` (messages in Slovak with the JSON path), `planDiff` (preview), `planJson` (short lists on one line),
+  `planFromText` (finds the plan in a whole AI answer or a full backup), `planAiText` (instructions + progress + plan).
+  **When the format grows, change `compilePlan`, `validatePlan`, `planAiText` and `planDiff` together.**
+- Template of a date: a test that day → `"test"`; else the first `periods` entry it falls in (`weekdays_only` skips
+  Sat/Sun); else `weekdays`. Ids: a topic id, `"opak:<topic>"` for a review, or a test id; each at most once.
+- The UI (card, preview, history, `setPlan`) is in `js/views/info.js`. Pasting a plan into "Vložiť postup" routes it to the plan card.
+- A stored def that fails `validatePlan` is not used: the calendar falls back to the default and Info says why (`PLAN_ERR`).
+- No plan at all (`PLAN_DEFAULT = null` and nothing pasted, the public app): `PLAN_NONE`, empty tables; the calendar's Témy,
+  the overview and Info offer "Vytvoriť plán s AI", whose text (`planCreateText`) asks the AI to ask the person first and
+  shows it `planStarter()`, a small valid example plan. Test the public variant by copying the tree, putting
+  `dev/public/plan.js` in, and opening it from `file://`.
+- Check after touching the model: the compiled default must not change (compare `PLAN_SLOTS`/`PLAN_OVER` before and after
+  in a browser), then paste a changed plan in Info and apply it.
 
 ### Tools on their own page (2026-11-16, Fable)
 
@@ -263,7 +318,7 @@ Things that bite:
   From a cloud session a tag push hangs up ("remote end hung up"); start the workflow with the GitHub tool
   `actions_run_trigger` (`run_workflow`, `desktop.yml`, ref `main`) instead: it tags `v<version>` itself (1.2.0 and 1.2.1, 2026-11-16).
 - **macOS build:** without an Apple certificate electron-builder signs nothing, and macOS then refuses the app
-  ("is damaged"). `package.json` therefore has `mac.identity: "-"` (ad-hoc) with `hardenedRuntime: false`; keep both.
+  ("is damaged"). `package.json` therefore has `mac.identity: "-"` (ad-hoc) with `hardenedRuntime: false`; keep both. The Mac build is `arm64` only (the person, 2026-11-18: only Macs with an M chip; universal was ~550 MB), output in `dist/mac-arm64/`.
   The workflow checks the signature and starts every packaged build with `MATURITA_SMOKE=1` (desktop/main.js: page
   rendered + database answers + the graph tool drew a curve, exit code 0/1). Locally: `npx electron-builder --linux dir`, then
   `MATURITA_SMOKE=1 xvfb-run -a dist/linux-unpacked/maturita-tracker --no-sandbox`. `dev/check.js` uses `file://`,

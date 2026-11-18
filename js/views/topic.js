@@ -4,7 +4,6 @@
    Keys (when not typing): ← → previous / next topic · ↑ ↓ pick a subtopic · 0–4 its level
                            N new note · Esc back to list
    ============================================================ */
-const qlog = {};   /* per-topic quick diary draft: {text, n} */
 const nf = {t:null, sub:null, lv:null};   /* note filter on the open topic: subtopic key, note level */
 
 VIEWS.tema = {
@@ -259,7 +258,6 @@ function drawTNotes(){
           ${noteLvSeg(n)}
         </div>
         <div class="note-acts">
-          <button data-act="note-log" data-n="${n.id}" title="Zapísať do denníka s odkazom na túto poznámku">→ Denník</button>
           <button data-act="note-edit" data-n="${n.id}">Upraviť</button>
           <button class="danger" data-act="note-del" data-n="${n.id}" title="Zmazať poznámku">Zmazať</button>
         </div>
@@ -430,14 +428,6 @@ action("md-check", el => {
   saveSoon();
   el.closest("li").classList.toggle("done", el.checked);
 });
-action("note-log", el => {
-  const tid = ui.route.id;
-  (qlog[tid] ||= {text:""}).n = el.dataset.n;
-  drawTSide();
-  const ta = $("#qlogText");
-  ta.scrollIntoView({block:"center", behavior:"smooth"});
-  ta.focus({preventScroll:true});
-});
 
 /* ---------- side column ---------- */
 function drawTSide(){
@@ -464,49 +454,29 @@ function drawTSide(){
     </section>`;
   }
 
-  const q = qlog[id] ||= {text:""};
-  const qn = q.n && findNote(id, q.n);
-  const logs = logFor(id);
+  const today = todayIso(), tn = topicNote(today, id);
+  const logs = logFor(id).filter(e => e.text.trim() && e !== tn);
   html += `<section class="card t-log">
-    <h2>V denníku${logs.length ? ` <span class="count">${logs.length}</span>` : ""}</h2>
+    <h2>Dnes v denníku</h2>
     <div class="qlog">
-      <textarea id="qlogText" data-in="qlog" rows="3" placeholder="Čo si dnes k tejto téme robil? Stačí pár slov.">${esc(q.text)}</textarea>
+      <textarea id="qlogText" data-in="qlog" rows="3" placeholder="Čo si dnes k tejto téme robil? Stačí pár slov.">${esc(tn ? tn.text : "")}</textarea>
       <div class="qlog-foot">
-        <div class="chips">${linkChip({t:id})}${qn ? linkChip({t:id, n:q.n}, {remove:"qlog-unnote"}) : ""}</div>
-        <button class="btn small" data-act="qlog-add">Zapísať · dnes</button>
+        <span class="muted small">Ukladá sa samo do poznámok dnešného dňa.</span>
+        <a class="btn small ghost" href="${calHash("t", today, true)}">Otvoriť deň</a>
       </div>
     </div>
-    ${logs.length ? `<ul class="side-log">${logs.slice(0, 6).map(e => {
-      const notes = e.links.filter(l => l.t === id && l.n && findNote(id, l.n));
-      return `<li><a href="#/dennik/${e.id}">
+    ${logs.length ? `<h3 class="t-log-h">Skôr</h3><ul class="side-log">${logs.slice(0, 12).map(e => `<li><a href="${calHash("t", e.d, true)}">
         <span class="sl-date">${fmtAgo(e.d)}</span>
-        <span class="sl-text">${inline(plainText(e.text, 120)) || "<i>bez textu</i>"}</span>
-        ${notes.length ? `<span class="sl-notes">${notes.map(l => "✎ " + esc(noteTitle(findNote(id, l.n)))).join(" · ")}</span>` : ""}
-      </a></li>`;
-    }).join("")}</ul>
-    ${logs.length > 6 ? `<a class="more" href="#/dennik/t/${id}">Všetky záznamy k téme (${logs.length}) →</a>` : ""}`
-    : `<p class="muted small">Záznamy z denníka, ktoré spomínajú túto tému, sa zobrazia tu.</p>`}
+        <span class="sl-text">${inline(plainText(e.text, 120))}</span>
+      </a></li>`).join("")}</ul>` : ""}
   </section>`;
 
   $("#tSide").innerHTML = html;
 }
 
-onInput("qlog", el => { (qlog[ui.route.id] ||= {text:""}).text = el.value; });
-document.addEventListener("keydown", e => {
-  if(e.target.id === "qlogText" && (e.ctrlKey || e.metaKey) && e.key === "Enter"){ e.preventDefault(); ACTIONS["qlog-add"](); }
-});
-action("qlog-unnote", () => { qlog[ui.route.id].n = null; drawTSide(); });
-action("qlog-add", () => {
-  const id = ui.route.id;
-  const q = qlog[id] ||= {text:""};
-  const links = [{t:id}];
-  if(q.n && findNote(id, q.n)) links[0] = {t:id, n:q.n};
-  const e = addLog(todayIso(), q.text.trim(), links);
-  qlog[id] = {text:""};
-  save();
-  drawTSide(); drawTNotes();
-  toast("Zapísané do denníka.", () => {
-    removeLog(e.id); save();
-    if(ui.route.view === "tema"){ drawTSide(); drawTNotes(); }
-  });
+onInput("qlog", el => {
+  const id = ui.route.id, d = todayIso();
+  if(el.value.trim()) setNote("t", d, id, el.value);
+  else { const e = topicNote(d, id); if(e) removeLog(e.id); }
+  saveSoon();
 });

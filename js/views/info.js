@@ -8,7 +8,8 @@ const SHORTCUTS = [
   ["<kbd>0</kbd> – <kbd>4</kbd>", "nastaviť úroveň vybranej podtémy"],
   ["<kbd>N</kbd>", "nová poznámka k otvorenej téme"],
   ["<kbd>Esc</kbd>", "zavrieť editor, späť na zoznam"],
-  ["<kbd>Ctrl</kbd>+<kbd>Enter</kbd>", "uložiť a zavrieť poznámku, pridať záznam do denníka"],
+  ["<kbd>Ctrl</kbd>+<kbd>Enter</kbd>", "uložiť a zavrieť poznámku"],
+  ["Kalendár: <kbd>←</kbd> <kbd>→</kbd> · <kbd>M</kbd> <kbd>T</kbd> · <kbd>P</kbd>", "predošlý / ďalší · mesiac / týždeň · témy alebo poznámky"],
   ["<kbd>Ctrl</kbd>+<kbd>B</kbd> · <kbd>Ctrl</kbd>+<kbd>I</kbd>", "tučné · kurzíva"],
   ["<kbd>Ctrl</kbd>+<kbd>M</kbd>", "vzorec"]
 ];
@@ -22,7 +23,7 @@ VIEWS.info = {
       <section class="card">
         <h2>Záloha</h2>
         <p><span id="storeNote"></span></p>
-        <p class="muted">Záloha obsahuje hodnotenia, všetky poznámky aj denník. Pri prechode na novú verziu sa staré poznámky zmenili na pomenované poznámky a pôvodné dáta sa uložili bokom ako záloha.</p>
+        <p class="muted">Záloha obsahuje hodnotenia, všetky poznámky, denník aj plán v kalendári. Pri prechode na novú verziu sa staré poznámky zmenili na pomenované poznámky a pôvodné dáta sa uložili bokom ako záloha.</p>
         <div class="tools">
           <button class="btn ghost" data-act="export">Skopírovať postup</button>
           <button class="btn ghost" data-act="download">Stiahnuť ako súbor</button>
@@ -35,6 +36,8 @@ VIEWS.info = {
           <button class="btn" data-act="import">Načítať</button>
         </div>
       </section>
+
+      ${planCardHtml()}
 
       ${store === "server" ? `<section class="card">
         <h2>História</h2>
@@ -60,6 +63,9 @@ VIEWS.info = {
     renderStoreNote();
     if(store === "server") renderHistory();
     if(ui.openImport){ ui.openImport = false; $("#importBox").hidden = false; $("#importArea").focus(); }
+    if(ui.openPlan != null){ const t = ui.openPlan; ui.openPlan = null; openPlanBox(t); }
+    /* from "Zmeniť plán" in the calendar; after the route's own scroll to the top */
+    if(ui.showPlan){ ui.showPlan = false; setTimeout(() => { const c = $("#planCard"); if(c) c.scrollIntoView({block:"start"}); }, 0); }
   }
 };
 
@@ -132,8 +138,18 @@ action("import-file", () => {
   input.click();
 });
 function importText(txt){
+  let data = null;
+  try{ data = JSON.parse(txt.trim()); }catch(err){}
+  /* a plan (or an AI's answer with one) pasted here goes to the plan card instead of replacing the progress */
+  const pl = (!data || data.format === PLAN_FORMAT) && planFromText(txt);
+  if(pl && pl.def && pl.def.format === PLAN_FORMAT){
+    $("#importBox").hidden = true;
+    openPlanBox(txt);
+    toast("Toto je plán, nie celý postup. Skontroluj zmeny v karte Plán a potvrď ich.");
+    return;
+  }
   try{
-    state = migrate(JSON.parse(txt.trim()));
+    state = migrate(data);
     newEpoch();   /* the import replaces what other open tabs hold */
     ui.editing = null;
     save(); toast("Načítané.");
@@ -143,4 +159,130 @@ function importText(txt){
 action("reset", () => {
   if(!confirm("Naozaj vymazať všetky hodnotenia, poznámky aj denník?")) return;
   state = emptyState(); newEpoch(); ui.editing = null; save(); toast("Vymazané.");
+});
+
+/* ============================================================
+   PLAN — copy it for an AI, paste the answer back (with a preview of the changes), earlier versions.
+   Only state.plan.def / .at / .hist change; levels, notes and test scores stay. The model is js/planmodel.js.
+   ============================================================ */
+function planCardHtml(){
+  ensurePlan();
+  const h = state.plan.hist;
+  const count = d => d.weeks.reduce((a, w) => a + (w.items || []).length, 0);
+  return `<section class="card" id="planCard">
+    <h2>Plán v kalendári</h2>
+    <p>${PLAN_NONE ? "Zatiaľ nemáš študijný plán." : `${planIsCustom() ? `${PLAN_DEFAULT ? "Upravený plán" : "Plán"} z ${fmtStamp(state.plan.at)}` : "Pôvodný plán"} · ${nWeeks(PLAN_WEEKS.length)} · ${nItems(PLAN_ITEMS.length)} · ${calNum(PLAN_TOTAL)} ${skSed(PLAN_TOTAL)} · maturita ${fmtD(PLAN_EXAM)}`}</p>
+    ${PLAN_ERR ? `<p class="warn">Uložený plán sa nedá použiť${PLAN_NONE ? "" : ", kalendár preto ukazuje pôvodný"}: ${esc(PLAN_ERR.slice(0, 3).join(" · "))}</p>` : ""}
+    <p class="muted">${PLAN_NONE
+      ? "Plán si vytvoríš s AI (Claude, ChatGPT…): klikni na „Vytvoriť plán s AI“, vlož text do chatu a odpovedz na jej otázky (kedy maturuješ, ako vyzerá tvoj týždeň, koľko času máš na matiku). Keď ti pošle plán, vlož celú jej odpoveď cez „Vložiť plán“. Appka ho skontroluje a ukáže, než ho použije."
+      : "Keď si napred alebo pozadu, skopíruj plán pre AI (Claude, ChatGPT…), napíš, čo treba zmeniť, a celú odpoveď vlož späť. Appka plán skontroluje a ukáže zmeny. Mení sa len plán: hodnotenia, poznámky a body z testov zostanú."}</p>
+    <div class="tools">
+      <button class="btn ${PLAN_NONE ? "" : "ghost"}" data-act="plan-copy">${PLAN_NONE ? "Vytvoriť plán s AI" : "Skopírovať pre AI"}</button>
+      <button class="btn ghost" data-act="plan-paste">Vložiť plán</button>
+      ${PLAN_NONE ? "" : `<button class="btn ghost" data-act="plan-download">Stiahnuť plán</button>`}
+      <button class="btn ghost" data-act="plan-file">Načítať zo súboru</button>
+      ${state.plan.def ? `<button class="btn ghost" data-act="plan-reset">${PLAN_DEFAULT ? "Vrátiť pôvodný plán" : "Zmazať plán"}</button>` : ""}
+    </div>
+    <textarea id="planOut" class="plan-out" readonly hidden></textarea>
+    <div id="planBox" hidden>
+      <textarea id="planArea" data-in="plan-check" placeholder="Sem vlož celú odpoveď od AI (plán si z nej appka vyberie sama) alebo obsah stiahnutého súboru."></textarea>
+      <div id="planCheck"></div>
+    </div>
+    ${h.length ? `<details class="plan-hist"><summary>Predošlé verzie plánu (${h.length})</summary><div class="history"><ul>${h.map((x, i) => `<li>
+      <span class="h-when">${fmtStamp(x.at)}</span>
+      <span class="h-what muted">${nWeeks(x.def.weeks.length)} · ${nItems(count(x.def))}</span>
+      <span class="h-acts">
+        <button class="btn ghost small" data-act="plan-hist-dl" data-i="${i}">Stiahnuť</button>
+        <button class="btn ghost small" data-act="plan-hist-use" data-i="${i}">Obnoviť</button>
+      </span></li>`).join("")}</ul></div></details>` : ""}
+  </section>`;
+}
+
+let planPending = null, planErrs = null;
+const nWeeks = n => `${n} ${skWeeks(n)}`, nItems = n => `${n} ${plural(n, "položka", "položky", "položiek")}`;
+function openPlanBox(txt){
+  const box = $("#planBox");
+  if(!box) return;
+  box.hidden = false;
+  if(txt != null){ $("#planArea").value = txt; planCheck(txt); }
+  $("#planCard").scrollIntoView({block:"start"});
+  $("#planArea").focus();
+}
+function planCheck(txt){
+  const host = $("#planCheck");
+  planPending = null; planErrs = null;
+  if(!txt.trim()){ host.innerHTML = ""; return; }
+  const got = planFromText(txt);
+  if(!got){ host.innerHTML = `<p class="warn">V texte nie je žiadny plán (JSON). Vlož celú odpoveď od AI alebo obsah stiahnutého súboru.</p>`; return; }
+  const def = got.def || PLAN_DEFAULT;
+  if(!def){ host.innerHTML = `<p class="warn">V tejto zálohe nie je žiadny plán.</p>`; return; }
+  const errs = validatePlan(def);
+  if(errs.length){
+    planErrs = errs;
+    host.innerHTML = `<div class="plan-check bad"><p><b>Tento plán sa nedá použiť.</b> Pošli AI chyby nižšie, nech ho opraví.</p>
+      <ul>${errs.slice(0, 15).map(e => `<li><code>${esc(e)}</code></li>`).join("")}${errs.length > 15 ? `<li class="muted">… a ďalších ${errs.length - 15}</li>` : ""}</ul>
+      <button class="btn ghost small" data-act="plan-errs-copy">Skopírovať chyby pre AI</button></div>`;
+    return;
+  }
+  const diff = PLAN_NONE ? [["Nový plán", [`${fmtD(def.start)} ${def.start.slice(0, 4)} – maturita ${fmtD(def.exam)} ${def.exam.slice(0, 4)}`]]] : planDiff(planDef(), def);
+  if(!diff.length){ host.innerHTML = `<p class="muted">Tento plán je rovnaký ako ten, ktorý už máš.</p>`; return; }
+  const P = compilePlan(def);
+  const over = Object.entries(P.over).map(([wid, o]) => { const w = P.weeks.find(w => w.id === wid); return `týždeň ${fmtD(w.from)} – ${fmtD(w.to)}: ${o.map(x => `${x.it.n} (${x.blocks} ${skBlocks(x.blocks)})`).join(", ")}`; });
+  planPending = def;
+  host.innerHTML = `<div class="plan-check"><p><b>Čo sa zmení${got.backup ? " (plán zo zálohy postupu)" : ""}</b></p>
+    ${diff.map(([hd, ls]) => `<h4>${esc(hd)}</h4><ul>${ls.slice(0, 12).map(l => `<li>${esc(l)}</li>`).join("")}${ls.length > 12 ? `<li class="muted">… a ďalších ${ls.length - 12}</li>` : ""}</ul>`).join("")}
+    ${over.length ? `<p class="warn">Nezmestí sa do blokov ani do rezervy: ${esc(over.join("; "))}.</p>` : ""}
+    <p class="muted">Nový plán: ${nWeeks(P.weeks.length)}, ${nItems(P.items.length)}, ${calNum(P.total)} ${skSed(P.total)}.${PLAN_NONE ? "" : " Terajší plán sa odloží medzi predošlé verzie."}</p>
+    <button class="btn" data-act="plan-apply">Použiť tento plán</button></div>`;
+}
+onInput("plan-check", el => planCheck(el.value));
+
+/* set a new plan; the one it replaces goes to the history (the default is always there to go back to) */
+function setPlan(def){
+  const p = state.plan;
+  if(def && PLAN_DEFAULT && JSON.stringify(planOrdered(def)) === JSON.stringify(planOrdered(PLAN_DEFAULT))) def = null;
+  if(p.def) p.hist = [{def:p.def, at:p.at || Date.now()}, ...p.hist].slice(0, PLAN_HIST);
+  p.def = def;
+  p.at = Date.now();
+  save();
+  render();
+}
+const planText = def => planJson(planOrdered(def)) + "\n";
+function downloadText(text, name){
+  const blob = new Blob([text], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+async function copyOr(txt, ok){
+  try{ await navigator.clipboard.writeText(txt); toast(ok); }
+  catch(err){ const o = $("#planOut"); o.hidden = false; o.value = txt; o.select(); toast("Skopíruj text z poľa nižšie."); }
+}
+action("plan-copy", () => { ensurePlan(); copyOr(planAiText(), PLAN_NONE ? "Text je v schránke. Vlož ho do chatu s AI a odpovedz na jej otázky." : "Plán je v schránke. Vlož ho do chatu s AI a napíš, čo treba zmeniť."); });
+action("plan-errs-copy", () => planErrs && copyOr(
+  `Appka tento plán neprijala. Oprav, prosím, tieto chyby a pošli znova celý plán ako jeden blok \`\`\`json:\n${planErrs.map(e => "- " + e).join("\n")}\n`,
+  "Chyby sú v schránke. Vlož ich do chatu s AI."));
+action("plan-paste", () => { const b = $("#planBox"); if(b.hidden) openPlanBox(); else b.hidden = true; });
+action("plan-apply", () => { if(!planPending) return; setPlan(planPending); toast("Plán zmenený, kalendár sa prepočítal."); });
+action("plan-reset", () => {
+  if(!confirm(PLAN_DEFAULT ? "Vrátiť pôvodný plán? Terajší sa odloží medzi predošlé verzie." : "Zmazať plán? Odloží sa medzi predošlé verzie.")) return;
+  setPlan(null); toast(PLAN_DEFAULT ? "Kalendár ukazuje pôvodný plán." : "Plán zmazaný.");
+});
+action("plan-download", () => planDef() && downloadText(planText(planDef()), `maturita-plan-${todayIso()}.json`));
+action("plan-file", () => {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".json,.txt,.md,application/json,text/plain";
+  input.onchange = async () => { if(input.files[0]) openPlanBox(await input.files[0].text()); };
+  input.click();
+});
+action("plan-hist-dl", el => { const h = state.plan.hist[+el.dataset.i]; if(h) downloadText(planText(h.def), `maturita-plan-${isoOf(new Date(h.at))}.json`); });
+action("plan-hist-use", el => {
+  const i = +el.dataset.i, h = state.plan.hist[i];
+  if(!h || !confirm(`Obnoviť plán z ${fmtStamp(h.at)}? Terajší sa odloží medzi predošlé verzie.`)) return;
+  state.plan.hist.splice(i, 1);
+  setPlan(h.def);
+  toast("Plán obnovený.");
 });

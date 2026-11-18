@@ -25,11 +25,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
+        os: [windows-latest, macos-15, ubuntu-latest]   # macos-15 = Apple Silicon (arm64)
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -40,8 +40,8 @@ jobs:
       - name: Check the signature (macOS)
         if: runner.os == 'macOS'
         run: |
-          codesign --verify --deep --strict --verbose=2 "dist/mac-universal/Maturita z matematiky.app"
-          codesign -dv "dist/mac-universal/Maturita z matematiky.app" 2>&1 | grep -E "Signature|flags"
+          codesign --verify --deep --strict --verbose=2 "dist/mac-arm64/Maturita z matematiky.app"
+          codesign -dv "dist/mac-arm64/Maturita z matematiky.app" 2>&1 | grep -E "Signature|flags"
       # start the packaged app: it has to show the page and reach its database (desktop/main.js, MATURITA_SMOKE)
       - name: Start the packaged app
         shell: bash
@@ -51,11 +51,11 @@ jobs:
           MATURITA_DATA_DIR: ${{ runner.temp }}/smoke-data
         run: |
           case "$RUNNER_OS" in
-            macOS)   "dist/mac-universal/Maturita z matematiky.app/Contents/MacOS/Maturita z matematiky" ;;
+            macOS)   "dist/mac-arm64/Maturita z matematiky.app/Contents/MacOS/Maturita z matematiky" ;;
             Windows) "dist/win-unpacked/Maturita z matematiky.exe" ;;
             Linux)   xvfb-run -a dist/linux-unpacked/maturita-tracker --no-sandbox ;;
           esac
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: Maturita-${{ runner.os }}
           path: |
@@ -70,12 +70,12 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - id: version
         run: |
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then echo "tag=$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
           else echo "tag=v$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"; fi
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
         with:
           path: dist
           merge-multiple: true
@@ -87,6 +87,6 @@ jobs:
           body: |
             Stiahni súbor pre svoj systém:
             - **Windows** — `Maturita-…-Windows.exe` (ak sa objaví „Windows protected your PC“: *More info → Run anyway*)
-            - **macOS** — `Maturita-…-macOS.dmg` (prvýkrát: otvor ju, potom *System Settings → Privacy & Security → Open Anyway*)
+            - **macOS** — `Maturita-…-macOS.dmg`, len pre Mac s čipom M (prvýkrát: otvor ju, potom *System Settings → Privacy & Security → Open Anyway*)
             - **Linux** — `Maturita-…-Linux.AppImage` (`chmod +x`, potom spustiť)
           files: dist/*

@@ -7,8 +7,9 @@
             #/tema/<id>[/n/<noteId>]   one topic, optionally a note
             #/tema/<id>/teoria[/<sub>] the topic's theory, optionally scrolled to a subtopic
             #/nastroje[/<toolId>]      interactive tools, all of them or one
-            #/dennik[/<entryId>]       study diary (#/dennik/t/<id>: only entries about a topic)
+            #/dennik[/<entryId>]       old diary links → the diary week in the calendar
             #/info        sources, backup, shortcuts
+            #/kalendar[/m|t[/<iso>[/p]]]  the study plan as a month or week calendar; p = the diary
    ============================================================ */
 const ui = {
   route: {view:"prehlad"},
@@ -51,8 +52,10 @@ function parseRoute(){
                                          tab:p[2] === "teoria" ? "teoria" : null, sub:p[2] === "teoria" ? p[3] || null : null}
                                       : {view:"temy", tab:ui.tab};
     case "nastroje": return {view:"nastroje", tool:TOOLS[p[1]] ? p[1] : null};
-    case "dennik": return p[1] === "t" && BY_ID[p[2]] ? {view:"dennik", topic:p[2]} : {view:"dennik", entry:p[1] || null};
+    case "dennik": { const e = p[1] && p[1] !== "t" && state.log.find(x => x.id === p[1]);
+                     return {view:"kalendar", mode:"t", d:e ? e.d : null, notes:true, entry:e ? e.id : null}; }
     case "info":   return {view:"info"};
+    case "kalendar": return {view:"kalendar", mode:p[1] === "t" ? "t" : "m", d:/^\d{4}-\d\d-\d\d$/.test(p[2] || "") ? p[2] : null, notes:p.includes("p")};
     default:       return {view:"prehlad"};
   }
 }
@@ -61,6 +64,7 @@ const go = hash => { if(location.hash === hash) render(); else location.hash = h
 const scrollMem = {};
 
 function render(){
+  ensurePlan();
   const r = ui.route;
   const v = VIEWS[r.view];
   $$("#mainnav [data-nav]").forEach(a => a.toggleAttribute("aria-current", a.dataset.nav === r.view || (r.view === "tema" && a.dataset.nav === "temy")));
@@ -72,6 +76,7 @@ function render(){
 
 /* re-draw whatever is on screen after a data change; views may do it more surgically */
 function refresh(what){
+  ensurePlan();
   const v = VIEWS[ui.route.view];
   if(v.refresh) v.refresh(what); else v.render($("#view"));
   renderMiniClock();
@@ -87,7 +92,7 @@ window.addEventListener("hashchange", e => {
   render();
   const key = location.hash || "#/";
   if(ui.route.view === "temy" && scrollMem[key] != null) window.scrollTo(0, scrollMem[key]);
-  else if(!(ui.route.view === "tema" && ui.route.note) && !(ui.route.view === "dennik" && ui.route.entry)) window.scrollTo(0, 0);
+  else if(!(ui.route.view === "tema" && ui.route.note) && !(ui.route.view === "kalendar" && ui.route.entry)) window.scrollTo(0, 0);
 });
 
 /* ---------- another tab (or window) saved ---------- */
@@ -104,7 +109,7 @@ function takeRemote(incoming){
   state = mergeStates(state, incoming);
   if(JSON.stringify(state) === before) return;
   if(ui.editing && !findNote(ui.editing.t, ui.editing.n)) ui.editing = null;
-  if(jr.edit && !findLog(jr.edit)) jr.edit = null;
+  if(cal.edit && cal.edit.startsWith("cn|e|") && !findLog(cal.edit.split("|")[2])) cal.edit = null;
   /* don't yank the text box out from under someone typing — redraw once they leave it */
   if(isTyping()) remotePending = true; else refresh("remote");
 }

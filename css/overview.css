@@ -89,7 +89,9 @@
 
 @media (max-width:900px){
   .ov-grid{grid-template-columns:1fr}
-  .ov-side{order:-1}
+  .ov-side{display:contents}
+  .ov-main{order:1}
+  .plan-pace{order:2} #milestones{order:3} .plan-rules{order:4}
 }
 @media (max-width:640px){
   .cell{width:7px;height:22px}

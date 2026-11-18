@@ -15,7 +15,7 @@ Download the installer for your system (step by step below), then install it:
 - **Windows** — `Maturita-…-Windows.exe`. Installs for your user only and adds a desktop and Start menu
   shortcut. The installer isn't signed, so Windows may show "Windows protected your PC": click
   *More info → Run anyway*.
-- **macOS** — `Maturita-…-macOS.dmg`, drag the app to Applications. It is signed ad hoc, not by Apple: the first
+- **macOS** — `Maturita-…-macOS.dmg` (Apple Silicon only, M1 and later), drag the app to Applications. It is signed ad hoc, not by Apple: the first
   time, open it, then go to *System Settings → Privacy & Security* and click *Open Anyway*. If macOS
   says the app "is damaged", run `xattr -cr "/Applications/Maturita z matematiky.app"` in Terminal.
 - **Linux** — `Maturita-…-Linux.AppImage`: make it executable (`chmod +x`) and run it.
@@ -106,23 +106,25 @@ choose the folder).
 
 ## What's in it
 
-- **Prehľad** — countdown, score estimate by test block, "Čo ďalej" suggestions, and
-  "Pokračuj, kde si skončil" (last diary entry + recently opened topics).
+- **Prehľad** — countdown, score estimate by test block, and from your study plan: today's blocks, what comes
+  next, pace (ahead or behind), milestones and the plan's rules; plus the last day you studied.
 - **Témy** — the topic list with tabs, search (also inside notes), filters with counts and
   quick level buttons. Click a topic name to open it.
 - **Topic page** (`#/tema/a5`) — the whole topic on one page: its subtopics, each with its own
   level (the topic's level and understanding % are computed from them; you can add your own
   subtopics), named notes (sorted by creation date, each with its own "rozumiem" level and optionally
   tied to a subtopic, filterable by both), description, prerequisites / what builds on it, and the
-  diary entries that mention it, with a quick "zapísať do denníka" box.
+  diary notes that mention it, with a box that writes today's diary note for the topic (saved as you type).
 - **Teória** (`#/tema/a21/teoria`) — the topic explained in short pieces, each followed by an
   interactive example with only the relevant values unlocked. See *Theory and tools* below.
 - **Nástroje** — the same interactive tools on their own, fully unlocked: function graphs, sequences, a triangle
   with its lines and circles, mean / median / mode.
-- **Denník** — study diary with an activity calendar, entries linked to topics or specific notes,
-  suggestions from what you changed today, search, and editing.
-- **Info** — data sources, backup (copy / download / paste / load a file), history of earlier versions
-  (desktop app and Docker), keyboard shortcuts.
+- **Kalendár** — your study plan as a month view and a week view split into the day's time blocks, each maths
+  block with its topic (see *Study plan* below); switch to **Poznámky** for the study diary: a note for each day
+  and for each topic taken that day (topics appear by themselves when rated or noted), saved as you type.
+  Replaced the old Denník tab; old `#/dennik` links land here.
+- **Info** — data sources, backup (copy / download / paste / load a file), the study plan (make or change it
+  with an AI), history of earlier versions (desktop app and Docker), keyboard shortcuts.
 
 Press `/` (or Ctrl+K) anywhere to jump to a topic or note. On a topic page: `←` `→` previous /
 next topic, `↑` `↓` pick a subtopic, `0`–`4` set its level, `N` new note, `Esc` back to the list.
@@ -138,6 +140,38 @@ are for your orientation only and don't feed the estimate.
 Topics you know won't be on the test can be marked ⊘ (row button or topic page). They move to the
 **Nerelevantné** tab and drop out of the estimate, "Čo ďalej" and the pace counter — each block's item
 count is then spread over the topics still in play. Levels and notes stay; ↩ Vrátiť brings them back.
+
+## Study plan
+
+The calendar shows a study plan up to the exam: which topic you take in which block of which day. The app
+starts without one; you make it with an AI chat (Claude, ChatGPT, …) and never have to write it by hand.
+
+**Making a plan**
+
+1. Open **Info → Plán v kalendári** and click **Vytvoriť plán s AI**. The app copies a text to the clipboard:
+   what the plan looks like, how the app reads it, your topics with your current levels, and a small example plan.
+2. Paste it into a chat with an AI. It asks you what it needs: when your exam is and when you want to start,
+   what a normal week looks like (school, training, other subjects) and how much time each day has for maths,
+   holidays and days off, whether you want to write past tests on time before the exam.
+3. The AI answers with the whole plan as a ```json block. Click **Vložiť plán** and paste its **whole answer**:
+   the app finds the plan in it, checks it and shows what it contains. **Použiť tento plán** puts it into the calendar.
+4. If the app finds a mistake, it lists it (with the place in the plan); **Skopírovať chyby pre AI** copies the
+   list so the AI can fix it.
+
+**Changing it later** — when you are ahead or behind, click **Skopírovať pre AI** (the same card): the text now
+holds your plan and your progress (pace, which topics are done, test scores). Tell the AI what to change and paste
+its answer back the same way. Before anything changes you see what moves, what is added or removed and whether a
+week overflows. The last 10 plans can be restored and the plan can be deleted.
+
+**How the app reads a plan** — a plan is a list of weeks, each with its topics in order and the number of
+sessions each needs (1 session = 2 blocks of 45 minutes), plus day templates (school day, weekend, test day …)
+with their time blocks. The app fills each week's maths blocks with its topics in order; what does not fit goes
+into the reserve blocks of the reserve days, and anything left is shown as a warning. A topic counts as done at
+level *ide to* or better and as started at *neviem* / *slabo*, so there is nothing to tick off by hand; a test
+counts once its score is typed into its day in the calendar.
+
+The plan is part of your saved progress: *Skopírovať / Stiahnuť postup* include it, and *Stiahnuť plán* saves the
+plan alone as a `.json` file. The format (`maturita-plan-1`) is described in `js/planmodel.js`.
 
 ## Writing notes
 
@@ -248,13 +282,15 @@ js/tools/core.js                   tool engine: expressions, sliders and locking
 js/tools/<id>.js                   the tools themselves, one file each (the table in CLAUDE.md lists them)
 js/components/editor.js            note editor: toolbar, symbols, live preview, list keys
 js/components/palette.js           quick search / topic picker
-js/components/{countdown,gauge,next}.js   pieces of the overview
+js/components/{countdown,gauge,plancards}.js   pieces of the overview (plancards: today / next / pace / milestones from the plan)
 js/views/overview.js               #/
 js/views/topics.js                 #/temy/a|c
 js/views/topic.js                  #/tema/<id>
 js/views/theory.js                 #/tema/<id>/teoria
 js/views/tools.js                  #/nastroje, #/nastroje/<tool>
-js/views/journal.js                #/dennik
+js/views/calendar.js               #/kalendar (plan + diary; data in js/data/plan.js)
+js/planmodel.js                    the plan as data: compile, check, compare, copy for an AI (Info → Plán v kalendári)
+js/data/plan.js                    the default plan (none in the public app: PLAN_DEFAULT = null)
 js/views/info.js                   #/info
 js/main.js                         theme, global keys, startup
 
@@ -266,7 +302,7 @@ server/store.js                    the SQLite database: current save, history, d
 server/app.js                      serves the files above + the save API (web-standard Request → Response)
 server/main.js                     runs it as a web server (npm start, Docker)
 desktop/main.js                    the desktop app: Electron window serving the same handler over app://
-build/icon.png                     app icon
+build/icon.png                     app icon (a square root with rising bars; favicon.svg is the same picture)
 Dockerfile, docker-compose.yml     the Docker setup
 ```
 

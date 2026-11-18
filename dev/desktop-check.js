@@ -34,7 +34,7 @@ const quick = process.argv[2] === "quick";
 
   /* ---------- every kind of page: nothing blocked, nothing failed ---------- */
   const tools = fs.readdirSync(path.join(ROOT, "js/tools")).map(f => f.replace(".js", "")).filter(t => t !== "core");
-  const hashes = ["#/", "#/temy/a", "#/temy/c", "#/tema/a22", "#/dennik", "#/info", "#/nastroje",
+  const hashes = ["#/", "#/temy/a", "#/temy/c", "#/tema/a22", "#/kalendar", "#/kalendar/t/2026-11-23", "#/kalendar/m/2026-11-01/p", "#/info", "#/nastroje",
     ...(quick ? ["a22", "b9", "c5"] : ["a1", "a22", "a28", "b9", "b20", "b28", "b31", "b40", "c5", "c10", "c15", "c23", "c27", "c33"]).map(t => `#/tema/${t}/teoria`),
     ...(quick ? ["graf", "derivacia", "kocka"] : tools).map(t => `#/nastroje/${t}`)];
   for (const hash of hashes) {

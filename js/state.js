@@ -29,7 +29,8 @@ const STATE_V = 4;
 /* untouched copy of an older save, written once before upgrading it */
 const backupKey = v => `maturita-mat-v${v || 1}-backup`;
 
-const emptyState = () => ({v:STATE_V, slv:{}, slvAt:{}, subs:{}, rel:{}, notes:{}, upd:{}, log:[], del:{}, epoch:0, recent:[], prefs:{}});
+const emptyState = () => ({v:STATE_V, slv:{}, slvAt:{}, subs:{}, rel:{}, notes:{}, upd:{}, log:[], del:{}, epoch:0, recent:[], prefs:{}, plan:{tests:{}, def:null, at:0, hist:[]}});
+const PLAN_HIST = 10;   /* earlier plans kept in state.plan.hist */
 let state = emptyState();
 let store = "none";
 
@@ -56,7 +57,7 @@ function migrate(old){
   const s = emptyState();
   let levels = {}, levelAt = {};
   if(old.v >= 2 && old.v <= STATE_V){
-    for(const k of ["slv","slvAt","subs","rel","notes","upd","del","prefs"]) if(isObj(old[k])) s[k] = old[k];
+    for(const k of ["slv","slvAt","subs","rel","notes","upd","del","prefs","plan"]) if(isObj(old[k])) s[k] = old[k];
     s.epoch = +old.epoch || 0;
     if(Array.isArray(old.log)) s.log = old.log;
     if(Array.isArray(old.recent)) s.recent = old.recent;
@@ -105,6 +106,7 @@ function tidy(s){
   }
   s.log = s.log.filter(e => isObj(e) && typeof e.d === "string").map(e => ({
     id: String(e.id || uid()), d: e.d, text: String(e.text || ""), ts: +e.ts || Date.now(), u: +e.u || +e.ts || Date.now(),
+    ...(e.k === "day" || e.k === "t" ? {k: e.k} : {}),
     links: Array.isArray(e.links)
       ? e.links.filter(l => isObj(l) && BY_ID[l.t]).map(l => l.n ? {t:l.t, n:String(l.n)} : {t:l.t})
       : []
@@ -124,6 +126,17 @@ function tidy(s){
     if(BY_ID[key.split("/")[0]] && v >= 1 && v <= 4) s.slv[key] = v; else delete s.slv[key];
   }
   s.recent = s.recent.filter(id => BY_ID[id]).slice(0, 8);
+  /* study plan: test scores {id: {s: points or null when cleared, at}}; def = the plan pasted in Info
+     (null = the default, PLAN_DEFAULT), at = when it was set, hist = the plans it replaced (newest first) */
+  const op = isObj(s.plan) ? s.plan : {};
+  const pt = isObj(op.tests) ? op.tests : {};
+  const okDef = d => isObj(d) && d.format === "maturita-plan-1" && Array.isArray(d.weeks);
+  s.plan = {tests:{}, def: okDef(op.def) ? op.def : null, at: +op.at || 0,
+    hist: (Array.isArray(op.hist) ? op.hist : []).filter(h => isObj(h) && okDef(h.def) && +h.at).map(h => ({def:h.def, at:+h.at})).slice(0, PLAN_HIST)};
+  for(const id in pt){
+    const x = pt[id];
+    if(isObj(x) && +x.at) s.plan.tests[id] = {s: x.s == null || x.s === "" || !isFinite(+x.s) ? null : Math.max(0, Math.min(30, +x.s)), at:+x.at};
+  }
   return s;
 }
 
@@ -314,6 +327,14 @@ function mergeStates(a, b){
   out.log = newest([...b.log, ...a.log]).filter(alive);
   out.recent = [...new Set([...a.recent, ...b.recent])].slice(0, 8);
   out.prefs = {...b.prefs, ...a.prefs};
+  const ta = (a.plan || {}).tests || {}, tb = (b.plan || {}).tests || {};
+  for(const id of new Set([ta, tb].flatMap(Object.keys)))
+    out.plan.tests[id] = !tb[id] || (ta[id] && ta[id].at >= tb[id].at) ? ta[id] : tb[id];
+  /* the plan: the one set later wins, with its history (a restored version leaves the history) */
+  const pa = a.plan || {}, pb = b.plan || {}, pw = (pa.at || 0) >= (pb.at || 0) ? pa : pb;
+  out.plan.def = pw.def || null;
+  out.plan.at = pw.at || 0;
+  out.plan.hist = (pw.hist || []).slice(0, PLAN_HIST);
   return out;
 }
 /* one item per id, the most recently changed (ties go to the later copy = this tab) */

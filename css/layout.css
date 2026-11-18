@@ -60,10 +60,20 @@
 .history .h-when{font-weight:600;min-width:150px}
 .history .h-what{flex:1;font-size:13px}
 .history .h-acts{display:flex;gap:6px}
-#importArea{
+#importArea, #planArea, .plan-out{
   width:100%;height:100px;margin:12px 0 8px;font:11px/1.4 var(--mono);
   border:1px solid var(--rule);border-radius:5px;padding:8px;color:var(--ink-soft);background:var(--input);
 }
+#planArea{height:140px}
+.plan-out{height:140px}
+.plan-check{border:1px solid var(--rule);border-radius:6px;padding:10px 14px;margin-bottom:8px;font-size:14px}
+.plan-check.bad{border-color:var(--flag)}
+.plan-check h4{margin:10px 0 2px;font-size:13px}
+.plan-check ul{margin:0 0 6px;padding-left:20px}
+.plan-check li{margin:2px 0}
+.plan-check .btn{margin-top:4px}
+.plan-hist{margin-top:14px}
+.plan-hist summary{cursor:pointer;font-size:14px;font-weight:600;margin-bottom:6px}
 .keys{border-collapse:collapse;font-size:14px}
 .keys td{padding:6px 16px 6px 0;vertical-align:top;border-top:1px solid var(--rule)}
 .keys tr:first-child td{border-top:0}
