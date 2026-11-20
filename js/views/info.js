@@ -178,6 +178,7 @@ function planCardHtml(){
       : "Keď si napred alebo pozadu, skopíruj plán pre AI (Claude, ChatGPT…), napíš, čo treba zmeniť, a celú odpoveď vlož späť. Appka plán skontroluje a ukáže zmeny. Mení sa len plán: hodnotenia, poznámky a body z testov zostanú."}</p>
     <div class="tools">
       <button class="btn ${PLAN_NONE ? "" : "ghost"}" data-act="plan-copy">${PLAN_NONE ? "Vytvoriť plán s AI" : "Skopírovať pre AI"}</button>
+      ${PLAN_NONE ? "" : `<button class="btn ghost" data-act="plan-copy-raw" title="Len údaje plánu (JSON), bez pokynov pre AI">Skopírovať len plán</button>`}
       <button class="btn ghost" data-act="plan-paste">Vložiť plán</button>
       ${PLAN_NONE ? "" : `<button class="btn ghost" data-act="plan-download">Stiahnuť plán</button>`}
       <button class="btn ghost" data-act="plan-file">Načítať zo súboru</button>
@@ -261,6 +262,7 @@ async function copyOr(txt, ok){
   catch(err){ const o = $("#planOut"); o.hidden = false; o.value = txt; o.select(); toast("Skopíruj text z poľa nižšie."); }
 }
 action("plan-copy", () => { ensurePlan(); copyOr(planAiText(), PLAN_NONE ? "Text je v schránke. Vlož ho do chatu s AI a odpovedz na jej otázky." : "Plán je v schránke. Vlož ho do chatu s AI a napíš, čo treba zmeniť."); });
+action("plan-copy-raw", () => { ensurePlan(); const d = planDef(); if(d) copyOr(planText(d), "Plán (bez pokynov pre AI) je v schránke."); });
 action("plan-errs-copy", () => planErrs && copyOr(
   `Appka tento plán neprijala. Oprav, prosím, tieto chyby a pošli znova celý plán ako jeden blok \`\`\`json:\n${planErrs.map(e => "- " + e).join("\n")}\n`,
   "Chyby sú v schránke. Vlož ich do chatu s AI."));

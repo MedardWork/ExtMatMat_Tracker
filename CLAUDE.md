@@ -171,7 +171,7 @@ ask for a change and paste the answer back; so the format is made to be easy for
   **When the format grows, change `compilePlan`, `validatePlan`, `planAiText` and `planDiff` together.**
 - Template of a date: a test that day → `"test"`; else the first `periods` entry it falls in (`weekdays_only` skips
   Sat/Sun); else `weekdays`. Ids: a topic id, `"opak:<topic>"` for a review, or a test id; each at most once.
-- The UI (card, preview, history, `setPlan`) is in `js/views/info.js`. Pasting a plan into "Vložiť postup" routes it to the plan card.
+- The UI (card, preview, history, `setPlan`) is in `js/views/info.js`. "Skopírovať len plán" copies `planText(planDef())` (the bare JSON, no AI instructions; 2026-11-20). Pasting a plan into "Vložiť postup" routes it to the plan card.
 - A stored def that fails `validatePlan` is not used: the calendar falls back to the default and Info says why (`PLAN_ERR`).
 - No plan at all (`PLAN_DEFAULT = null` and nothing pasted, the public app): `PLAN_NONE`, empty tables; the calendar's Témy,
   the overview and Info offer "Vytvoriť plán s AI", whose text (`planCreateText`) asks the AI to ask the person first and
