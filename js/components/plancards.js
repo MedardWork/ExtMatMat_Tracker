@@ -73,15 +73,18 @@ function renderPlanPace(){
   if(PLAN_NONE) return;
   const t = todayIso(), pc = planPace();
   let pace;
+  const open = pc.open.slice(0, 3).map(x => { const tid = planTopicOf(x); return tid ? `<a href="#/tema/${tid}"><i class="dot l${itemLevel(x)}"></i>${esc(itemName(x))}</a>` : esc(itemName(x)); }).join(", ")
+    + (pc.open.length > 3 ? ` a ešte ${pc.open.length - 3}` : "");
+  const todo = pc.open.length ? `Najprv dotiahni, čo ešte nevieš: ${open}.` : null;
   if(t < PLAN_START) pace = `Plán začína ${WEEKDAYS[dateOf(PLAN_START).getDay()]} ${fmtD(PLAN_START)}`;
-  else if(Math.abs(pc.delta) < 0.5) pace = `Ideš <b>presne podľa plánu</b>: ${calNum(pc.done)} z ${calNum(pc.ex)} sedení.`;
-  else if(pc.delta > 0) pace = `<span class="ahead">Náskok ${calNum(pc.delta)} ${skSed(pc.delta)}.</span> Podľa plánu ${calNum(pc.ex)}, máš ${calNum(pc.done)}. Ber ďalšiu tému v poradí.`;
-  else pace = `<span class="behind">Sklz ${calNum(-pc.delta)} ${skSed(pc.delta)}.</span> Podľa plánu ${calNum(pc.ex)}, máš ${calNum(pc.done)}. Doťahuj v rezervných blokoch.`;
+  else if(Math.abs(pc.delta) < 0.5) pace = `Ideš <b>presne podľa plánu</b>: ${calNum(pc.done)} z ${calNum(pc.ex)} sedení.${todo ? " " + todo : ""}`;
+  else if(pc.delta > 0) pace = `<span class="ahead">Náskok ${calNum(pc.delta)} ${skSed(pc.delta)}.</span> Podľa plánu ${calNum(pc.ex)}, máš ${calNum(pc.done)}. ${todo || "Ber ďalšiu tému v poradí."}`;
+  else pace = `<span class="behind">Sklz ${calNum(-pc.delta)} ${skSed(pc.delta)}.</span> Podľa plánu ${calNum(pc.ex)}, máš ${calNum(pc.done)}. ${todo ? todo + " Využi na to rezervné bloky." : "Doťahuj v rezervných blokoch."}`;
   const scored = PLAN_TESTS.filter(x => planScore(x.id) != null);
   const avg = scored.length ? scored.reduce((a, x) => a + planScore(x.id), 0) / scored.length : null;
   host.innerHTML = `<h2>Tempo podľa plánu</h2><p>${pace}</p>
     <div class="bar"><div class="bar-fill" style="width:${Math.min(100, pc.done / PLAN_TOTAL * 100)}%"></div><div class="tick" style="left:${Math.min(100, pc.ex / PLAN_TOTAL * 100)}%"></div></div>
-    <p class="muted pp-hint">Červená čiarka: kde by si mal byť dnes. Hotová téma je od „ide to“, rozrobená („neviem“, „slabo“) sa ráta za polovicu.${avg != null ? ` Testy: priemer <b>${calNum(avg)}/30</b> z ${scored.length}.` : ""}</p>`;
+    <p class="muted pp-hint">Červená čiarka: kde by si mal byť dnes. Ráta sa len hotová téma, teda od „ide to“ vyššie. Rozrobená („neviem“, „slabo“) sa neráta.${avg != null ? ` Testy: priemer <b>${calNum(avg)}/30</b> z ${scored.length}.` : ""}</p>`;
 }
 
 function renderMilestones(){

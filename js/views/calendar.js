@@ -48,8 +48,11 @@ function planPace(){
   const t = todayIso();
   let ex = 0;
   for(const d in PLAN_BY_DAY) if(d < t) for(const p of PLAN_BY_DAY[d]) ex += p.amt;
-  const done = PLAN_ITEMS.reduce((a, x) => { const s = planStatus(x); return a + (s === 2 ? x.s : s === 1 ? x.s / 2 : 0); }, 0);
-  return {ex, done, delta: done - ex};
+  /* only finished items count ("ide to" or better); a started one ("neviem", "slabo") counts nothing */
+  const done = PLAN_ITEMS.reduce((a, x) => a + (planStatus(x) === 2 ? x.s : 0), 0);
+  /* unfinished items the plan already had on an earlier day, or that are started: do these first */
+  const open = PLAN_ITEMS.filter(x => !isPlanTest(x) && planStatus(x) !== 2 && (planStatus(x) === 1 || (planDaysOf(x)[0] || t) < t));
+  return {ex, done, delta: done - ex, open};
 }
 
 function eventsOn(d){ return PLAN_EVENTS.filter(e => e.d === d || (e.to && d > e.d && d <= e.to)); }
