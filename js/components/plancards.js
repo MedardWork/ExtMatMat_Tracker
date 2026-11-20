@@ -53,11 +53,11 @@ function renderPlanNext(){
   if(!left.length){ host.innerHTML = `<h2>Ďalej na rade podľa plánu</h2><p class="done">Všetky témy z plánu sú hotové. Teraz testy na čas.</p>`; return; }
   const list = left.slice(0, 5).map(x => {
     const days = planDaysOf(x), tid = planTopicOf(x), v = itemLevel(x);
-    const from = days[0], to = days[days.length - 1];
-    const late = to && to < t;
-    const when = !from ? "" : late ? `<b class="late">mešká</b> · podľa plánu ${from === to ? fmtDW(to) : `${fmtDW(from)} – ${fmtDW(to)}`}`
-      : from <= t ? `podľa plánu ${from === to ? "dnes" : `do ${fmtDW(to)}`}` : `podľa plánu ${fmtDW(from)}`;
-    const what = itemKind(x) === "rev" ? "opakovanie · zapíš ho do poznámok k téme" : planStatus(x) === 1 ? `rozrobené (${LV[v].label})` : LV[v].label;
+    const from = days[0], to = days[days.length - 1], end = planEndOf(x);
+    const late = end < t;
+    const when = late ? `<b class="late">mešká</b>${from ? ` · podľa plánu ${from === to ? fmtDW(to) : `${fmtDW(from)} – ${fmtDW(to)}`}` : ` · malo byť do ${fmtDW(end)}`}`
+      : !from ? `nezmestilo sa do blokov · dobehni do ${fmtDW(end)}` : from <= t ? `podľa plánu ${from === end ? "dnes" : `do ${fmtDW(end)}`}` : `podľa plánu ${fmtDW(from)}`;
+    const what = itemKind(x) === "rev" ? "opakovanie · zapíš ho do poznámok k téme" : LV[v].label;
     return {tid, li: `<li><a class="next-link" href="#/tema/${tid}" data-act="seq-next"><i class="dot l${v}"></i>${esc(x.n)}</a><em>${what} · ${calNum(x.s)} ${skSed(x.s)}${when ? " · " + when : ""}</em></li>`};
   });
   host.dataset.ids = list.map(x => x.tid).join(" ");
@@ -73,18 +73,22 @@ function renderPlanPace(){
   if(PLAN_NONE) return;
   const t = todayIso(), pc = planPace();
   let pace;
-  const open = pc.open.slice(0, 3).map(x => { const tid = planTopicOf(x); return tid ? `<a href="#/tema/${tid}"><i class="dot l${itemLevel(x)}"></i>${esc(itemName(x))}</a>` : esc(itemName(x)); }).join(", ")
-    + (pc.open.length > 3 ? ` a ešte ${pc.open.length - 3}` : "");
-  const todo = pc.open.length ? `Najprv dotiahni, čo ešte nevieš: ${open}.` : null;
+  /* what the plan already wanted finished and is not: topics and reviews to finish first, tests to score */
+  const late = pc.open.filter(x => !isPlanTest(x)), tests = pc.open.filter(isPlanTest), behind = pc.delta <= -0.5;
+  const link = x => { const tid = planTopicOf(x); return tid ? `<a href="#/tema/${tid}"><i class="dot l${itemLevel(x)}"></i>${esc(itemName(x))}</a>` : esc(itemName(x)); };
+  const todo = [
+    late.length ? `Najprv dotiahni, čo už malo byť hotové: ${late.slice(0, 3).map(link).join(", ")}${late.length > 3 ? ` a ešte ${late.length - 3}` : ""}.${behind ? " Využi na to rezervné bloky." : ""}` : "",
+    tests.length ? `Zapíš do kalendára body za ${tests.length > 1 ? "testy" : "test"}: ${tests.map(x => `<a href="${calHash("t", planEndOf(x), false)}">${esc(x.n)}</a>`).join(", ")}.` : ""
+  ].filter(Boolean).join(" ");
   if(t < PLAN_START) pace = `Plán začína ${WEEKDAYS[dateOf(PLAN_START).getDay()]} ${fmtD(PLAN_START)}`;
-  else if(Math.abs(pc.delta) < 0.5) pace = `Ideš <b>presne podľa plánu</b>: ${calNum(pc.done)} z ${calNum(pc.ex)} sedení.${todo ? " " + todo : ""}`;
-  else if(pc.delta > 0) pace = `<span class="ahead">Náskok ${calNum(pc.delta)} ${skSed(pc.delta)}.</span> Podľa plánu ${calNum(pc.ex)}, máš ${calNum(pc.done)}. ${todo || "Ber ďalšiu tému v poradí."}`;
-  else pace = `<span class="behind">Sklz ${calNum(-pc.delta)} ${skSed(pc.delta)}.</span> Podľa plánu ${calNum(pc.ex)}, máš ${calNum(pc.done)}. ${todo ? todo + " Využi na to rezervné bloky." : "Doťahuj v rezervných blokoch."}`;
+  else if(!behind && pc.delta < 0.5) pace = `Ideš <b>presne podľa plánu</b>${pc.ex ? `: ${calNum(pc.done)} z ${calNum(pc.ex)} sedení` : ""}.${todo ? " " + todo : ""}`;
+  else if(!behind) pace = `<span class="ahead">Náskok ${calNum(pc.delta)} ${skSed(pc.delta)}.</span> Podľa plánu ${calNum(pc.ex)}, máš ${calNum(pc.done)}. ${todo || "Ber ďalšiu tému v poradí."}`;
+  else pace = `<span class="behind">Sklz ${calNum(-pc.delta)} ${skSed(pc.delta)}.</span> Podľa plánu ${calNum(pc.ex)}, máš ${calNum(pc.done)}. ${todo || "Doťahuj v rezervných blokoch."}`;
   const scored = PLAN_TESTS.filter(x => planScore(x.id) != null);
   const avg = scored.length ? scored.reduce((a, x) => a + planScore(x.id), 0) / scored.length : null;
   host.innerHTML = `<h2>Tempo podľa plánu</h2><p>${pace}</p>
     <div class="bar"><div class="bar-fill" style="width:${Math.min(100, pc.done / PLAN_TOTAL * 100)}%"></div><div class="tick" style="left:${Math.min(100, pc.ex / PLAN_TOTAL * 100)}%"></div></div>
-    <p class="muted pp-hint">Červená čiarka: kde by si mal byť dnes. Ráta sa len hotová téma, teda od „ide to“ vyššie. Rozrobená („neviem“, „slabo“) sa neráta.${avg != null ? ` Testy: priemer <b>${calNum(avg)}/30</b> z ${scored.length}.` : ""}</p>`;
+    <p class="muted pp-hint">Červená čiarka: kde by si mal byť dnes. Téma sa ráta až od „ide to“ a hotová má byť po poslednom dni, ktorý jej dáva plán. Témy na dnes a ďalšie dni ti sklz nerobia; keď niektorú dokončíš vopred, máš náskok.${avg != null ? ` Testy: priemer <b>${calNum(avg)}/30</b> z ${scored.length}.` : ""}</p>`;
 }
 
 function renderMilestones(){

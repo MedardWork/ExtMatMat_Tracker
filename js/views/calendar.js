@@ -44,14 +44,35 @@ function planStatus(x){
 const planScore = id => { const t = state.plan.tests[id]; return t && t.s != null ? t.s : null; };
 const planTopicOf = x => PLAN_REVIEW[x.id] || (BY_ID[x.id] ? x.id : null);
 
+/* when the plan wants an item finished: a test on its day; otherwise the last day the plan gives it, or,
+   when part of it did not fit into its week (PLAN_OVER), the end of the next week, whose reserve the calendar
+   sends the rest to (see the week head) */
+function planEndOf(x){
+  const test = PLAN_TESTS.find(p => p.id === x.id);
+  if(test) return test.d;
+  const days = planDaysOf(x);
+  if(days.length && !(PLAN_OVER[x.w] || []).some(o => o.it === x)) return days[days.length - 1];
+  const i = PLAN_WEEKS.findIndex(w => w.id === x.w);
+  return (PLAN_WEEKS[i + 1] || {}).to || PLAN_EXAM;
+}
+const planStartOf = x => planDaysOf(x)[0] || (PLAN_TESTS.find(p => p.id === x.id) || {}).d || PLAN_WEEKS.find(w => w.id === x.w).from;
+
+/* pace. An item counts only when finished (a topic at "ide to" or better, a review noted, a test scored);
+   "neviem" / "slabo" count nothing, and that rating says nothing about when you meant to study it.
+   The plan wants an item finished once its end (planEndOf) is past: such items are expected (ex), and the
+   unfinished ones are open (to finish first, in the plan's order). Items whose days are still running
+   (today included) or still to come neither help nor hurt until you finish them: a finished one whose days
+   have begun counts on both sides, one finished before its first day is a lead. */
 function planPace(){
   const t = todayIso();
-  let ex = 0;
-  for(const d in PLAN_BY_DAY) if(d < t) for(const p of PLAN_BY_DAY[d]) ex += p.amt;
-  /* only finished items count ("ide to" or better); a started one ("neviem", "slabo") counts nothing */
-  const done = PLAN_ITEMS.reduce((a, x) => a + (planStatus(x) === 2 ? x.s : 0), 0);
-  /* unfinished items the plan already had on an earlier day, or that are started: do these first */
-  const open = PLAN_ITEMS.filter(x => !isPlanTest(x) && planStatus(x) !== 2 && (planStatus(x) === 1 || (planDaysOf(x)[0] || t) < t));
+  let ex = 0, done = 0;
+  const open = [];
+  for(const x of PLAN_ITEMS){
+    const fin = planStatus(x) === 2;
+    if(fin) done += x.s;
+    if(planEndOf(x) < t){ ex += x.s; if(!fin) open.push(x); }
+    else if(fin && planStartOf(x) <= t) ex += x.s;
+  }
   return {ex, done, delta: done - ex, open};
 }
 

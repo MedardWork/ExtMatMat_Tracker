@@ -409,7 +409,8 @@ function planFormatText(){
 - rules: pravidlá plánu {title, points}, ukazujú sa na prehľade; **tučné** funguje.
 
 AKO APPKA RÁTA POKROK (to do plánu nepíš, appka to berie zo svojich dát)
-- Téma je hotová od úrovne „ide to“, rozrobená pri „neviem“ a „slabo“ (ráta sa za polovicu).
+- Téma je hotová od úrovne „ide to“; „neviem“ a „slabo“ sa za hotové nerátajú (často je to len moje prvé hodnotenie, nie začatá práca).
+- Položka má byť hotová po poslednom dni, ktorý jej plán dáva; čo sa do týždňa nezmestí, do konca ďalšieho týždňa. Dovtedy nerobí sklz, a keď ju dokončím skôr, mám náskok.
 - Opakovanie je hotové, keď mám k jeho téme poznámku z toho týždňa alebo neskôr.
 - Test je hotový, keď má zapísané body.`;
 }
@@ -475,7 +476,7 @@ function planAiText(){
     const k = itemKind(x);
     if(k === "test") return planScore(x.id) != null ? `napísaný, ${planScore(x.id)}/30 b.` : "nenapísaný";
     if(k === "rev") return planStatus(x) === 2 ? "hotové" : "nezačaté";
-    return `${["nezačaté", "rozrobené", "hotové"][planStatus(x)]} (${LV[lv(x.id)].label})`;
+    return `${planStatus(x) === 2 ? "hotové" : "nehotové"} (${LV[lv(x.id)].label})`;
   };
   const weeks = PLAN_WEEKS.map(w => {
     const its = PLAN_ITEMS.filter(x => x.w === w.id);
@@ -486,8 +487,9 @@ function planAiText(){
   const outside = T.filter(x => /^[ab]/.test(x.id) && !inPlanIds.has(x.id) && !(state.rel[x.id] && state.rel[x.id].off))
     .map(x => `${x.id} ${shortName(x)} (${LV[lv(x.id)].label})`);
   const pace = t < PLAN_START ? `plán ešte nezačal (začína ${fmtD(PLAN_START)})`
-    : `podľa plánu som mal mať do dnes ${calNum(pc.ex)} ${skSed(pc.ex)}, mám ${calNum(pc.done)}` +
-      (Math.abs(pc.delta) < 0.5 ? ", idem presne podľa plánu" : pc.delta > 0 ? `, náskok ${calNum(pc.delta)}` : `, sklz ${calNum(-pc.delta)}`);
+    : `podľa plánu som mal mať do dnes hotové ${calNum(pc.ex)} ${skSed(pc.ex)}, mám ${calNum(pc.done)} (hotová téma = od „ide to“)` +
+      (Math.abs(pc.delta) < 0.5 ? ", idem presne podľa plánu" : pc.delta > 0 ? `, náskok ${calNum(pc.delta)}` : `, sklz ${calNum(-pc.delta)}`) +
+      (pc.open.length ? `; mešká (plán to už mal, nie je hotové): ${pc.open.map(x => x.id).join(", ")}` : "");
   const F = "```";
   return `Toto je môj študijný plán na externú maturitu z matematiky z mojej appky. Uprav ho, prosím, podľa toho, o čo ťa požiadam (pod týmto textom alebo v ďalšej správe).
 

@@ -146,9 +146,16 @@ Reworked the same day on their request:
   The topic page's "Dnes v denníku" box writes the `k:"t"` note of today.
 - **Overview** (js/components/plancards.js): today by the plan, next in the plan's order (replaced "Čo ďalej"),
   last study day (replaced "Pokračuj"), pace, milestones, rules.
-- No separate ticks: a topic is done at level "ide to" or more, started at "neviem"/"slabo"; a review (`PLAN_REVIEW`)
+- No separate ticks: a topic is done at level "ide to" or more (a lower level says nothing about work done: people rate
+  topics "neviem" long before the plan reaches them); a review (`PLAN_REVIEW`)
   is done once the diary has a note about its topic from that week on; test scores live in `state.plan.tests`
   (merged per test by `at`, see `tidy` and `mergeStates` in state.js).
+- **Pace** (`planPace` in calendar.js, 2026-11-20): only finished items count. The plan wants an item finished once
+  `planEndOf(x)` is past: its last planned day; a test its date; an item with blocks in `PLAN_OVER` the end of the next week
+  (the week head sends the rest to that week's reserve). Items whose days are running (today included) or still to come neither
+  help nor hurt until finished: a finished one whose days have begun counts on both sides, one finished before its first day is a
+  lead. `open` = past their end and unfinished, in plan order: the pace card's "Najprv dotiahni" (tests: "zapíš body"), "mešká"
+  in "Ďalej na rade", and the AI text. Keep these three on `planEndOf`.
 
 **The plan is data (2026-11-18).** The person never edits it by hand: they copy it for an AI in Info → *Plán v kalendári*,
 ask for a change and paste the answer back; so the format is made to be easy for the next Claude to read and edit.
