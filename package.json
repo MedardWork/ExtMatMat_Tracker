@@ -1,10 +1,11 @@
 {
   "name": "maturita-tracker",
   "productName": "Maturita z matematiky",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "Tracker prípravy na maturitu z matematiky — s vlastnou databázou, ktorá sa ukladá sama.",
   "private": true,
   "main": "desktop/main.js",
+  "updateRepo": "MedardWork/ExtMatMat_Tracker",
   "desktopName": "maturita-tracker.desktop",
   "engines": {
     "node": ">=22.13"

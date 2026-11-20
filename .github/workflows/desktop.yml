@@ -79,6 +79,8 @@ jobs:
         with:
           path: dist
           merge-multiple: true
+      # the page files alone, for the apps already installed (desktop/update.js reads web.json of the latest release)
+      - run: node dev/webbundle.js dist
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
@@ -89,4 +91,6 @@ jobs:
             - **Windows** — `Maturita-…-Windows.exe` (ak sa objaví „Windows protected your PC“: *More info → Run anyway*)
             - **macOS** — `Maturita-…-macOS.dmg`, len pre Mac s čipom M (prvýkrát: otvor ju, potom *System Settings → Privacy & Security → Open Anyway*)
             - **Linux** — `Maturita-…-Linux.AppImage` (`chmod +x`, potom spustiť)
+
+            Už nainštalovaná aplikácia (od verzie 1.5.3) si novú verziu stiahne sama, ak sa zmenili len jej súbory. Ak treba novú inštaláciu, povie to.
           files: dist/*

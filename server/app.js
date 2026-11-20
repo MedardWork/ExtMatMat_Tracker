@@ -11,12 +11,10 @@ const fs = require("node:fs/promises");
 const path = require("node:path");
 const net = require("node:net");
 
-const APP_ID = "maturita-tracker";
-const ROOT = path.resolve(__dirname, "..");
-const MAX_BODY = 50 * 1024 * 1024;
+const {ROOT, servable, updatable} = require("./webfiles");
 
-/* only the tracker itself is served — not the database, node_modules or anything else in the folder */
-const PUBLIC = /^(index\.html|maturita-matematika-tracker\.html|(css|js|vendor)\/[\w./-]+)$/;
+const APP_ID = "maturita-tracker";
+const MAX_BODY = 50 * 1024 * 1024;
 const TYPES = {
   ".html":"text/html; charset=utf-8", ".css":"text/css; charset=utf-8", ".js":"text/javascript; charset=utf-8",
   ".json":"application/json", ".woff2":"font/woff2", ".woff":"font/woff", ".ttf":"font/ttf", ".svg":"image/svg+xml", ".png":"image/png"
@@ -38,12 +36,15 @@ function hostAllowed(req, extra){
   return host === "localhost" || net.isIP(host) !== 0 || extra.includes(host);
 }
 
-function createApp({store, where = store.dir, checkHost = true, allowedHosts = []}){
+/* web(): the folder with newer page files from an update ({dir, version}) or null (desktop/update.js);
+   version: the version of the installed app. Both are optional (the Docker server has neither). */
+function createApp({store, where = store.dir, checkHost = true, allowedHosts = [], web = () => null, version = ""}){
+  const pageVersion = () => (web() || {}).version || version;
   async function api(req, url){
     const p = url.pathname;
     if(p === "/api/state" && req.method === "GET"){
       const cur = store.current();
-      return json({app:APP_ID, rev:cur.rev, saved:cur.saved, where, state:cur.data ? JSON.parse(cur.data) : null});
+      return json({app:APP_ID, rev:cur.rev, saved:cur.saved, where, version:pageVersion(), state:cur.data ? JSON.parse(cur.data) : null});
     }
     if(p === "/api/state" && req.method === "PUT"){
       /* a plain cross-site form can't send JSON, so this also keeps other pages from writing here */
@@ -71,9 +72,12 @@ function createApp({store, where = store.dir, checkHost = true, allowedHosts = [
     let rel;
     try{ rel = decodeURIComponent(url.pathname).replace(/^\/+/, ""); }catch(e){ return text("Bad path", 400); }
     if(rel === "") rel = "maturita-matematika-tracker.html";
-    if(!PUBLIC.test(rel) || rel.split("/").includes("..")) return text("Not found", 404);
+    if(!servable(rel)) return text("Not found", 404);
     try{
-      const data = await fs.readFile(path.join(ROOT, rel));
+      /* an update's copy first; a file it lacks (or the plan, see server/webfiles.js) from the installed app */
+      const w = updatable(rel) && web();
+      const data = w ? await fs.readFile(path.join(w.dir, rel)).catch(() => fs.readFile(path.join(ROOT, rel)))
+                     : await fs.readFile(path.join(ROOT, rel));
       const ext = path.extname(rel).toLowerCase();
       const headers = {"Content-Type":TYPES[ext] || "application/octet-stream", "Cache-Control":"no-cache"};
       if(ext === ".html") headers["Content-Security-Policy"] = CSP;

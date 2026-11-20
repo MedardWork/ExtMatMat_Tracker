@@ -19,6 +19,7 @@ const store = openStore(dir);
 const handle = createApp({
   store,
   where: process.env.DATA_LABEL || store.dir,
+  version: require("../package.json").version,
   allowedHosts: (process.env.ALLOWED_HOSTS || "").split(",").map(s => s.trim()).filter(Boolean)
 });
 

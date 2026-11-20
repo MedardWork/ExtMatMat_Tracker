@@ -162,7 +162,7 @@ async function load(){
     const srv = await connectServer();
     if(srv){
       store = "server";
-      server.rev = srv.rev; server.saved = srv.saved; server.where = srv.where || "";
+      server.rev = srv.rev; server.saved = srv.saved; server.where = srv.where || ""; server.version = srv.version || "";
       if(srv.state){
         state = migrate(srv.state);
         if(srv.state.v !== STATE_V) await save();   /* the server keeps the old version as a snapshot */
@@ -213,7 +213,7 @@ window.addEventListener("pagehide", () => { if(saveTimer || server.dirty) save()
    The page was served by server/app.js: every save goes to its SQLite file.
    Each write names the revision it builds on; if another tab or window wrote in between,
    the server answers 409 with its copy, we merge the two and try again. */
-const server = {rev:0, saved:0, where:"", dirty:false, busy:0, failing:false, retry:null, chain:Promise.resolve()};
+const server = {rev:0, saved:0, where:"", version:"", dirty:false, busy:0, failing:false, retry:null, chain:Promise.resolve()};
 const IN_DESKTOP = location.protocol === "app:";
 
 async function connectServer(){
@@ -355,7 +355,8 @@ function renderStoreNote(){
     el.innerHTML = `Postup sa ukladá automaticky do databázy aplikácie — nič nemusíš kopírovať. Každý deň sa robí aj záloha celej databázy a staršie verzie nájdeš nižšie v Histórii.`
       + (server.where ? `<br><span class="muted">Dáta sú v: <code>${esc(server.where)}</code>${IN_DESKTOP ? " — otvoríš ich cez Súbor → Otvoriť priečinok s dátami." : ""}</span>` : "")
       + (server.failing ? `<br><b class="warn">Posledná zmena sa zatiaľ neuložila — skúšam znova.</b>`
-         : server.saved ? `<br><span class="muted">Naposledy uložené ${fmtStamp(server.saved)}.</span>` : "");
+         : server.saved ? `<br><span class="muted">Naposledy uložené ${fmtStamp(server.saved)}.</span>` : "")
+      + (server.version ? `<br><span class="muted">Verzia aplikácie ${esc(server.version)}${IN_DESKTOP ? " — nové verzie si stiahne sama (Pomocník → Skontrolovať aktualizácie)." : ""}</span>` : "");
   } else if(store === "claude"){
     el.textContent = "Postup sa ukladá sem do Claude a nájdeš ho tu aj nabudúce. Ak si súbor stiahneš a otvoríš v prehliadači, ukladá sa doň zvlášť.";
   } else if(store === "local"){

@@ -34,6 +34,15 @@ start). Pasting the copied text works too.
 Linux). Updating or uninstalling the app leaves it alone. *Súbor → Uložiť kópiu databázy…* saves a
 copy anywhere you like, e.g. to a USB stick or cloud folder.
 
+**Updates (from 1.5.3):** the app checks the newest release at start and every 6 hours. When only the
+page changed (theory, tools, calendar), it downloads those files (about 1.6 MB), asks, and reloads; no
+reinstalling, on macOS too. When the app itself changed, it says so once and opens the download page.
+*Pomocník → Skontrolovať aktualizácie* checks at once; *Pomocník → Vrátiť nainštalovanú verziu* goes back
+to the files that came with the installer. The downloaded files sit next to the data (`web/`, one version
+only). They come over HTTPS from this repository's releases and must match the size and SHA-256 listed
+in the release's `web.json`. They are only the page, which runs sandboxed like a web page (no access to
+other files, no programs); the study plan always stays the installed one.
+
 ### Nothing gets lost
 
 - **History** (*Info → História*): while you work, the database keeps the earlier version every 10

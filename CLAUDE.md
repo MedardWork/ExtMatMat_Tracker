@@ -324,6 +324,13 @@ Things that bite:
   builds the three installers and publishes them under Releases. Do it whenever the person asks for a new download.
   From a cloud session a tag push hangs up ("remote end hung up"); start the workflow with the GitHub tool
   `actions_run_trigger` (`run_workflow`, `desktop.yml`, ref `main`) instead: it tags `v<version>` itself (1.2.0 and 1.2.1, 2026-11-16).
+- **Updates without reinstalling (2026-11-20, from 1.5.3):** the release job runs `dev/webbundle.js`, which attaches
+  `web.json` + `Maturita-<v>-web.json.gz` (the page files, never `js/data/plan.js`). `desktop/update.js` reads
+  `releases/latest/download/web.json` of `updateRepo` (package.json, the public repo) and applies it only if the pack's
+  `shell` equals its own `shellId()` (server/webfiles.js: a hash of `server/*.js` + `desktop/*.js`). So any change to
+  server/ or desktop/ means users must install the new installer (the app offers the page once); keep such changes
+  rare and release them on their own. Test: `MATURITA_UPDATE_URL=<local server>` makes an unpackaged app check too
+  (`xvfb-run -a node dev/update-check.js` drives the real app through update, restart, reset, other shell, bad checksum); `MATURITA_NO_UPDATE=1` turns it off.
 - **macOS build:** without an Apple certificate electron-builder signs nothing, and macOS then refuses the app
   ("is damaged"). `package.json` therefore has `mac.identity: "-"` (ad-hoc) with `hardenedRuntime: false`; keep both. The Mac build is `arm64` only (the person, 2026-11-18: only Macs with an M chip; universal was ~550 MB), output in `dist/mac-arm64/`.
   The workflow checks the signature and starts every packaged build with `MATURITA_SMOKE=1` (desktop/main.js: page

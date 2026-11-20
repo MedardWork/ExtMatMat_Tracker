@@ -4,12 +4,14 @@
    (server/app.js), so nothing listens on a network port.
    Data: data/maturita.db (+ data/backups/) in the app's user-data folder — "Súbor → Otvoriť priečinok s dátami".
    It stays there when the app is uninstalled or updated.
+   New versions of the page arrive without reinstalling (desktop/update.js, menu Pomocník).
    ============================================================ */
 const {app, BrowserWindow, Menu, protocol, shell, dialog, nativeTheme} = require("electron");
 const fs = require("node:fs");
 const path = require("node:path");
 const {openStore} = require("../server/store");
 const {createApp} = require("../server/app");
+const {createUpdater} = require("./update");
 
 const START = "app://tracker/maturita-matematika-tracker.html";
 
@@ -22,7 +24,13 @@ protocol.registerSchemesAsPrivileged([
 const primary = app.requestSingleInstanceLock();
 if(!primary) app.quit();
 
-let win = null, store = null, closing = false, quitting = false;
+let win = null, store = null, updater = null, closing = false, quitting = false;
+
+/* the page's last save, as when the window closes (at most 4 s) */
+const flushPage = () => !win || win.isDestroyed() ? Promise.resolve() : Promise.race([
+  win.webContents.executeJavaScript("window.flushSave ? window.flushSave() : true").catch(() => true),
+  new Promise(r => setTimeout(r, 4000))
+]);
 
 /* MATURITA_SMOKE=1: start, check that the page rendered and the database answers, print the result
    and exit (0 = fine). The release workflow starts every packaged build this way, so an installer
@@ -91,9 +99,7 @@ function createWindow(){
     if(closing) return;
     e.preventDefault();
     closing = true;
-    const flush = win.webContents.executeJavaScript("window.flushSave ? window.flushSave() : true").catch(() => true);
-    const timeout = new Promise(r => setTimeout(r, 4000));
-    Promise.race([flush, timeout]).finally(() => {
+    flushPage().finally(() => {
       if(!win.isDestroyed()) win.destroy();
       if(quitting) app.quit();   /* the close above interrupted a quit — carry it on */
     });
@@ -123,6 +129,12 @@ function buildMenu(){
       {type:"separator"},
       {role:"togglefullscreen", label:"Celá obrazovka"},
       {role:"toggleDevTools", label:"Nástroje pre vývojárov"}
+    ]},
+    {label:"Pomocník", submenu:[
+      {label:"Skontrolovať aktualizácie…", click:() => updater.check(true)},
+      {label:"Vrátiť nainštalovanú verziu", click:() => updater.reset(), visible:updater.isUpdated()},
+      {type:"separator"},
+      {label:`Verzia ${updater.version()}${updater.isUpdated() ? ` (nainštalovaná ${app.getVersion()})` : ""}`, enabled:false}
     ]}
   ];
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
@@ -153,10 +165,12 @@ app.on("before-quit", () => { quitting = true; });
 app.whenReady().then(() => {
   if(!primary) return;
   store = openStore(process.env.MATURITA_DATA_DIR || path.join(app.getPath("userData"), "data"));
-  const handle = createApp({store, checkHost:false});
+  updater = createUpdater({getWindow:() => win, beforeReload:flushPage, onChange:buildMenu});
+  const handle = createApp({store, checkHost:false, web:updater.web, version:app.getVersion()});
   protocol.handle("app", handle);
   buildMenu();
   createWindow();
+  updater.start();
   app.on("activate", () => { if(!win) createWindow(); });
 });
 
