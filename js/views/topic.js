@@ -349,6 +349,24 @@ document.addEventListener("keydown", e => {
   if(e.key === "Enter" || e.key === "ArrowDown"){ e.preventDefault(); const ta = $(".ed-in", e.target.closest(".note")); if(ta) ta.focus(); }
   if(e.key === "Escape"){ e.preventDefault(); finishEditing(); }
 });
+/* Pasting several lines into the title: the first line stays in the title, the rest goes to the top of the body. */
+document.addEventListener("paste", e => {
+  const el = e.target;
+  if(!el.matches || !el.matches(".note-title-in")) return;
+  const text = (e.clipboardData && e.clipboardData.getData("text/plain") || "").replace(/\r\n?/g, "\n");
+  const lines = text.replace(/^\s*\n/, "").split("\n");
+  if(lines.length < 2) return;
+  const rest = lines.slice(1).join("\n").replace(/^\s*\n/, "").trimEnd();
+  if(!rest) return;
+  e.preventDefault();
+  const first = lines[0].replace(/^\s*#+\s+/, "").trim();
+  el.setRangeText(first, el.selectionStart, el.selectionEnd, "end");
+  el.dispatchEvent(new Event("input", {bubbles:true}));
+  const ta = $(".ed-in", el.closest(".note"));
+  if(!ta) return;
+  ta.value = ta.value.trim() ? rest + "\n\n" + ta.value.replace(/^\s*\n/, "") : rest;
+  ta.dispatchEvent(new Event("input", {bubbles:true}));
+});
 
 action("note-new", el => {
   if(ui.route.view !== "tema") return;
