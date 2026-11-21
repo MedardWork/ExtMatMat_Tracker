@@ -180,6 +180,31 @@ ask for a change and paste the answer back; so the format is made to be easy for
 - Check after touching the model: the compiled default must not change (compare `PLAN_SLOTS`/`PLAN_OVER` before and after
   in a browser), then paste a changed plan in Info and apply it.
 
+### Topic tests (2026-11-21)
+
+The person asked for a short test per topic (written at the end of learning it): a score, a day, and the tasks as notes bound
+to that test; shown in the calendar per day and topic, and wherever else it helps.
+
+- Data (js/state.js, "topic tests"): `state.tests = {topicId: [{id, d, n, s, m, c, u}]}`: d = the day written, n = optional name,
+  s points / tasks right out of m (null while not typed). Not `state.plan.tests` (the plan's past papers, scored /30).
+  Its tasks are ordinary notes with `test` = the test's id and `res` = "ok" | "part" | "bad" | "", so editor, search, tombstones and
+  merging are the notes' own. `topicNotes(id)` = the topic's own notes: use it wherever notes are listed or counted for a topic;
+  `notesOf` stays for storage and search. A task whose test is gone shows as an ordinary note (`isTask`).
+- Merged per test by `u` in `mergeStates`; `removeTest` buries the test and its tasks, `restoreTest` is the undo.
+  STATE_V stays 4: `tests` is an optional key. Never bump STATE_V for an optional key: an older app reads an unknown v as v1.
+- Topic page: js/views/topictests.js, section `#tTests` between subtopics and notes. `ui.testEdit` = the test whose fields are open,
+  `finishTest` drops a test left without score, name and tasks; route `#/tema/<id>/t/<testId>`; key T; "8/10" or "8 z 10" in the
+  score field fills both. The hint compares the latest score with the topic's level.
+- Elsewhere through js/components/testcards.js (styles in css/tests.css): month cells and day heads of both calendar panes,
+  diary rows (with "+ test": `ui.pendingTest` opens the topic with a new test on that day), the overview card "Testy z tém"
+  (latest, na zopakovanie, hotové bez testu), the topic list (badge, filter "Slabý test"), quick search, "Naposledy",
+  and "na konci krátky test" / the score on a topic's last block in "Dnes podľa plánu".
+- `testGrade`: from 90 / 70 / 40 % = colours tg4–tg1 (the level colours); `TEST_WEAK` = 0.7 (weak topic, hint, AI text).
+- A scored test counts as the plan's review (`opak:<topic>`) from that week on (`planStatus`). Tests don't feed the pace or the
+  estimate. `planFormatText`, `planAiText` and `planCreateText` mention them.
+- `node dev/app-check.js` drives the app's own pages and the tests end to end (fresh profile, file://, about 30 s; `SHOTS=<dir>`
+  saves pictures). Run it after touching state, the topic page, the calendar or the overview.
+
 ### Tools on their own page (2026-11-16, Fable)
 
 The person found the tools awkward to use standalone. What the engine (`js/tools/core.js`) offers for that now,
@@ -273,7 +298,7 @@ Things that bite:
   that shows a table returns `<div class="tw-tab">…` from `svg()`. `"c_a"` in `SV.text` writes a subscript.
 - A full `node dev/check.js` in the background crawls (the container sleeps between calls): run it in the foreground in
   halves with a 10-minute timeout instead.
-- `node dev/check.js <tool>` clicks through every preset of the tool. `node dev/tile.js <dir> [prefix]`
+- `node dev/check.js <tool>` clicks through every preset of the tool. `node dev/app-check.js` covers the app's own pages (dev/check.js only theory and tools). `node dev/tile.js <dir> [prefix]`
   tiles `SHOTS` pictures into `<dir>/_all.png`. A full `node dev/check.js` takes over 2 minutes.
 - A new tool needs its `<script>` tag in `maturita-matematika-tracker.html` and its styles in
   `css/theory.css`; `dev/check.js` picks it up from `js/tools/` by itself.

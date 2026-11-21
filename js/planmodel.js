@@ -411,8 +411,9 @@ function planFormatText(){
 AKO APPKA RÁTA POKROK (to do plánu nepíš, appka to berie zo svojich dát)
 - Téma je hotová od úrovne „ide to“; „neviem“ a „slabo“ sa za hotové nerátajú (často je to len moje prvé hodnotenie, nie začatá práca).
 - Položka má byť hotová po poslednom dni, ktorý jej plán dáva; čo sa do týždňa nezmestí, do konca ďalšieho týždňa. Dovtedy nerobí sklz, a keď ju dokončím skôr, mám náskok.
-- Opakovanie je hotové, keď mám k jeho téme poznámku z toho týždňa alebo neskôr.
-- Test je hotový, keď má zapísané body.`;
+- Opakovanie je hotové, keď mám k jeho téme poznámku alebo test z tejto témy (s bodmi) z toho týždňa alebo neskôr.
+- Test je hotový, keď má zapísané body.
+- Testy z tém sú krátke testy, ktoré si zapisujem k jednotlivým témam (body z maxima). Do tempa sa nerátajú. Téma, ktorej posledný test je pod ${Math.round(TEST_WEAK * 100)} %, potrebuje opakovanie.`;
 }
 
 /* a small valid plan to show an AI the shape when there is no plan yet (generic, nothing personal) */
@@ -444,10 +445,14 @@ function planStarter(){
       {title:"Keď meškáš", points:["Doťahuj v rezervných blokoch. Pri ľahkých témach stačí menej sedení."]}]};
 }
 
+/* the latest scored topic test, for the AI texts: "8/10 (80 %, 21. 11.)" */
+const testForAi = id => { const x = lastScored(id); return x ? `${scoreTxt(x)} (${pctTxt(x)}, ${fmtD(x.d)})` : ""; };
+
 /* no plan yet: ask the AI to make one, after asking the person what it needs */
 function planCreateText(){
   const F = "```", t = todayIso();
-  const tops = T.filter(x => /^[ab]/.test(x.id) && !(state.rel[x.id] && state.rel[x.id].off)).map(x => `- ${x.id} ${shortName(x)}: ${LV[lv(x.id)].label}`);
+  const tops = T.filter(x => /^[ab]/.test(x.id) && !(state.rel[x.id] && state.rel[x.id].off))
+    .map(x => `- ${x.id} ${shortName(x)}: ${LV[lv(x.id)].label}${testForAi(x.id) ? `, posledný test ${testForAi(x.id)}` : ""}`);
   return `Pomôž mi vytvoriť študijný plán na externú maturitu z matematiky pre moju appku (Maturita z matematiky). Appka z plánu spraví kalendár: rozloží témy do blokov v dňoch a ukazuje, či idem podľa plánu.
 
 AKO POSTUPOVAŤ
@@ -483,6 +488,8 @@ function planAiText(){
     return its.length ? `  - ${fmtD(w.from)} – ${fmtD(w.to)}: ${its.map(x => `${x.id} ${st(x)}`).join("; ")}` : null;
   }).filter(Boolean);
   const tests = PLAN_TESTS.filter(x => planScore(x.id) != null).map(x => `${x.n} (${x.id}) ${planScore(x.id)}/30`);
+  const topicTests = T.filter(x => testForAi(x.id)).map(x => `${x.id} ${testForAi(x.id)}`);
+  const weak = T.filter(x => !(state.rel[x.id] && state.rel[x.id].off) && weakTopic(x.id)).map(x => x.id);
   const inPlanIds = new Set(PLAN_ITEMS.map(planTopicOf).filter(Boolean));
   const outside = T.filter(x => /^[ab]/.test(x.id) && !inPlanIds.has(x.id) && !(state.rel[x.id] && state.rel[x.id].off))
     .map(x => `${x.id} ${shortName(x)} (${LV[lv(x.id)].label})`);
@@ -505,6 +512,8 @@ MÔJ STAV (dnes je ${WEEKDAYS[dateOf(t).getDay()]} ${fmtD(t)} ${t.slice(0, 4)})
 - Položky plánu po týždňoch:
 ${weeks.join("\n")}
 - Body z testov: ${tests.length ? tests.join(", ") : "zatiaľ žiadne"}.
+- Testy z tém (môj posledný test z témy): ${topicTests.length ? topicTests.join("; ") : "zatiaľ žiadne"}.${weak.length ? `
+- Slabý posledný test (pod ${Math.round(TEST_WEAK * 100)} %), na zopakovanie: ${weak.join(", ")}.` : ""}
 - Témy, ktoré v pláne nie sú (id, názov, moja úroveň): ${outside.join("; ") || "žiadne"}.
 
 PLÁN

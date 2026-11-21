@@ -86,6 +86,13 @@ function palSearch(q){
       notes.sort((a, b) => b.c - a.c);
       items.push(...notes.slice(0, 10));
     }
+    if(!o.pick){
+      /* tests by their name ("2. test" too) */
+      const tests = [];
+      for(const x of T) for(const y of testsOf(x.id)) if(hit(testName(x.id, y) + " " + x.n)) tests.push({t:x.id, x:y.id, group:"Testy", d:y.d});
+      tests.sort((a, b) => b.d.localeCompare(a.d));
+      items.push(...tests.slice(0, 6));
+    }
   }
   pal.items = items;
   pal.q = qn;
@@ -103,13 +110,15 @@ function palDraw(){
     if(it.group !== group){ group = it.group; html += `<div class="pal-group">${group}</div>`; }
     const x = BY_ID[it.t];
     const n = it.n ? findNote(it.t, it.n) : null;
-    const main = n ? `✎ ${esc(noteTitle(n))}` : esc(x.n);
-    const sub = n
-      ? `${esc(shortName(x))} · ${fmtAgo(isoOf(n.c))}`
-      : `${esc(areaName(x))} · ${TAB_LABEL[tabOf(x)]}${notesOf(x.id).length ? ` · ✎ ${notesOf(x.id).length}` : ""}`;
+    const y = it.x ? findTest(it.t, it.x) : null, task = n && isTask(it.t, n) ? findTest(it.t, n.test) : null;
+    const main = y ? `Test: ${esc(testName(it.t, y))} · ${scoreTxt(y)}` : n ? `✎ ${esc(noteTitle(n))}` : esc(x.n);
+    const sub = y ? `${esc(shortName(x))} · ${fmtAgo(y.d)}`
+      : task ? `${esc(shortName(x))} · úloha z testu ${esc(testName(it.t, task))} (${fmtAgo(task.d)})`
+      : n ? `${esc(shortName(x))} · ${fmtAgo(isoOf(n.c))}`
+      : `${esc(areaName(x))} · ${TAB_LABEL[tabOf(x)]}${topicNotes(x.id).length ? ` · ✎ ${topicNotes(x.id).length}` : ""}`;
     html += `<div class="pal-item${i === pal.sel ? " sel" : ""}" role="option" aria-selected="${i === pal.sel}" data-act="pal-pick" data-i="${i}">
       <i class="dot l${lv(it.t)}"></i><div><div class="pal-main">${main}</div><div class="pal-sub">${sub}</div></div>
-      ${!n ? `<span class="pal-lv">${LV[lv(it.t)].label}</span>` : ""}
+      ${!n && !y ? `<span class="pal-lv">${LV[lv(it.t)].label}</span>` : ""}
     </div>`;
   });
   list.innerHTML = html;
@@ -140,7 +149,7 @@ function palChoose(i){
   const link = it.n ? {t:it.t, n:it.n} : {t:it.t};
   closePalette(!!o.pick);
   if(o.pick) o.onPick(link);
-  else go(`#/tema/${it.t}${it.n ? "/n/" + it.n : ""}`);
+  else go(`#/tema/${it.t}${it.n ? "/n/" + it.n : it.x ? "/t/" + it.x : ""}`);
 }
 
 action("pal-pick", el => palChoose(Number(el.dataset.i)));

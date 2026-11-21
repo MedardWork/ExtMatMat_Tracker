@@ -5,7 +5,10 @@
                                           p = Poznámky (diary) instead of Témy (the plan)
            #/dennik… (old links) land on the diary week of that entry.
    A topic's state is its level in the app (no separate ticks); a review counts as done once
-   the diary has a note about its topic from that week on; tests by the score typed into the day.
+   the diary has a note about its topic, or a scored topic test of it, from that week on; the plan's tests
+   by the score typed into the day.
+   Topic tests (js/state.js, written on the topic page) show on the day they were written, in both panes:
+   their score in the month cells and day heads, in the diary next to their topic; "+ test" there starts one.
    Diary: state.log entries with k:"day" (note about a day) or k:"t" (note about one topic on a day,
    links[0].t); entries without k are old free entries and are shown on their day.
    ============================================================ */
@@ -34,8 +37,9 @@ const planDaysOf = x => Object.keys(PLAN_BY_DAY).filter(d => PLAN_BY_DAY[d].some
 /* 0 not started, 1 started, 2 done */
 function planStatus(x){
   if(PLAN_REVIEW[x.id]){
-    const w = PLAN_WEEKS.find(w => w.id === x.w);
-    return state.log.some(e => e.d >= w.from && e.links.some(l => l.t === PLAN_REVIEW[x.id]) && (e.text.trim() || !e.k)) ? 2 : 0;
+    const w = PLAN_WEEKS.find(w => w.id === x.w), t = PLAN_REVIEW[x.id];
+    return state.log.some(e => e.d >= w.from && e.links.some(l => l.t === t) && (e.text.trim() || !e.k))
+      || testsOf(t).some(y => y.d >= w.from && y.s != null) ? 2 : 0;
   }
   if(isPlanTest(x)) return planScore(x.id) != null ? 2 : 0;
   const v = lv(x.id);
@@ -127,6 +131,7 @@ function planCell(d, o){
     } else if(ph) body += `<div class="cal-ph" title="${esc(ph.w)}">${esc(ph.w)}</div>`;
     body += (PLAN_BY_DAY[d] || []).filter(p => !isPlanTest(p.it)).map(itemChip).join("");
   }
+  body += testsOnDay(d).map(r => testChip(r.t, r.x)).join("");
   return `<div class="${cls}" data-act="cal-open" data-d="${d}" role="button" tabindex="0" aria-label="${esc(WEEKDAYS[dateOf(d).getDay()] + " " + fmtD(d))}">${cellHead(d)}${body}</div>`;
 }
 
@@ -170,9 +175,11 @@ function slotBody(s, d, compact){
   if(s.it && itemKind(s.it) !== "test"){
     const x = s.it, v = itemLevel(x), tid = planTopicOf(x);
     const which = compact ? `${s.n}/${s.of}` : s.n2 > s.n ? `bloky ${s.n}–${s.n2} z ${s.of}` : `blok ${s.n} z ${s.of}`;
+    const lt = !compact && s.n2 >= s.of && itemKind(x) === "top" ? lastScored(tid) : null;
+    const end = compact || s.n2 < s.of || itemKind(x) !== "top" ? "" : lt ? ` · test ${scoreTxt(lt)}` : " · na konci krátky test";
     return `<a class="sl-it s${planStatus(x)}" href="#/tema/${tid}" title="${esc(x.n)} · ${LV[v].label} · blok ${s.n} z ${s.of}">
       <i class="dot l${v}"></i><span class="sl-n">${esc(compact ? itemName(x) : x.n)}</span>
-      <span class="sl-meta">${itemKind(x) === "rev" ? "opakovanie · " : ""}${which}${s.k === "flex" ? " · v rezerve" : ""}</span></a>`;
+      <span class="sl-meta">${itemKind(x) === "rev" ? "opakovanie · " : ""}${which}${s.k === "flex" ? " · v rezerve" : ""}${end}</span></a>`;
   }
   const test = s.k === "test" && planTestOn(d);
   if(test) return `<span class="sl-n">${esc(test.n)} · NÚCEM ${test.y}</span>${scoreInput(test)}`;
@@ -186,6 +193,7 @@ function dayHeader(d){
     <b>${WD_SHORT[dd.getDay()]} ${fmtD(d)}</b><span>${esc(PLAN_DAY_LABEL[type] ? PLAN_DAYS[type].n : WEEKDAYS[dd.getDay()].replace(/^./, c => c.toUpperCase()))}</span>
     ${ev.map(e => `<div class="cal-ev ${e.k || ""}" title="${esc(e.n + (e.note ? ": " + e.note : ""))}">${esc(e.n)}</div>`).join("")}
     ${ph && !planTestOn(d) ? `<div class="cal-ph" title="${esc(ph.w)}">${esc(ph.w)}</div>` : ""}
+    ${dayTestLines(d)}
   </div>`;
 }
 
@@ -198,7 +206,7 @@ function weekGrid(anchor){
   let heads = `<div class="wk-corner"></div>`, cols = `<div class="wk-hours" style="height:${H}px">${hours.join("")}</div>`, agenda = "";
   for(const d of days){
     if(!inPlan(d)){
-      heads += `<div class="wk-dh off"><b>${fmtDW(d)}</b><span>${d < PLAN_START ? "pred plánom" : "po maturite"}</span></div>`;
+      heads += `<div class="wk-dh off"><b>${fmtDW(d)}</b><span>${d < PLAN_START ? "pred plánom" : "po maturite"}</span>${dayTestLines(d)}</div>`;
       cols += `<div class="wk-col off" style="height:${H}px"></div>`;
       continue;
     }
@@ -257,8 +265,9 @@ function dayTopics(d){
   };
   for(const p of PLAN_BY_DAY[d] || []){ const t = planTopicOf(p.it); if(t) add(t, PLAN_REVIEW[p.it.id] ? "rev" : "plan"); }
   for(const key in state.slvAt) if(isoOf(state.slvAt[key]) === d) add(key.split("/")[0], "lv");
-  for(const t in state.notes) for(const n of state.notes[t]) if(isoOf(n.c) === d || isoOf(n.u) === d) add(t, "note").notes.push(n);
+  for(const t in state.notes) for(const n of state.notes[t]) if(!isTask(t, n) && (isoOf(n.c) === d || isoOf(n.u) === d)) add(t, "note").notes.push(n);
   for(const e of dayNotes(d)) if(e.k === "t" && e.links[0]) add(e.links[0].t, "log");
+  for(const r of testsOnDay(d)) add(r.t, "test");
   return out;
 }
 
@@ -271,6 +280,7 @@ function activityMap(){
   const rated = {};
   for(const key in state.slvAt) (rated[isoOf(state.slvAt[key])] ||= new Set()).add(key.split("/")[0]);
   for(const d in rated) add(d, rated[d].size);
+  for(const t in state.tests) state.tests[t].forEach(x => add(x.d));
   return map;
 }
 const heat = n => !n ? 0 : n === 1 ? 1 : n <= 3 ? 2 : n <= 6 ? 3 : 4;
@@ -325,6 +335,8 @@ function notesCell(map){
       if(tops.length) body += `<div class="nt-dots">${tops.map(r => `<i class="dot l${lv(r.t)}" title="${esc(BY_ID[r.t].n)}"></i>`).join("")}</div>`;
       const cnt = dayNotes(d).filter(e => e.text.trim()).length;
       if(cnt) body += `<span class="nt-cnt">✎ ${cnt}</span>`;
+      const tests = testsOnDay(d);
+      if(tests.length) body += `<div class="nt-tests">${tests.map(r => testBadge(r.t, r.x)).join("")}</div>`;
     }
     return `<div class="${cls}" data-act="cal-open" data-d="${d}" role="button" tabindex="0" title="${fmtIso(d)} · ${n ? n + " " + plural(n, "aktivita", "aktivity", "aktivít") : "nič"}">${cellHead(d)}${body}</div>`;
   };
@@ -350,9 +362,15 @@ function notesWeek(anchor, map){
       if(r.why.has("plan")) tags.push("podľa plánu");
       if(r.why.has("rev")) tags.push("opakovanie podľa plánu");
       if(r.why.has("lv")) tags.push(`ohodnotené: ${LV[v].label}`);
+      const tests = testsOf(r.t).filter(x => x.d === d).sort((a, b) => a.c - b.c).map(x => {
+        const bad = testTasks(r.t, x.id).filter(n => n.res === "bad" || n.res === "part").length;
+        return `<a class="cn-test ${testCls(x)}" href="${testHref(r.t, x)}" title="${esc(testTitle(r.t, x))}">${esc(testName(r.t, x))} <b>${scoreTxt(x)}</b>${pctTxt(x) ? ` · ${pctTxt(x)}` : ""}${bad ? ` · ✗ ${bad}` : ""}</a>`;
+      }).join("");
       const notes = r.notes.map(n => `<a class="cn-tnote" href="#/tema/${r.t}/n/${n.id}">✎ ${esc(noteTitle(n))}</a>`).join("");
       return `<div class="cn-topic" ${tn ? `id="cn-${tn.id}"` : ""}>
-        <div class="cn-th"><a href="#/tema/${r.t}"><i class="dot l${v}"></i>${esc(BY_ID[r.t].n)}</a>${tags.map(x => `<span class="cn-tag">${x}</span>`).join("")}</div>
+        <div class="cn-th"><a href="#/tema/${r.t}"><i class="dot l${v}"></i>${esc(BY_ID[r.t].n)}</a>${tags.map(x => `<span class="cn-tag">${x}</span>`).join("")}
+          <button class="cn-tadd" data-act="cal-test-new" data-t="${r.t}" data-d="${d}" title="Zapísať test z tejto témy v tento deň">+ test</button></div>
+        ${tests ? `<div class="cn-tests">${tests}</div>` : ""}
         ${notes ? `<div class="cn-tnotes">${notes}</div>` : ""}
         ${noteField(`cn|t|${d}|${r.t}`, tn ? tn.text : "", "+ poznámka k téme v tento deň")}
       </div>`;
@@ -365,7 +383,8 @@ function notesWeek(anchor, map){
       <div class="cn-dnote"><span class="cn-label">Deň</span>${noteField(`cn|day|${d}`, dn ? dn.text : "", "+ poznámka k celému dňu")}</div>
       ${rows ? `<div class="cn-topics">${rows}</div>` : `<p class="muted cn-plan">V tento deň nie je nič v pláne ani ohodnotené.</p>`}
       ${old ? `<div class="cn-olds"><span class="cn-label">Záznamy</span>${old}</div>` : ""}
-      <button class="chip add" data-act="cn-topic" data-d="${d}">+ Pridať tému</button>
+      <div class="cn-adds"><button class="chip add" data-act="cn-topic" data-d="${d}">+ Pridať tému</button>
+        <button class="chip add" data-act="cal-test-pick" data-d="${d}">+ Test z témy</button></div>
     </section>`;
   }
   return html;
@@ -482,6 +501,16 @@ action("cn-del", el => {
   if(!e) return;
   save(); rerenderCal();
   toast("Záznam zmazaný.", () => { restoreLog(e); save(); rerenderCal(); });
+});
+/* a new test on a topic, written on day d: the topic page opens with its fields */
+function calTestNew(t, d){
+  ui.pendingTest = {t, d};
+  go(`#/tema/${t}`);
+}
+action("cal-test-new", el => calTestNew(el.dataset.t, el.dataset.d));
+action("cal-test-pick", el => {
+  const d = el.dataset.d;
+  openPalette({pick:true, notes:false, title:`Test z ktorej témy? (${fmtDW(d)})`, onPick: link => calTestNew(link.t, d)});
 });
 action("cn-topic", el => {
   const d = el.dataset.d;

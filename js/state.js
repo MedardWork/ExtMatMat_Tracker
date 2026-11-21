@@ -6,9 +6,15 @@
      slvAt:  { "topicId/subKey": timestamp },   when that level last changed
      subs:   { topicId: [ {id, n, c, u} ] },    subtopics you added yourself
      rel:    { topicId: {off, at} },            off = moved to "Nerelevantné", left out of the estimate
-     notes:  { topicId: [ {id, title, body, c, u, lv, sub} ] }
+     notes:  { topicId: [ {id, title, body, c, u, lv, sub, test?, res?} ] }
                                                 named notes; c = created, u = updated,
-                                                lv = how well you understand it (0 = not set), sub = subtopic key
+                                                lv = how well you understand it (0 = not set), sub = subtopic key;
+                                                test = id of the topic test it belongs to (a task of that test),
+                                                res = how that task went: "ok" | "part" | "bad" | "" (not marked)
+     tests:  { topicId: [ {id, d:"YYYY-MM-DD", n, s, m, c, u} ] }
+                                                short tests on a topic: d = the day it was written, n = name (optional),
+                                                s points / tasks right out of m (null while not typed)
+                                                (not state.plan.tests: those are the plan's past papers, scored /30)
      upd:    { topicId: timestamp },            last change to levels or notes
      log:    [ {id, d:"YYYY-MM-DD", text, ts, u, links:[{t, n?}]} ]
                                                 study diary; links point at topics / notes
@@ -29,7 +35,7 @@ const STATE_V = 4;
 /* untouched copy of an older save, written once before upgrading it */
 const backupKey = v => `maturita-mat-v${v || 1}-backup`;
 
-const emptyState = () => ({v:STATE_V, slv:{}, slvAt:{}, subs:{}, rel:{}, notes:{}, upd:{}, log:[], del:{}, epoch:0, recent:[], prefs:{}, plan:{tests:{}, def:null, at:0, hist:[]}});
+const emptyState = () => ({v:STATE_V, slv:{}, slvAt:{}, subs:{}, rel:{}, notes:{}, tests:{}, upd:{}, log:[], del:{}, epoch:0, recent:[], prefs:{}, plan:{tests:{}, def:null, at:0, hist:[]}});
 const PLAN_HIST = 10;   /* earlier plans kept in state.plan.hist */
 let state = emptyState();
 let store = "none";
@@ -57,7 +63,7 @@ function migrate(old){
   const s = emptyState();
   let levels = {}, levelAt = {};
   if(old.v >= 2 && old.v <= STATE_V){
-    for(const k of ["slv","slvAt","subs","rel","notes","upd","del","prefs","plan"]) if(isObj(old[k])) s[k] = old[k];
+    for(const k of ["slv","slvAt","subs","rel","notes","tests","upd","del","prefs","plan"]) if(isObj(old[k])) s[k] = old[k];
     s.epoch = +old.epoch || 0;
     if(Array.isArray(old.log)) s.log = old.log;
     if(Array.isArray(old.recent)) s.recent = old.recent;
@@ -99,7 +105,8 @@ function tidy(s){
       list = v.filter(isObj).map(n => ({
         id: String(n.id || uid()), title: String(n.title || ""), body: String(n.body || ""),
         c: +n.c || Date.now(), u: +n.u || +n.c || Date.now(),
-        lv: n.lv >= 1 && n.lv <= 4 ? +n.lv : 0, sub: String(n.sub || "")
+        lv: n.lv >= 1 && n.lv <= 4 ? +n.lv : 0, sub: String(n.sub || ""),
+        ...(n.test ? {test: String(n.test), res: TASK_RES.includes(n.res) ? n.res : ""} : {})
       }));
     }
     if(list.length && BY_ID[id]) s.notes[id] = list; else delete s.notes[id];
@@ -111,6 +118,14 @@ function tidy(s){
       ? e.links.filter(l => isObj(l) && BY_ID[l.t]).map(l => l.n ? {t:l.t, n:String(l.n)} : {t:l.t})
       : []
   }));
+  for(const id in s.tests){
+    const num = v => v == null || v === "" || !isFinite(+v) ? null : Math.max(0, +v);
+    const list = Array.isArray(s.tests[id]) ? s.tests[id].filter(isObj).map(x => ({
+      id: String(x.id || uid()), d: /^\d{4}-\d\d-\d\d$/.test(x.d) ? x.d : isoOf(+x.c || Date.now()), n: String(x.n || ""),
+      s: num(x.s), m: num(x.m) || null, c: +x.c || Date.now(), u: +x.u || +x.c || Date.now()
+    })) : [];
+    if(list.length && BY_ID[id]) s.tests[id] = list; else delete s.tests[id];
+  }
   for(const id in s.subs){
     const list = Array.isArray(s.subs[id]) ? s.subs[id].filter(x => isObj(x) && String(x.n || "").trim()).map(x => ({
       id: String(x.id || "u" + uid()), n: String(x.n).trim(), c: +x.c || Date.now(), u: +x.u || +x.c || Date.now()
@@ -314,6 +329,11 @@ function mergeStates(a, b){
     const subs = newest([...(b.subs[id] || []), ...(a.subs[id] || [])]).filter(alive);
     if(subs.length) out.subs[id] = subs;
   }
+  const xa = a.tests || {}, xb = b.tests || {};
+  for(const id of new Set([xa, xb].flatMap(Object.keys))){
+    const tests = newest([...(xb[id] || []), ...(xa[id] || [])]).filter(alive);
+    if(tests.length) out.tests[id] = tests;
+  }
   for(const id of new Set([a.rel, b.rel].flatMap(Object.keys))){
     const ra = a.rel[id], rb = b.rel[id];
     out.rel[id] = !rb || (ra && ra.at >= rb.at) ? ra : rb;
@@ -344,7 +364,7 @@ function newest(list){
   return [...m.values()];
 }
 /* nothing rated, written or opened yet */
-const isEmptyState = () => !Object.keys(state.slv).length && !Object.keys(state.notes).length && !state.log.length;
+const isEmptyState = () => !Object.keys(state.slv).length && !Object.keys(state.notes).length && !Object.keys(state.tests).length && !state.log.length;
 const bury = id => { state.del[id] = Date.now(); };
 function newEpoch(){ state.epoch = Date.now(); }
 
@@ -450,23 +470,27 @@ function itemsOf(k){ return T.filter(x => tabOf(x) === k); }
 const ecItems = () => T.filter(x => x.t === "a" && !isOff(x.id));
 
 /* ---------- notes ---------- */
+/* notesOf = every note of the topic, the tasks of its tests included; topicNotes = the topic's own notes */
 const notesOf = id => state.notes[id] || [];
 const findNote = (tid, nid) => notesOf(tid).find(n => n.id === nid);
+/* a note that belongs to one of the topic's tests (if the test is gone, it is an ordinary note again) */
+const isTask = (tid, n) => !!(n.test && findTest(tid, n.test));
+const topicNotes = id => notesOf(id).filter(n => !isTask(id, n));
 
 function sortedNotes(id){
   const dir = state.prefs.noteOrder === "old" ? 1 : -1;
-  return [...notesOf(id)].sort((a, b) => (a.c - b.c) * dir);
+  return [...topicNotes(id)].sort((a, b) => (a.c - b.c) * dir);
 }
 /* newest by creation, whatever the display order */
-const latestNote = id => notesOf(id).reduce((a, n) => (!a || n.c > a.c ? n : a), null);
+const latestNote = id => topicNotes(id).reduce((a, n) => (!a || n.c > a.c ? n : a), null);
 
 function noteTitle(n){
   return n.title.trim() || plainText(n.body.split("\n").find(l => l.trim()) || "", 60) || "Bez názvu";
 }
 
-function addNote(tid, sub = ""){
+function addNote(tid, sub = "", test = ""){
   const now = Date.now();
-  const n = {id:uid(), title:"", body:"", c:now, u:now, lv:0, sub};
+  const n = {id:uid(), title:"", body:"", c:now, u:now, lv:0, sub, ...(test ? {test, res:""} : {})};
   (state.notes[tid] ||= []).push(n);
   touch(tid);
   return n;
@@ -492,7 +516,81 @@ function restoreNote(tid, n){
   (state.notes[tid] ||= []).push(n);
 }
 
-const noteHaystack = id => notesOf(id).map(n => n.title + " " + n.body).join(" ");
+const noteHaystack = id => notesOf(id).map(n => n.title + " " + n.body).concat(testsOf(id).map(x => x.n)).join(" ");
+
+/* ---------- topic tests ----------
+   A short test on one topic: when (d), how many points / tasks right (s) out of how many (m), an optional name (n).
+   Its tasks are notes of the topic with test = its id, written and edited like any note, plus a mark res. */
+const TASK_RES = ["ok", "part", "bad"];
+const TEST_WEAK = 0.7;       /* a topic whose latest test is below this is "na zopakovanie" */
+const testsOf = id => state.tests[id] || [];
+const findTest = (tid, xid) => testsOf(tid).find(x => x.id === xid);
+/* oldest first: by the day written, then by when it was entered */
+const testsByDate = id => [...testsOf(id)].sort((a, b) => a.d.localeCompare(b.d) || a.c - b.c);
+const latestTest = id => { const l = testsByDate(id); return l[l.length - 1] || null; };
+/* the latest test that has a score */
+const lastScored = id => testsByDate(id).filter(x => testPct(x) != null).pop() || null;
+const testName = (tid, x) => x.n.trim() || `${testsByDate(tid).indexOf(x) + 1}. test`;
+const testTasks = (tid, xid) => notesOf(tid).filter(n => n.test === xid).sort((a, b) => a.c - b.c);
+/* share of the maximum, 0–1; null while the score or the maximum is missing */
+const testPct = x => x.s != null && x.m ? Math.min(1, x.s / x.m) : null;
+/* a result on the colour scale of the levels: from 90 % 4, from 70 % 3, from 40 % 2, below 1, no score 0 */
+const testGrade = p => p == null ? 0 : p >= 0.9 ? 4 : p >= TEST_WEAK ? 3 : p >= 0.4 ? 2 : 1;
+const numTxt = v => String(Math.round(v * 100) / 100).replace(".", ",");
+/* "8/10", "8 b." without a maximum, "—" without a score */
+const scoreTxt = x => x.s == null ? "—" : x.m ? `${numTxt(x.s)}/${numTxt(x.m)}` : `${numTxt(x.s)} b.`;
+const pctTxt = x => { const p = testPct(x); return p == null ? "" : `${Math.round(p * 100)} %`; };
+/* the topic's latest scored test is below TEST_WEAK */
+const weakTopic = id => { const x = lastScored(id); return !!x && testPct(x) < TEST_WEAK; };
+/* every test written on a day, as {t: topic id, x: test} */
+function testsOnDay(d){
+  const out = [];
+  for(const t in state.tests) for(const x of state.tests[t]) if(x.d === d && BY_ID[t]) out.push({t, x});
+  return out.sort((a, b) => a.x.c - b.x.c);
+}
+/* the "out of" of the test entered last, offered for the next one */
+function lastMax(){
+  let best = null;
+  for(const t in state.tests) for(const x of state.tests[t]) if(x.m && (!best || x.c > best.c)) best = x;
+  return best ? best.m : null;
+}
+
+function addTest(tid, d = todayIso()){
+  const now = Date.now();
+  const x = {id:uid(), d, n:"", s:null, m:lastMax(), c:now, u:now};
+  (state.tests[tid] ||= []).push(x);
+  touch(tid);
+  return x;
+}
+function updateTest(tid, xid, patch){
+  const x = findTest(tid, xid);
+  if(!x) return null;
+  Object.assign(x, patch, {u:Date.now()});
+  touch(tid);
+  return x;
+}
+/* the test goes together with its tasks; returns both, for undo */
+function removeTest(tid, xid){
+  const list = testsOf(tid);
+  const i = list.findIndex(x => x.id === xid);
+  if(i < 0) return null;
+  const tasks = testTasks(tid, xid);
+  tasks.forEach(n => removeNote(tid, n.id));
+  const [x] = list.splice(i, 1);
+  if(!list.length) delete state.tests[tid];
+  bury(xid);
+  touch(tid);
+  return {x, tasks};
+}
+function restoreTest(tid, {x, tasks}){
+  delete state.del[x.id];
+  x.u = Date.now();
+  (state.tests[tid] ||= []).push(x);
+  tasks.forEach(n => restoreNote(tid, n));
+  touch(tid);
+}
+/* nothing typed yet: no score, no name, no tasks */
+const emptyTest = (tid, x) => x.s == null && !x.n.trim() && !testTasks(tid, x.id).length;
 const subHaystack = id => subsOf(id).map(x => x.n).join(" ");
 
 /* ---------- log ---------- */

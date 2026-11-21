@@ -13,7 +13,8 @@ const FILTERS = [
   {f:"n1",    label:"Neviem",       test: x => lv(x.id) === 1},
   {f:"mid",   label:"Rozrobené",    test: x => lv(x.id) === 2 || lv(x.id) === 3},
   {f:"n4",    label:"Perfektne",    test: x => lv(x.id) === 4},
-  {f:"note",  label:"S poznámkou",  test: x => notesOf(x.id).length > 0},
+  {f:"note",  label:"S poznámkou",  test: x => topicNotes(x.id).length > 0},
+  {f:"weak",  label:"Slabý test",   test: x => weakTopic(x.id)},
   {f:"today", label:"Zmenené dnes", test: x => changedToday(x.id)}
 ];
 
@@ -87,10 +88,12 @@ const gluedArrow = name => {
 
 function rowHtml(x){
   const v = lv(x.id);
-  const notes = notesOf(x.id);
+  const notes = topicNotes(x.id);
 
   const nSub = subsOf(x.id).length, rated = ratedSubs(x.id);
   let meta = `<span class="sub-count" title="Ohodnotené podtémy">${subMeter(x.id)}${rated}/${nSub}</span>`;
+  const lt = lastScored(x.id), nt = testsOf(x.id).length;
+  if(lt) meta += testBadge(x.id, lt, `test ${scoreTxt(lt)}${nt > 1 ? ` <em>· ${nt}×</em>` : ""}`);
   if(x.src) meta += `<span class="src">${x.src}</span>`;
   if(state.upd[x.id]){
     const t = changedToday(x.id);

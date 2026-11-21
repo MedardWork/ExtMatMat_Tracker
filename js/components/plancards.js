@@ -33,7 +33,7 @@ function renderPlanToday(){
     const dn = dayNote(last);
     html += `<a class="pt-last" href="${calHash("t", last, true)}"><span class="rl-when">Naposledy · ${fmtAgo(last)}</span>
       ${dn ? `<span class="rl-text">${inline(plainText(dn.text, 140))}</span>` : ""}
-      ${tops.length ? `<span class="pt-tops">${tops.map(r => `<i class="dot l${lv(r.t)}"></i>${esc(shortName(BY_ID[r.t]))}`).join(" · ")}</span>` : ""}</a>`;
+      ${tops.length ? `<span class="pt-tops">${tops.map(r => `<i class="dot l${lv(r.t)}"></i>${esc(shortName(BY_ID[r.t]))}${testsOf(r.t).filter(x => x.d === last && x.s != null).map(x => ` <span class="tt-badge ${testCls(x)}">test ${scoreTxt(x)}</span>`).join("")}`).join(" · ")}</span>` : ""}</a>`;
   }
   html += `<div class="resume-acts">
     ${PLAN_NONE ? `<a class="btn" href="#/info" data-act="plan-goto">Vytvoriť plán</a>` : ""}
@@ -57,7 +57,7 @@ function renderPlanNext(){
     const late = end < t;
     const when = late ? `<b class="late">mešká</b>${from ? ` · podľa plánu ${from === to ? fmtDW(to) : `${fmtDW(from)} – ${fmtDW(to)}`}` : ` · malo byť do ${fmtDW(end)}`}`
       : !from ? `nezmestilo sa do blokov · dobehni do ${fmtDW(end)}` : from <= t ? `podľa plánu ${from === end ? "dnes" : `do ${fmtDW(end)}`}` : `podľa plánu ${fmtDW(from)}`;
-    const what = itemKind(x) === "rev" ? "opakovanie · zapíš ho do poznámok k téme" : LV[v].label;
+    const what = itemKind(x) === "rev" ? "opakovanie · zapíš ho do poznámok k téme alebo si daj test" : LV[v].label;
     return {tid, li: `<li><a class="next-link" href="#/tema/${tid}" data-act="seq-next"><i class="dot l${v}"></i>${esc(x.n)}</a><em>${what} · ${calNum(x.s)} ${skSed(x.s)}${when ? " · " + when : ""}</em></li>`};
   });
   host.dataset.ids = list.map(x => x.tid).join(" ");

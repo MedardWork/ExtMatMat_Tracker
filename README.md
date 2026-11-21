@@ -116,12 +116,13 @@ choose the folder).
 ## What's in it
 
 - **Prehľad** — countdown, score estimate by test block, and from your study plan: today's blocks, what comes
-  next, pace (ahead or behind), milestones and the plan's rules; plus the last day you studied.
-- **Témy** — the topic list with tabs, search (also inside notes), filters with counts and
-  quick level buttons. Click a topic name to open it.
+  next, pace (ahead or behind), milestones and the plan's rules; plus the last day you studied and your topic
+  tests (the latest results, topics to go over again, finished topics without a test).
+- **Témy** — the topic list with tabs, search (also inside notes), filters with counts (one of them: *Slabý test*),
+  the latest test score of each topic and quick level buttons. Click a topic name to open it.
 - **Topic page** (`#/tema/a5`) — the whole topic on one page: its subtopics, each with its own
   level (the topic's level and understanding % are computed from them; you can add your own
-  subtopics), named notes (sorted by creation date, each with its own "rozumiem" level and optionally
+  subtopics), its tests (see *Tests on a topic* below), named notes (sorted by creation date, each with its own "rozumiem" level and optionally
   tied to a subtopic, filterable by both), description, prerequisites / what builds on it, and the
   diary notes that mention it, with a box that writes today's diary note for the topic (saved as you type).
 - **Teória** (`#/tema/a21/teoria`) — the topic explained in short pieces, each followed by an
@@ -130,13 +131,14 @@ choose the folder).
   with its lines and circles, mean / median / mode.
 - **Kalendár** — your study plan as a month view and a week view split into the day's time blocks, each maths
   block with its topic (see *Study plan* below); switch to **Poznámky** for the study diary: a note for each day
-  and for each topic taken that day (topics appear by themselves when rated or noted), saved as you type.
+  and for each topic taken that day (topics appear by themselves when rated, noted or tested), saved as you type.
+  Both views show the topic tests written on each day with their score; *+ test* starts one for a topic and day.
   Replaced the old Denník tab; old `#/dennik` links land here.
 - **Info** — data sources, backup (copy / download / paste / load a file), the study plan (make or change it
   with an AI), history of earlier versions (desktop app and Docker), keyboard shortcuts.
 
 Press `/` (or Ctrl+K) anywhere to jump to a topic or note. On a topic page: `←` `→` previous /
-next topic, `↑` `↓` pick a subtopic, `0`–`4` set its level, `N` new note, `Esc` back to the list.
+next topic, `↑` `↓` pick a subtopic, `0`–`4` set its level, `N` new note, `T` new test, `Esc` back to the list.
 
 ### How levels add up
 
@@ -149,6 +151,21 @@ are for your orientation only and don't feed the estimate.
 Topics you know won't be on the test can be marked ⊘ (row button or topic page). They move to the
 **Nerelevantné** tab and drop out of the estimate, "Čo ďalej" and the pace counter — each block's item
 count is then spread over the topics still in play. Levels and notes stay; ↩ Vrátiť brings them back.
+
+### Tests on a topic
+
+A short test at the end of a topic goes under **Testy** on the topic page (`+ Nový test` or `T`): the day you wrote
+it, how many points or tasks you got right out of how many (typing `8/10` into the first field fills both) and an
+optional name. Its tasks are notes that belong to that test, written in the same editor, each marked *správne*,
+*čiastočne* or *zle*; they don't show among the topic's own notes, but the quick search finds them.
+
+- The colour of a result follows the levels: from 90 % *perfektne*, from 70 % *ide to*, from 40 % *slabo*, below that *neviem*.
+- A topic whose latest test is below 70 % is listed under *Na zopakovanie* on the overview and under the *Slabý test*
+  filter. When the latest test disagrees with the topic's own level, the topic page says so.
+- The calendar shows every test on the day it was written, with its score, in the plan and in the diary.
+- A scored test counts as the plan's review of that topic (*opak:*) in the week it was written. Tests don't feed the
+  score estimate or the pace.
+- Tests are part of the saved progress, the backup and the text for an AI (Info → Plán v kalendári).
 
 ## Study plan
 
@@ -176,8 +193,9 @@ week overflows. The last 10 plans can be restored and the plan can be deleted.
 sessions each needs (1 session = 2 blocks of 45 minutes), plus day templates (school day, weekend, test day …)
 with their time blocks. The app fills each week's maths blocks with its topics in order; what does not fit goes
 into the reserve blocks of the reserve days, and anything left is shown as a warning. A topic counts as done at
-level *ide to* or better and as started at *neviem* / *slabo*, so there is nothing to tick off by hand; a test
-counts once its score is typed into its day in the calendar.
+level *ide to* or better and as started at *neviem* / *slabo*, so there is nothing to tick off by hand; a review counts
+once you write a note about its topic or a scored test on it that week; a test counts once its score is typed into its
+day in the calendar.
 
 The plan is part of your saved progress: *Skopírovať / Stiahnuť postup* include it, and *Stiahnuť plán* saves the
 plan alone as a `.json` file. The format (`maturita-plan-1`) is described in `js/planmodel.js`.
@@ -274,6 +292,7 @@ css/{overview,topics,topic,journal}.css   one stylesheet per page
 css/markdown.css                   how rendered notes look
 css/editor.css, css/palette.css    note editor, quick search
 css/theory.css                     Teória tab, tool widgets, Nástroje pages
+css/tests.css                      topic tests: the section on the topic page, scores in the list, calendar, overview
 vendor/katex/                      KaTeX 0.16 (MIT) — formula rendering, bundled for offline use
 vendor/jsxgraph/                   JSXGraph 1.13 (MIT) — graphs and geometry; loaded when first needed
 js/data/levels.js                  test areas (with item counts), levels, tab labels
@@ -284,7 +303,7 @@ js/data/theory/index.js            which topics have theory
 js/data/theory/<id>.js             one topic's theory; loaded when its Teória tab opens
 js/utils.js                        escaping, dates, Slovak plurals, plain-text snippets
 js/markdown.js                     Markdown + math → HTML (escapes everything first)
-js/state.js                        saved data (v4), migration, load/save, levels, notes + diary helpers
+js/state.js                        saved data (v4), migration, load/save, levels, notes + diary helpers, topic tests
 js/core.js                         UI state, routing (#/…), data-act click handling, toast
 js/theory.js                       theory blocks → HTML, loading theory files
 js/tools/core.js                   tool engine: expressions, sliders and locking, mounting, drawing helpers
@@ -292,9 +311,11 @@ js/tools/<id>.js                   the tools themselves, one file each (the tabl
 js/components/editor.js            note editor: toolbar, symbols, live preview, list keys
 js/components/palette.js           quick search / topic picker
 js/components/{countdown,gauge,plancards}.js   pieces of the overview (plancards: today / next / pace / milestones from the plan)
+js/components/testcards.js         topic tests outside the topic page: badges, calendar chips, the overview card
 js/views/overview.js               #/
 js/views/topics.js                 #/temy/a|c
 js/views/topic.js                  #/tema/<id>
+js/views/topictests.js             the Testy section of the topic page (#/tema/<id>/t/<testId> opens one test)
 js/views/theory.js                 #/tema/<id>/teoria
 js/views/tools.js                  #/nastroje, #/nastroje/<tool>
 js/views/calendar.js               #/kalendar (plan + diary; data in js/data/plan.js)
@@ -304,6 +325,7 @@ js/views/info.js                   #/info
 js/main.js                         theme, global keys, startup
 
 dev/check.js                       opens theory and tool pages in a browser and reports errors
+dev/app-check.js                   drives the app's own pages (overview, list, topic, calendar, Info) incl. topic tests
 dev/desktop-check.js               starts the real desktop app and checks pages, saving, export, links, closing
 CLAUDE.md                          notes for continuing the theory work with Claude Code
 

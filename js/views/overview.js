@@ -1,5 +1,5 @@
 /* ============================================================
-   OVERVIEW — countdown, score estimate, today by the plan, next in the plan, pace, milestones
+   OVERVIEW — countdown, score estimate, today by the plan, next in the plan, pace, topic tests, milestones
    ============================================================ */
 VIEWS.prehlad = {
   title: () => "Prehľad",
@@ -40,12 +40,13 @@ VIEWS.prehlad = {
         <div class="ov-side">
           <div class="clock" id="clockEc"></div>
           <section class="card plan-pace" id="planPace"></section>
+          <section class="card tests-card" id="testsCard"></section>
           <section class="card" id="milestones"></section>
           ${planRulesHtml()}
         </div>
       </div>
     </div>`;
-    renderClock(); renderGauge(); renderPlanToday(); renderPlanNext(); renderPlanPace(); renderMilestones();
+    renderClock(); renderGauge(); renderPlanToday(); renderPlanNext(); renderPlanPace(); renderTestsCard(); renderMilestones();
   }
 };
 

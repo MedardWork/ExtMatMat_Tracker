@@ -1,8 +1,8 @@
 /* ============================================================
-   TOPIC — one topic on the whole page: subtopics with their own levels,
-   named notes, description, prerequisites and the diary entries that mention it
+   TOPIC — one topic on the whole page: subtopics with their own levels, tests on the topic
+   (js/views/topictests.js), named notes, description, prerequisites and the diary entries that mention it
    Keys (when not typing): ← → previous / next topic · ↑ ↓ pick a subtopic · 0–4 its level
-                           N new note · Esc back to list
+                           N new note · T new test · Esc back to list
    ============================================================ */
 const nf = {t:null, sub:null, lv:null};   /* note filter on the open topic: subtopic key, note level */
 
@@ -11,6 +11,7 @@ VIEWS.tema = {
   render(host){
     const id = ui.route.id, x = BY_ID[id];
     if(ui.editing && ui.editing.t !== id) finishEditing(true);
+    if(ui.testEdit && ui.testEdit.t !== id) finishTest(true);
     markRecent(id); saveSoon();
     ui.lastTopic = id;
     if(!ui.seq || !ui.seq.includes(id)){ ui.seq = itemsOf(tabOf(x)).map(y => y.id); ui.seqLabel = ""; }
@@ -21,6 +22,13 @@ VIEWS.tema = {
       ui.pendingSub = null;
     }
     if(nf.t !== id){ nf.t = id; nf.sub = null; nf.lv = null; ui.subSel = null; }
+    /* "+ Test" in the calendar: a new test on that day, its fields open */
+    let newTest = null;
+    if(ui.pendingTest && ui.pendingTest.t === id){ newTest = startTest(id, ui.pendingTest.d); ui.pendingTest = null; }
+    /* a link to a test, or to a task inside one, opens that test */
+    const routed = ui.route.note && findNote(id, ui.route.note);
+    if(routed && routed.test) ui.collapsed.delete(routed.test);
+    if(ui.route.test) ui.collapsed.delete(ui.route.test);
 
     host.innerHTML = `<article class="page topic${ui.editing ? " editing" : ""}" id="topicPage">
       <div class="t-nav" id="tNav"></div>
@@ -29,18 +37,24 @@ VIEWS.tema = {
       <div class="t-grid">
         <div class="t-main">
           <section class="card t-subs" id="tSubs" aria-label="Podtémy"></section>
+          <section class="t-tests" id="tTests" aria-label="Testy"></section>
           <section class="t-notes" id="tNotes" aria-label="Poznámky"></section>
         </div>
         <aside class="t-side" id="tSide"></aside>
       </div>
     </article>`;
-    drawTNav(); drawTHead(); drawTSubs(); drawTNotes(); drawTSide();
+    drawTNav(); drawTHead(); drawTSubs(); drawTTests(); drawTNotes(); drawTSide();
     /* the "Teória" links beside subtopics need to know which of them the theory covers */
     if(hasTheory(id) && !THEORY[id]) loadTheory(id).then(() => {
       if(ui.route.view === "tema" && ui.route.id === id && !ui.route.tab && $("#tSubs")) drawTSubs();
     });
 
-    if(ui.editing) focusEditor();
+    if(newTest) focusTest(newTest.id);
+    else if(ui.editing) focusEditor();
+    else if(ui.route.test){
+      const el = $(`#test-${ui.route.test}`);
+      if(el){ el.scrollIntoView({block:"start"}); flashEl(el); }
+    }
     else if(ui.route.note){
       const el = $(`#note-${ui.route.note}`);
       if(el){ ui.collapsed.delete(ui.route.note); el.classList.remove("collapsed"); el.scrollIntoView({block:"start"}); flashEl(el); }
@@ -48,8 +62,8 @@ VIEWS.tema = {
   },
   refresh(what){
     if(ui.route.tab === "teoria"){ refreshTheory(); return; }
-    if(what === "level"){ drawTNav(); drawTHead(); drawTSubs(); drawTSide(); }
-    else { drawTNav(); drawTHead(); drawTSubs(); drawTNotes(); drawTSide(); }
+    if(what === "level"){ drawTNav(); drawTHead(); drawTSubs(); drawTSide(); const h = $("#ttHint"); if(h) h.innerHTML = testHintHtml(ui.route.id); }
+    else { drawTNav(); drawTHead(); drawTSubs(); drawTTests(); drawTNotes(); drawTSide(); }
   },
   key(e){
     const id = ui.route.id;
@@ -79,6 +93,7 @@ VIEWS.tema = {
       setSubLevel(id, k, Number(e.key)); save(); refresh("level");
     }
     else if(e.key === "n" || e.key === "N"){ e.preventDefault(); ACTIONS["note-new"](); }
+    else if(e.key === "t" || e.key === "T"){ e.preventDefault(); ACTIONS["test-new"](); }
     else if(e.key === "Escape"){ go(`#/temy/${tabOf(BY_ID[id])}`); }
   }
 };
@@ -109,6 +124,8 @@ function drawTHead(){
   const head = $("#tHead");
   head.className = `t-head s${v}`;
   const upd = state.upd[id] ? `<span class="upd${changedToday(id) ? " today" : ""}">${changedToday(id) ? "zmenené dnes" : "zmenené " + fmtIso(isoOf(state.upd[id]))}</span>` : "";
+  const lt = lastScored(id);
+  const test = lt ? `<a class="tt-badge tg${testGrade(testPct(lt))}" href="#/tema/${id}/t/${lt.id}" title="Posledný test: ${esc(testName(id, lt))}, ${fmtIso(lt.d)}">test ${scoreTxt(lt)}</a>` : "";
   const weight = isOff(id) ? `<span class="t-weight off">mimo odhadu</span>`
     : x.t !== "c" ? `<span class="t-weight">blok <b>${AREAS[x.area].w}</b> úloh v teste</span>` : "";
   head.innerHTML = `
@@ -119,7 +136,7 @@ function drawTHead(){
       <span class="lv-pill l${v}" title="Počíta sa z podtém">${LV[v].label}</span>
       ${subMeter(id)}
       <span class="t-pct">porozumenie <b>${Math.round(understanding(id) * 100)} %</b> · ohodnotené ${ratedSubs(id)} z ${subsOf(id).length} podtém</span>
-      ${upd}
+      ${test}${upd}
     </div>
     <div class="t-rel">${isOff(id)
       ? `<span class="t-rel-note">Táto téma je v <b>Nerelevantné</b> — nepočíta sa do odhadu ani do „Čo ďalej“.</span> <button class="btn ghost small" data-act="rel" data-id="${id}">↩ Vrátiť ${TAB_INTO[x.t]}</button>`
@@ -133,7 +150,7 @@ function drawTSubs(){
   const subs = subsOf(id);
   const inTheory = new Set(THEORY[id] ? theorySections(id).map(s => s.k) : []);
   const counts = {};
-  notesOf(id).forEach(n => { if(n.sub) counts[n.sub] = (counts[n.sub] || 0) + 1; });
+  topicNotes(id).forEach(n => { if(n.sub) counts[n.sub] = (counts[n.sub] || 0) + 1; });
   const rows = subs.map(x => {
     const v = subLv(id, x.k);
     const n = counts[x.k] || 0;
@@ -242,7 +259,8 @@ function drawTNotes(){
     </div>`;
   }
 
-  const editingHidden = ui.editing && ui.editing.t === id && !list.some(n => n.id === ui.editing.n);
+  const edNote = ui.editing && ui.editing.t === id && findNote(id, ui.editing.n);
+  const editingHidden = edNote && !isTask(id, edNote) && !list.some(n => n.id === ui.editing.n);
   for(const n of editingHidden ? [findNote(id, ui.editing.n), ...list].filter(Boolean) : list){
     if(ui.editing && ui.editing.n === n.id){ html += noteEditorHtml(id, n); continue; }
     const logs = logForNote(id, n.id);
@@ -271,13 +289,14 @@ function drawTNotes(){
 
 function noteEditorHtml(tid, n){
   const key = `note:${tid}:${n.id}`;
+  const task = isTask(tid, n), no = task ? testTasks(tid, n.test).indexOf(n) + 1 : 0;
   EDITORS[key] = {
     onChange: text => { updateNote(tid, n.id, {body:text}); savedMark(); },
     onDone: () => finishEditing()
   };
-  return `<article class="note editing nl${n.lv || 0}" id="note-${n.id}">
+  return `<article class="note editing ${task ? `task r-${n.res || "no"}` : `nl${n.lv || 0}`}" id="note-${n.id}">
     <input class="note-title-in" data-in="note-title" data-n="${n.id}" value="${esc(n.title)}"
-      placeholder="Názov — napr. Skúška koreňov, Vzorce, Príklad z písomky" aria-label="Názov poznámky">
+      placeholder="${task ? `Úloha ${no} — napr. číslo úlohy, zadanie alebo čo sa pokazilo` : "Názov — napr. Skúška koreňov, Vzorce, Príklad z písomky"}" aria-label="${task ? "Názov úlohy" : "Názov poznámky"}">
     <div class="note-meta-in">
       <label class="note-sub-in">Podtéma
         <select data-in="note-sub" data-n="${n.id}">
@@ -285,12 +304,14 @@ function noteEditorHtml(tid, n){
           ${subsOf(tid).map(x => `<option value="${x.k}"${n.sub === x.k ? " selected" : ""}>${esc(x.n)}</option>`).join("")}
         </select>
       </label>
-      ${noteLvSeg(n)}
+      ${task ? taskResSeg(n) : noteLvSeg(n)}
     </div>
-    ${editorHtml(key, n.body, {rows:10, placeholder:"Čo si zistil, kde robíš chyby, vzorce, vyriešený príklad…\n\nVzorec napíš medzi dolármi: $x^2 - 5x + 6 = 0$ — alebo klikni na ƒ Vzorec."})}
+    ${editorHtml(key, n.body, {rows:task ? 7 : 10, placeholder:task
+      ? "Zadanie, tvoj postup a kde bola chyba. Pod to správny postup alebo na čo si nabudúce dať pozor.\n\nVzorec napíš medzi dolármi: $x^2 - 5x + 6 = 0$ — alebo klikni na ƒ Vzorec."
+      : "Čo si zistil, kde robíš chyby, vzorce, vyriešený príklad…\n\nVzorec napíš medzi dolármi: $x^2 - 5x + 6 = 0$ — alebo klikni na ƒ Vzorec."})}
     <div class="note-edit-foot">
       <span class="saved" id="savedMark">Uložené</span>
-      <button class="btn ghost" data-act="note-del" data-n="${n.id}">Zmazať</button>
+      <button class="btn ghost" data-act="note-del" data-n="${n.id}">Zmazať${task ? " úlohu" : ""}</button>
       <button class="btn" data-act="note-done">Hotovo</button>
     </div>
   </article>`;
@@ -331,11 +352,11 @@ function finishEditing(silent){
   if(!ed) return;
   ui.editing = null;
   const n = findNote(ed.t, ed.n);
-  if(n && !n.title.trim() && !n.body.trim()) removeNote(ed.t, ed.n);
+  if(n && !n.title.trim() && !n.body.trim() && !n.res) removeNote(ed.t, ed.n);
   save();
   if(silent || ui.route.view !== "tema") return;
   $("#topicPage").classList.remove("editing");
-  drawTSubs(); drawTNotes(); drawTSide();
+  drawTSubs(); drawTTests(); drawTNotes(); drawTSide();
   flashEl($(`#note-${ed.n}`));
 }
 
@@ -372,9 +393,10 @@ action("note-new", el => {
   if(ui.route.view !== "tema") return;
   if(ui.editing) finishEditing(true);
   const sub = el && el.dataset && el.dataset.sub;
+  finishTest(true);
   startNote(ui.route.id, sub === undefined ? undefined : sub);
   save();
-  drawTSubs(); drawTNotes(); drawTHead();
+  drawTSubs(); drawTTests(); drawTNotes(); drawTHead();
   focusEditor();
 });
 action("note-lv", el => {
@@ -405,7 +427,7 @@ onInput("note-sub", el => {
 action("note-edit", el => {
   if(ui.editing) finishEditing(true);
   ui.editing = {t:ui.route.id, n:el.dataset.n};
-  drawTNotes();
+  drawTTests(); drawTNotes();
   focusEditor();
 });
 action("note-done", () => finishEditing());
@@ -413,15 +435,15 @@ action("note-del", el => {
   const tid = ui.route.id, nid = el.dataset.n;
   const n = findNote(tid, nid);
   if(!n) return;
-  const empty = !n.title.trim() && !n.body.trim();
+  const empty = !n.title.trim() && !n.body.trim() && !n.res;
   if(ui.editing && ui.editing.n === nid){ ui.editing = null; $("#topicPage").classList.remove("editing"); }
   removeNote(tid, nid);
   touch(tid);
   save();
-  drawTSubs(); drawTNotes(); drawTSide();
-  if(!empty) toast(`Poznámka „${noteTitle(n)}“ zmazaná.`, () => {
+  drawTSubs(); drawTTests(); drawTNotes(); drawTSide();
+  if(!empty) toast(`${n.test ? "Úloha" : "Poznámka"} „${noteTitle(n)}“ zmazaná.`, () => {
     restoreNote(tid, n); save();
-    if(ui.route.view === "tema" && ui.route.id === tid){ drawTSubs(); drawTNotes(); drawTSide(); }
+    if(ui.route.view === "tema" && ui.route.id === tid){ drawTSubs(); drawTTests(); drawTNotes(); drawTSide(); }
   });
 });
 action("note-fold", el => {

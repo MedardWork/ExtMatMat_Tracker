@@ -5,6 +5,7 @@
    Routes:  #/            overview
             #/temy/a|c|x  topic list for a tab (x = Nerelevantné; old #/temy/b links land on a)
             #/tema/<id>[/n/<noteId>]   one topic, optionally a note
+            #/tema/<id>/t/<testId>     one topic, scrolled to one of its tests
             #/tema/<id>/teoria[/<sub>] the topic's theory, optionally scrolled to a subtopic
             #/nastroje[/<toolId>]      interactive tools, all of them or one
             #/dennik[/<entryId>]       old diary links → the diary week in the calendar
@@ -21,6 +22,8 @@ const ui = {
   seq: null,          /* topic ids for ‹ › in the topic view, snapshotted from the list */
   lastTopic: null,    /* highlighted in the list when coming back */
   editing: null,      /* {t, n} note open in the editor */
+  testEdit: null,     /* {t, x} test whose score, day and name are open for typing */
+  pendingTest: null,  /* {t, d}: open topic t with a new test written on day d (from the calendar) */
   pendingNew: null,   /* topic id that should open with a fresh note */
   pendingSub: null,   /* …filed under this subtopic (set from the theory tab) */
   collapsed: new Set()
@@ -48,7 +51,7 @@ function parseRoute(){
   const p = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean).map(decodeURIComponent);
   switch(p[0]){
     case "temy":   return {view:"temy", tab:p[1] === "c" || p[1] === "x" ? p[1] : p[1] ? "a" : ui.tab};
-    case "tema":   return BY_ID[p[1]] ? {view:"tema", id:p[1], note:p[2] === "n" ? p[3] || null : null,
+    case "tema":   return BY_ID[p[1]] ? {view:"tema", id:p[1], note:p[2] === "n" ? p[3] || null : null, test:p[2] === "t" ? p[3] || null : null,
                                          tab:p[2] === "teoria" ? "teoria" : null, sub:p[2] === "teoria" ? p[3] || null : null}
                                       : {view:"temy", tab:ui.tab};
     case "nastroje": return {view:"nastroje", tool:TOOLS[p[1]] ? p[1] : null};
@@ -88,11 +91,12 @@ window.addEventListener("hashchange", e => {
   const prev = ui.route;
   if(prev.view === "tema" && ui.editing) finishEditing(true);
   ui.route = parseRoute();
+  if(prev.view === "tema" && ui.testEdit && ui.route.view !== "tema") finishTest(true);   /* another topic: its render closes it */
   closePalette();
   render();
   const key = location.hash || "#/";
   if(ui.route.view === "temy" && scrollMem[key] != null) window.scrollTo(0, scrollMem[key]);
-  else if(!(ui.route.view === "tema" && ui.route.note) && !(ui.route.view === "kalendar" && ui.route.entry)) window.scrollTo(0, 0);
+  else if(!(ui.route.view === "tema" && (ui.route.note || ui.route.test || ui.testEdit)) && !(ui.route.view === "kalendar" && ui.route.entry)) window.scrollTo(0, 0);
 });
 
 /* ---------- another tab (or window) saved ---------- */
@@ -109,6 +113,7 @@ function takeRemote(incoming){
   state = mergeStates(state, incoming);
   if(JSON.stringify(state) === before) return;
   if(ui.editing && !findNote(ui.editing.t, ui.editing.n)) ui.editing = null;
+  if(ui.testEdit && !findTest(ui.testEdit.t, ui.testEdit.x)) ui.testEdit = null;
   if(cal.edit && cal.edit.startsWith("cn|e|") && !findLog(cal.edit.split("|")[2])) cal.edit = null;
   /* don't yank the text box out from under someone typing — redraw once they leave it */
   if(isTyping()) remotePending = true; else refresh("remote");
