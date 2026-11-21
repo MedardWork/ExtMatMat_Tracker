@@ -162,14 +162,17 @@ const check = (cond, what) => { if(!cond) bad++; console.log(`${cond ? "ok  " : 
   await ev(() => {
     const a = addNote("a12"); Object.assign(a, {title:"Test z nerovníc", body:"8/10, chyba v úlohe 3"});
     const b = addNote("a12"); Object.assign(b, {title:"Vzorce na nerovnice", body:"…", lv:2});
+    const c = addNote("a12"); Object.assign(c, {title:"A1: zlomok", body:"postup A1"});
+    const e = addNote("a12"); Object.assign(e, {title:"A2: Definičný obor", body:"postup A2"});
     setSubLevel("a12", subsOf("a12")[0].k, 4);      /* rated today: newer than the session */
     save();
   });
-  const zap = await ev(([d, n14]) => "Zhrnutie: dva testy...\n\n```json\n" + JSON.stringify({format:"maturita-zapis-1", date:d, topics:[
-    {topic:"a12", level:3, tests:[{date:d, name:"Zbierka", from_note:"test z nerovnic", tasks:[{res:"ok"}, {res:"✓"}, {res:"part", title:"Úloha 3", text:"Znamienko pri delení $-1$."}, {res:"bad", title:"Úloha 4", text:"$\\frac{1}{2}$"}]}],
-      notes:[{title:"Vzorce na nerovnice", level:3}]},
-    {topic:n14, level:2},
-    {topic:"Téma, ktorá nie je", level:2}]}, null, 2) + "\n```\nHotovo.", [d2, await ev(() => BY_ID.a14.n)]);
+  const a1 = await ev(() => topicNotes("a12").find(n => n.title === "A1: zlomok").id);
+  const zap = await ev(([d, n14, a1]) => "Zhrnutie: dva testy...\n\n```json\n" + JSON.stringify({format:"maturita-zapis-1", date:d, topics:[
+    {topic:"a12", level:"ide to", tests:[{date:d, name:"Zbierka", from_note:"test z nerovnic", tasks:[{res:"ok", note:a1}, {res:"✓"}, {res:"part", note:"a2 definicny obor"}, {res:"bad", title:"Úloha 4", text:"$\\frac{1}{2}$"}]}],
+      notes:[{note:"Vzorce na nerovnice", level:3}, {note:a1, level:4}]},
+    {topic:n14, level:"slabo"},
+    {topic:"Téma, ktorá nie je", level:2}]}, null, 2) + "\n```\nHotovo.", [d2, await ev(() => BY_ID.a14.n), a1]);
   const before = await ev(() => JSON.stringify(state));
   await page.goto(BASE + "#/info");
   await wait(250);
@@ -182,17 +185,20 @@ const check = (cond, what) => { if(!cond) bad++; console.log(`${cond ? "ok  " : 
   await page.click('[data-act="import"]');
   await wait(150);
   const prev = await ev(() => document.querySelector("#zapisCheck").innerText);
-  check(/2,5\/4/.test(prev) && /zmaže/.test(prev) && /nenašla/.test(prev) && /neskôr/.test(prev) && /ide to/.test(prev), "zápis: the preview lists the test (2,5/4), the note it replaces, an unknown topic and a newer rating");
+  check(/2,5\/4/.test(prev) && /zmaže/.test(prev) && /2 poznámky sa presunú/.test(prev) && /nenašla/.test(prev) && /neskôr/.test(prev) && /ide to/.test(prev), "zápis: the preview lists the test (2,5/4), the two notes moved into it, the note it replaces, an unknown topic and a newer rating");
   check(await ev(b => JSON.stringify(state) === b, before), "zápis: the preview changes nothing");
   await page.click('[data-act="zapis-apply"]');
   await wait(200);
   check(await ev(d => {
     const x = (state.tests.a12 || [])[0], subs = subsOf("a12");
+    const tasks = testTasks("a12", x ? x.id : "");
     return !!x && x.d === d && x.n === "Zbierka" && scoreTxt("a12", x) === "2,5/4"
+      && tasks.some(n => n.title === "A1: zlomok" && n.body === "postup A1" && n.res === "ok") && tasks.some(n => n.title === "A2: Definičný obor" && n.res === "part")
+      && !topicNotes("a12").some(n => /^A[12]:/.test(n.title))
       && !topicNotes("a12").some(n => n.title === "Test z nerovníc") && topicNotes("a12").find(n => n.title === "Vzorce na nerovnice").lv === 3
       && subLv("a12", subs[0].k) === 4 && subs.slice(1).every(y => subLv("a12", y.k) === 3 && isoOf(state.slvAt["a12/" + y.k]) === d)
       && subsOf("a14").every(y => subLv("a14", y.k) === 2) && !!state.tests.a5;
-  }, d2), "zápis added: the test with its tasks, the old note gone, levels as of that day (a newer one kept), the note re-rated, the rest untouched");
+  }, d2), "zápis added: the test with its tasks (two of them the session's notes, text kept), the old note gone, levels as of that day (a newer one kept), the note re-rated, the rest untouched");
   await page.goto(BASE + "#/info");
   await wait(200);
   await page.click('[data-act="import-toggle"]');
@@ -211,7 +217,7 @@ const check = (cond, what) => { if(!cond) bad++; console.log(`${cond ? "ok  " : 
   await wait(150);
   await page.click('[data-act="toast-undo"]');
   await wait(150);
-  check(await ev(() => !state.tests.a12 && topicNotes("a12").some(n => n.title === "Test z nerovníc")), "Späť takes the whole zápis back");
+  check(await ev(() => !state.tests.a12 && topicNotes("a12").some(n => n.title === "Test z nerovníc") && topicNotes("a12").some(n => n.title === "A1: zlomok")), "Späť takes the whole zápis back");
 
   /* ---------- every page, both widths ---------- */
   const pages = ["#/", "#/temy/a", "#/tema/a5", `#/tema/a5/t/${xid}`, "#/kalendar/m", "#/kalendar/t", `#/kalendar/m/${d2}/p`, `#/kalendar/t/${d2}/p`, "#/info"];

@@ -162,8 +162,8 @@ button focused, Enter adds the next one). A task can also carry a note, written 
 
 Tests written earlier with an AI (kept only as notes) come over through *Info → Vložiť postup → Skopírovať pokyny
 pre AI*: paste the instructions into that old session, then paste its whole answer back into *Vložiť postup*. The app
-shows what it will add (the tests with their tasks, the topic's level as of that day, notes rated again, the note that
-held the test removed) and adds it to the progress without replacing anything; *Späť* takes it back.
+shows what it will add (the tests with their tasks, the topic's level as of that day, notes rated again); notes the
+session wrote for the test's tasks move under the test with their text, so nothing is there twice and adds it to the progress without replacing anything; *Späť* takes it back.
 
 - The colour of a result follows the levels: from 90 % *perfektne*, from 70 % *ide to*, from 40 % *slabo*, below that *neviem*.
 - A topic whose latest test is below 70 % is listed under *Na zopakovanie* on the overview and under the *Slabý test*
