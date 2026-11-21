@@ -160,6 +160,11 @@ task is one point (½ is half a point), so `+ ✓ správne` pressed eight times 
 button focused, Enter adds the next one). A task can also carry a note, written in the same editor as the topic's notes
 (`+ s poznámkou`, or ✎ on a task); tasks don't show among the topic's own notes, but the quick search finds them.
 
+Tests written earlier with an AI (kept only as notes) come over through *Info → Vložiť postup → Skopírovať pokyny
+pre AI*: paste the instructions into that old session, then paste its whole answer back into *Vložiť postup*. The app
+shows what it will add (the tests with their tasks, the topic's level as of that day, notes rated again, the note that
+held the test removed) and adds it to the progress without replacing anything; *Späť* takes it back.
+
 - The colour of a result follows the levels: from 90 % *perfektne*, from 70 % *ide to*, from 40 % *slabo*, below that *neviem*.
 - A topic whose latest test is below 70 % is listed under *Na zopakovanie* on the overview and under the *Slabý test*
   filter. When the latest test disagrees with the topic's own level, the topic page says so.

@@ -158,6 +158,61 @@ const check = (cond, what) => { if(!cond) bad++; console.log(`${cond ? "ok  " : 
   check(await ev(() => !!state.tests.a14 && !!state.tests.a5 && scoreTxt("a14", state.tests.a14[0]) === "1/1"), "a test added in another tab is merged in, with its task");
   await other.close();
 
+  /* ---------- a zápis from an old session with an AI: preview, added to the progress, undo ---------- */
+  await ev(() => {
+    const a = addNote("a12"); Object.assign(a, {title:"Test z nerovníc", body:"8/10, chyba v úlohe 3"});
+    const b = addNote("a12"); Object.assign(b, {title:"Vzorce na nerovnice", body:"…", lv:2});
+    setSubLevel("a12", subsOf("a12")[0].k, 4);      /* rated today: newer than the session */
+    save();
+  });
+  const zap = await ev(([d, n14]) => "Zhrnutie: dva testy...\n\n```json\n" + JSON.stringify({format:"maturita-zapis-1", date:d, topics:[
+    {topic:"a12", level:3, tests:[{date:d, name:"Zbierka", from_note:"test z nerovnic", tasks:[{res:"ok"}, {res:"✓"}, {res:"part", title:"Úloha 3", text:"Znamienko pri delení $-1$."}, {res:"bad", title:"Úloha 4", text:"$\\frac{1}{2}$"}]}],
+      notes:[{title:"Vzorce na nerovnice", level:3}]},
+    {topic:n14, level:2},
+    {topic:"Téma, ktorá nie je", level:2}]}, null, 2) + "\n```\nHotovo.", [d2, await ev(() => BY_ID.a14.n)]);
+  const before = await ev(() => JSON.stringify(state));
+  await page.goto(BASE + "#/info");
+  await wait(250);
+  await page.click('[data-act="import-toggle"]');
+  await page.fill("#importArea", '{"format":"niečo iné", "slv":{}}');
+  await page.click('[data-act="import"]');
+  await wait(100);
+  check(await ev(b => JSON.stringify(state) === b, before), "a text with another format never replaces the progress");
+  await page.fill("#importArea", zap);
+  await page.click('[data-act="import"]');
+  await wait(150);
+  const prev = await ev(() => document.querySelector("#zapisCheck").innerText);
+  check(/2,5\/4/.test(prev) && /zmaže/.test(prev) && /nenašla/.test(prev) && /neskôr/.test(prev) && /ide to/.test(prev), "zápis: the preview lists the test (2,5/4), the note it replaces, an unknown topic and a newer rating");
+  check(await ev(b => JSON.stringify(state) === b, before), "zápis: the preview changes nothing");
+  await page.click('[data-act="zapis-apply"]');
+  await wait(200);
+  check(await ev(d => {
+    const x = (state.tests.a12 || [])[0], subs = subsOf("a12");
+    return !!x && x.d === d && x.n === "Zbierka" && scoreTxt("a12", x) === "2,5/4"
+      && !topicNotes("a12").some(n => n.title === "Test z nerovníc") && topicNotes("a12").find(n => n.title === "Vzorce na nerovnice").lv === 3
+      && subLv("a12", subs[0].k) === 4 && subs.slice(1).every(y => subLv("a12", y.k) === 3 && isoOf(state.slvAt["a12/" + y.k]) === d)
+      && subsOf("a14").every(y => subLv("a14", y.k) === 2) && !!state.tests.a5;
+  }, d2), "zápis added: the test with its tasks, the old note gone, levels as of that day (a newer one kept), the note re-rated, the rest untouched");
+  await page.goto(BASE + "#/info");
+  await wait(200);
+  await page.click('[data-act="import-toggle"]');
+  await page.fill("#importArea", zap);
+  await page.click('[data-act="import"]');
+  await wait(150);
+  check(/už v appke je/.test(await ev(() => document.querySelector("#zapisCheck").innerText)), "the same zápis again: the test is not added twice");
+  await page.click('[data-act="zapis-cancel"]');
+  await ev(b => { state = migrate(JSON.parse(b)); newEpoch(); save(); render(); }, before);
+  await wait(150);
+  await page.click('[data-act="import-toggle"]');
+  await page.fill("#importArea", zap);
+  await page.click('[data-act="import"]');
+  await wait(150);
+  await page.click('[data-act="zapis-apply"]');
+  await wait(150);
+  await page.click('[data-act="toast-undo"]');
+  await wait(150);
+  check(await ev(() => !state.tests.a12 && topicNotes("a12").some(n => n.title === "Test z nerovníc")), "Späť takes the whole zápis back");
+
   /* ---------- every page, both widths ---------- */
   const pages = ["#/", "#/temy/a", "#/tema/a5", `#/tema/a5/t/${xid}`, "#/kalendar/m", "#/kalendar/t", `#/kalendar/m/${d2}/p`, `#/kalendar/t/${d2}/p`, "#/info"];
   for(const w of [1280, 400]){

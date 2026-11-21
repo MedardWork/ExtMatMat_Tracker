@@ -35,6 +35,10 @@ VIEWS.info = {
         <div id="importBox" hidden>
           <textarea id="importArea" placeholder="Sem vlož skopírovaný text alebo obsah stiahnutého súboru."></textarea>
           <button class="btn" data-act="import">Načítať</button>
+          <p class="muted small zapis-how">Staré testy a úrovne zo session s AI: <button class="btn ghost small" data-act="zapis-prompt">Skopírovať pokyny pre AI</button>
+            Vlož ich do tej session a celú jej odpoveď potom sem. Appka ukáže, čo pridá, a nič iné nezmení.</p>
+          <textarea id="zapisOut" class="plan-out" readonly hidden></textarea>
+          <div id="zapisCheck"></div>
         </div>
       </section>
 
@@ -58,7 +62,7 @@ VIEWS.info = {
         <p><b>Úrovne a odhad.</b> Každá téma sa delí na podtémy a úroveň sa dáva každej zvlášť. Odhad bodov na EČ počíta podtému na <i>perfektne</i> celú, <i>ide to</i> za dve tretiny a <i>slabo</i> za tretinu. <i>Nepozreté</i> a <i>neviem</i> sa nepočítajú, ale rozlišujú sa, aby si videl, čo ešte vôbec neotvoril. Úroveň celej témy je priemer podtém — <i>perfektne</i> je až vtedy, keď sú perfektne všetky.</p>
         <p><b>Nerelevantné.</b> Témy, o ktorých vieš, že na teste nebudú, vyradíš tlačidlom ⊘ (v zozname alebo v okne témy). Presunú sa do záložky Nerelevantné a do odhadu, „Čo ďalej“ ani odpočtu sa nepočítajú — úlohy ich bloku sa rozdelia medzi zvyšné témy. Hodnotenie aj poznámky zostávajú a tlačidlom ↩ Vrátiť ich kedykoľvek vrátiš.</p>
         <p><b>Poznámky</b> majú vlastné „rozumiem“: ako rozumieš tomu, čo je napísané práve v nich. Do odhadu sa nepočíta — slúži na orientáciu a filtrovanie.</p>
-        <p><b>Testy z tém.</b> Na stránke témy si pod <i>Testy</i> zapíšeš krátky test: deň a jeho úlohy, každú ako ✓ správne, ½ čiastočne alebo ✗ zle. Body sa spočítajú samy: každá úloha je 1 bod, ½ je pol bodu. K úlohe, v ktorej si chyboval, si pripíšeš poznámku. Farba výsledku: od 90 % ako <i>perfektne</i>, od 70 % <i>ide to</i>, od 40 % <i>slabo</i>, menej <i>neviem</i>. Téma s posledným testom pod 70 % je na prehľade medzi „Na zopakovanie“ a v zozname tém pod filtrom Slabý test. Body vidíš aj v kalendári pri dni, keď si test písal, a test splní opakovanie témy z plánu. Do odhadu bodov ani do tempa sa nepočítajú.</p>
+        <p><b>Testy z tém.</b> Na stránke témy si pod <i>Testy</i> zapíšeš krátky test: deň a jeho úlohy, každú ako ✓ správne, ½ čiastočne alebo ✗ zle. Body sa spočítajú samy: každá úloha je 1 bod, ½ je pol bodu. K úlohe, v ktorej si chyboval, si pripíšeš poznámku. Farba výsledku: od 90 % ako <i>perfektne</i>, od 70 % <i>ide to</i>, od 40 % <i>slabo</i>, menej <i>neviem</i>. Téma s posledným testom pod 70 % je na prehľade medzi „Na zopakovanie“ a v zozname tém pod filtrom Slabý test. Body vidíš aj v kalendári pri dni, keď si test písal, a test splní opakovanie témy z plánu. Do odhadu bodov ani do tempa sa nepočítajú. Staré testy zo session s AI prenesieš cez <i>Vložiť postup</i> → <i>Skopírovať pokyny pre AI</i>: AI z tej session pripraví testy, úroveň témy a úrovne poznámok a appka ich k postupu pridá.</p>
         <p><b>Dánsko.</b> Záložka Matematik A je nastavená na Matematik A na STX podľa læreplanu z roku 2024 a do odhadu na EČ sa nepočíta. Písomná skúška má 5 hodín: delprøve 1 (3 h, iba formelsamling) a delprøve 2 (2 h, všetky pomôcky vrátane CAS).</p>
       </section>
     </div>`;
@@ -140,6 +144,9 @@ action("import-file", () => {
   input.click();
 });
 function importText(txt){
+  /* a zápis from an old session (js/zapis.js) is added to the progress, after a preview */
+  const zs = zapisFromText(txt);
+  if(zs.length){ zapisShow(zs); return; }
   let data = null;
   try{ data = JSON.parse(txt.trim()); }catch(err){}
   /* a plan (or an AI's answer with one) pasted here goes to the plan card instead of replacing the progress */
@@ -150,6 +157,8 @@ function importText(txt){
     toast("Toto je plán, nie celý postup. Skontroluj zmeny v karte Plán a potvrď ich.");
     return;
   }
+  /* something else with a format of its own is not a backup: never let it replace the progress */
+  if(isObj(data) && data.format){ toast("Tento text nie je záloha postupu, nič som nezmenil."); return; }
   try{
     state = migrate(data);
     newEpoch();   /* the import replaces what other open tabs hold */
@@ -158,6 +167,35 @@ function importText(txt){
     render();
   }catch(err){ toast("Text sa nedal prečítať — skontroluj, či je celý."); }
 }
+/* ---------- zápis zo session: preview, then add (js/zapis.js) ---------- */
+let zapisPending = null;
+function zapisShow(zs){
+  const p = zapisPending = zapisPreview(zs);
+  const host = $("#zapisCheck");
+  if(!host) return;
+  host.innerHTML = `<div class="plan-check${p.ops.length ? "" : " bad"}">
+    <p><b>${p.ops.length ? "Do postupu sa pridá" : "Nič nové na pridanie"}</b></p>
+    ${p.lines.length ? `<ul>${p.lines.map(l => `<li>${l}</li>`).join("")}</ul>` : ""}
+    ${p.skip.length ? `<h4>Preskočí sa</h4><ul class="muted">${p.skip.map(l => `<li>${l}</li>`).join("")}</ul>` : ""}
+    ${p.ops.length ? `<button class="btn" data-act="zapis-apply">Pridať do postupu</button> ` : ""}<button class="btn ghost" data-act="zapis-cancel">Zrušiť</button>
+  </div>`;
+  host.scrollIntoView({block:"nearest"});
+}
+action("zapis-apply", () => {
+  if(!zapisPending) return;
+  const before = JSON.stringify(state);
+  const r = zapisApply(zapisPending);
+  zapisPending = null;
+  save(); render();
+  const what = [r.tests ? `${r.tests} ${plural(r.tests, "test", "testy", "testov")}` : "", r.removed ? `zmazané ${r.removed} ${plural(r.removed, "poznámka", "poznámky", "poznámok")} s testami` : ""].filter(Boolean).join(", ");
+  toast(`Pridané do postupu${what ? `: ${what}` : ""}.`, () => { state = migrate(JSON.parse(before)); newEpoch(); save(); render(); });
+});
+action("zapis-cancel", () => { zapisPending = null; $("#zapisCheck").innerHTML = ""; });
+action("zapis-prompt", async () => {
+  const txt = zapisPrompt(true);
+  try{ await navigator.clipboard.writeText(txt); toast("Pokyny sú v schránke. Vlož ich do starej session s AI."); }
+  catch(err){ const o = $("#zapisOut"); o.hidden = false; o.value = txt; o.select(); toast("Skopíruj text z poľa nižšie."); }
+});
 action("reset", () => {
   if(!confirm("Naozaj vymazať všetky hodnotenia, poznámky aj denník?")) return;
   state = emptyState(); newEpoch(); ui.editing = null; save(); toast("Vymazané.");

@@ -203,6 +203,12 @@ to that test; shown in the calendar per day and topic, and wherever else it help
   diary rows (with "+ test": `ui.pendingTest` opens the topic with a new test on that day), the overview card "Testy z tém"
   (latest, na zopakovanie, hotové bez testu), the topic list (badge, filter "Slabý test"), quick search, "Naposledy",
   and "na konci krátky test" / the score on a topic's last block in "Dnes podľa plánu".
+- **Zápis zo session** (js/zapis.js, 2026-11-21): the person moves tests kept as notes in old AI study sessions into tests.
+  `zapisPrompt()` (button in Info's import box) asks that session's AI for a `"maturita-zapis-1"` block: per topic a level
+  (as of the session day; skipped for a subtopic rated on a later day), tests with tasks, `from_note` (the note that held the
+  test, removed), notes re-rated by title. `importText` routes such a paste to `zapisPreview` → "Pridať do postupu" → `zapisApply`
+  (adds, never replaces; undo restores the state before). Names are matched without case/accents (`zNorm`, `zFind`).
+  `importText` refuses any other JSON with a `format` key, so nothing but a backup can replace the progress.
 - `testGrade`: from 90 / 70 / 40 % = colours tg4–tg1 (the level colours); `TEST_WEAK` = 0.7 (weak topic, hint, AI text).
 - A scored test counts as the plan's review (`opak:<topic>`) from that week on (`planStatus`). Tests don't feed the pace or the
   estimate. `planFormatText`, `planAiText` and `planCreateText` mention them.
