@@ -359,7 +359,8 @@ Things that bite:
   main" in that session. Then push the branch, say that `main` still waits, and merge once they answer.
 - **Desktop app release:** bump `version` in `package.json` and both `version` fields at the top of `package-lock.json`,
   merge to `main`, then push the tag `v<version>` (or *Actions → Desktop app → Run workflow* on `main`). The workflow
-  builds the three installers and publishes them under Releases. Do it whenever the person asks for a new download.
+  builds the three installers and publishes them under Releases. Do it only when the person asks for a new version
+  (2026-11-21: never on your own after a change; they check for bugs first and then say so).
   From a cloud session a tag push hangs up ("remote end hung up"); start the workflow with the GitHub tool
   `actions_run_trigger` (`run_workflow`, `desktop.yml`, ref `main`) instead: it tags `v<version>` itself (1.2.0 and 1.2.1, 2026-11-16).
 - **Updates without reinstalling (2026-11-20, from 1.5.3):** the release job runs `dev/webbundle.js`, which attaches
