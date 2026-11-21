@@ -64,6 +64,12 @@ function zNote(tid, ref, title){
   }
   return null;
 }
+/* a task given only by its title is the topic's note of exactly that title, if there is one (an AI without the ids) */
+function zSame(tid, title){
+  const q = zNorm(title);
+  const f = q ? topicNotes(tid).filter(y => zNorm(y.title) === q) : [];
+  return f.length === 1 ? f[0] : null;
+}
 /* "mvs31wtcib58": looks like a note id, so it is no title for a new task */
 const zIdLike = s => /^[a-z0-9]{8,16}$/.test(s) && /\d/.test(s) && /[a-z]/.test(s);
 /* one line for all notes of a topic that were not found */
@@ -116,7 +122,7 @@ function zapisPreview(list){
         const lost = [];
         const tasks = (Array.isArray(x.tasks) ? x.tasks : []).filter(isObj).map(k => {
           const ref = String(k.note || "").trim();
-          let src = ref ? zNote(tid, ref, k.title) : null;
+          let src = ref ? zNote(tid, ref, k.title) : zSame(tid, k.title);
           if(src && used.has(src.id)) src = null;
           if(src) used.add(src.id);
           else if(ref) lost.push(ref);
