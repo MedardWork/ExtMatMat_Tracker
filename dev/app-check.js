@@ -169,8 +169,8 @@ const check = (cond, what) => { if(!cond) bad++; console.log(`${cond ? "ok  " : 
   });
   const a1 = await ev(() => topicNotes("a12").find(n => n.title === "A1: zlomok").id);
   const zap = await ev(([d, n14, a1]) => "Zhrnutie: dva testy...\n\n```json\n" + JSON.stringify({format:"maturita-zapis-1", date:d, topics:[
-    {topic:"a12", level:"ide to", tests:[{date:d, name:"Zbierka", from_note:"test z nerovnic", tasks:[{res:"ok", note:a1}, {res:"✓"}, {res:"part", note:"a2 definicny obor"}, {res:"bad", title:"Úloha 4", text:"$\\frac{1}{2}$"}]}],
-      notes:[{note:"Vzorce na nerovnice", level:3}, {note:a1, level:4}]},
+    {topic:"a12", level:"ide to", tests:[{date:d, name:"Zbierka", from_note:"test z nerovnic", tasks:[{res:"ok", note:a1}, {res:"✓"}, {res:"part", note:"mvs31wtcib58", title:"A2: Definičný obor"}, {res:"bad", title:"Úloha 4", text:"$\\frac{1}{2}$"}, {res:"bad", note:"mvs3262ojk50"}]}],
+      notes:[{note:"mvs31zwgrpdy", title:"Vzorce na nerovnice", level:3}, {note:a1, level:4}, {note:"mvs322zkf8ft", level:2}]},
     {topic:n14, level:"slabo"},
     {topic:"Téma, ktorá nie je", level:2}]}, null, 2) + "\n```\nHotovo.", [d2, await ev(() => BY_ID.a14.n), a1]);
   const before = await ev(() => JSON.stringify(state));
@@ -185,14 +185,15 @@ const check = (cond, what) => { if(!cond) bad++; console.log(`${cond ? "ok  " : 
   await page.click('[data-act="import"]');
   await wait(150);
   const prev = await ev(() => document.querySelector("#zapisCheck").innerText);
-  check(/2,5\/4/.test(prev) && /zmaže/.test(prev) && /2 poznámky sa presunú/.test(prev) && /nenašla/.test(prev) && /neskôr/.test(prev) && /ide to/.test(prev), "zápis: the preview lists the test (2,5/4), the two notes moved into it, the note it replaces, an unknown topic and a newer rating");
+  check(/2,5\/5/.test(prev) && /zmaže/.test(prev) && /2 poznámky sa presunú/.test(prev) && /Téma, ktorá nie je/.test(prev) && /neskôr/.test(prev) && /ide to/.test(prev), "zápis: the preview lists the test (2,5/5), the two notes moved into it (one found by its title when its id is wrong), the note it replaces, an unknown topic and a newer rating");
+  check(/1 poznámka k úlohe sa v appke nenašla \(„mvs3262ojk50“\), úloha sa zapíše nová/.test(prev) && /1 poznámka na nové hodnotenie sa v appke nenašla \(„mvs322zkf8ft“\)/.test(prev) && !/mvs31/.test(prev), "zápis: ids the app does not have are listed once per topic; a wrong id with the right title is found");
   check(await ev(b => JSON.stringify(state) === b, before), "zápis: the preview changes nothing");
   await page.click('[data-act="zapis-apply"]');
   await wait(200);
   check(await ev(d => {
     const x = (state.tests.a12 || [])[0], subs = subsOf("a12");
     const tasks = testTasks("a12", x ? x.id : "");
-    return !!x && x.d === d && x.n === "Zbierka" && scoreTxt("a12", x) === "2,5/4"
+    return !!x && x.d === d && x.n === "Zbierka" && scoreTxt("a12", x) === "2,5/5" && tasks.filter(n => n.res === "bad" && !n.title).length === 1 && !tasks.some(n => /mvs/.test(n.title))
       && tasks.some(n => n.title === "A1: zlomok" && n.body === "postup A1" && n.res === "ok") && tasks.some(n => n.title === "A2: Definičný obor" && n.res === "part")
       && !topicNotes("a12").some(n => /^A[12]:/.test(n.title))
       && !topicNotes("a12").some(n => n.title === "Test z nerovníc") && topicNotes("a12").find(n => n.title === "Vzorce na nerovnice").lv === 3

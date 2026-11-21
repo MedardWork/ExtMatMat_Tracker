@@ -207,7 +207,7 @@ to that test; shown in the calendar per day and topic, and wherever else it help
   `zapisPrompt()` (button in Info's import box) asks that session's AI for a `"maturita-zapis-1"` block: per topic a level
   (as of the session day; skipped for a subtopic rated on a later day), tests with tasks, `from_note` (the note that held the
   test, removed), notes re-rated. The person's tutor (their own rules, 2026-11-21) writes **one note per task**, mini tests too
-  (part A + B, "Ako sa darilo"), so a task names its note (`note`: id, else title) and that note **moves** under the test with its
+  (part A + B, "Ako sa darilo"), so a task names its note (`note`: id, plus `title`: its exact title, tried when the id is not in the app; an AI that lacks the ids makes up plausible ones, 2026-11-21) and that note **moves** under the test with its
   text (no duplicate); ✓ = first try without help, ½ = fixed later / after theory or a similar task, ✗ = after "ukáž postup".
   Levels may be names ("ide to"). The prompt tells the session not to return the whole tracker file (its rules otherwise do). `importText` routes such a paste to `zapisPreview` → "Pridať do postupu" → `zapisApply`
   (adds, never replaces; undo restores the state before). Names are matched without case/accents (`zNorm`, `zFind`).

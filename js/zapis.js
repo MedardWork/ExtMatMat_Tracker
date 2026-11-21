@@ -53,14 +53,21 @@ const zTopic = ref => BY_ID[String(ref || "").trim()] ? String(ref).trim()
 const zIso = d => typeof d === "string" && /^\d{4}-\d\d-\d\d$/.test(d) && !isNaN(Date.parse(d)) ? d : null;
 const ZLV = {neviem:1, slabo:2, "ide to":3, perfektne:4};
 const zLevel = v => { const w = ZLV[zNorm(v)]; if(w) return w; const n = Math.round(+v); return n >= 1 && n <= 4 ? n : null; };
-/* a topic's own note (not a task) by its id, else by its title */
-function zNote(tid, ref){
-  const r = String(ref || "").trim();
-  if(!r) return null;
-  const n = findNote(tid, r);
-  if(n && !isTask(tid, n)) return n;
-  return zFind(topicNotes(tid), r, y => [y.title]);
+/* a topic's own note (not a task) by its id, else by its title; title = the note's title the AI gave beside the id,
+   tried when the id is not in the app (an AI copying a 12-letter id gets it wrong or makes one up) */
+function zNote(tid, ref, title){
+  for(const r of [ref, title].map(v => String(v || "").trim()).filter(Boolean)){
+    const n = findNote(tid, r);
+    if(n && !isTask(tid, n)) return n;
+    const f = zFind(topicNotes(tid), r, y => [y.title]);
+    if(f) return f;
+  }
+  return null;
 }
+/* "mvs31wtcib58": looks like a note id, so it is no title for a new task */
+const zIdLike = s => /^[a-z0-9]{8,16}$/.test(s) && /\d/.test(s) && /[a-z]/.test(s);
+/* one line for all notes of a topic that were not found */
+const zMiss = refs => refs.slice(0, 3).map(r => `„${esc(r)}“`).join(", ") + (refs.length > 3 ? ` a ${refs.length - 3} ${plural(refs.length - 3, "ďalšia", "ďalšie", "ďalších")}` : "");
 const ZRES = {ok:"ok", "✓":"ok", spravne:"ok", "1":"ok", part:"part", "½":"part", ciastocne:"part", "0.5":"part", "0,5":"part", bad:"bad", "✗":"bad", zle:"bad", "0":"bad"};
 const zRes = r => ZRES[zNorm(r)] || ZRES[String(r).trim()] || "";
 
@@ -106,15 +113,18 @@ function zapisPreview(list){
         const d = zIso(x.date) || day;
         if(!d){ skip.push(`${tname}: test bez dátumu, preskočím ho.`); continue; }
         const name = String(x.name || "").trim().slice(0, 80);
+        const lost = [];
         const tasks = (Array.isArray(x.tasks) ? x.tasks : []).filter(isObj).map(k => {
-          let src = k.note ? zNote(tid, k.note) : null;
+          const ref = String(k.note || "").trim();
+          let src = ref ? zNote(tid, ref, k.title) : null;
           if(src && used.has(src.id)) src = null;
           if(src) used.add(src.id);
-          else if(k.note) skip.push(`${tname}: poznámka „${esc(k.note)}“ sa nenašla, úloha sa zapíše nová.`);
-          return {res: zRes(k.res), note: src ? src.id : null, title: String(k.title || (src ? "" : k.note) || "").trim(), body: String(k.text || k.body || "").trim(),
+          else if(ref) lost.push(ref);
+          return {res: zRes(k.res), note: src ? src.id : null, title: String(k.title || (src || zIdLike(ref) ? "" : ref) || "").trim(), body: String(k.text || k.body || "").trim(),
             sub: k.subtopic ? (zFind(subsOf(tid), k.subtopic, y => [y.n]) || {}).k || "" : ""};
         });
         if(!tasks.length){ skip.push(`${tname}: test ${fmtD(d)} nemá úlohy, preskočím ho.`); continue; }
+        if(lost.length) skip.push(`${tname}: ${lost.length} ${plural(lost.length, "poznámka k úlohe sa v appke nenašla", "poznámky k úlohám sa v appke nenašli", "poznámok k úlohám sa v appke nenašlo")} (${zMiss(lost)}), ${lost.length === 1 ? "úloha sa zapíše nová" : "úlohy sa zapíšu nové"}.`);
         if(testsOf(tid).some(y => y.d === d && zNorm(y.n) === zNorm(name)) || ops.some(o => o.kind === "test" && o.tid === tid && o.d === d && zNorm(o.name) === zNorm(name))){
           skip.push(`${tname}: test ${fmtD(d)}${name ? ` „${esc(name)}“` : ""} už v appke je.`);
           continue;
@@ -129,14 +139,16 @@ function zapisPreview(list){
         lines.push(`${tname}: test ${fmtD(d)}${name ? ` „${esc(name)}“` : ""} · <b>${numTxt(pts)}/${tasks.length}</b>${open ? ` (${open} bez známky)` : ""}${moved ? ` · ${moved} ${plural(moved, "poznámka sa presunie", "poznámky sa presunú", "poznámok sa presunie")} k testu ako úlohy` : ""}${from ? ` · poznámka „${esc(noteTitle(from))}“ sa zmaže` : ""}`);
       }
       /* notes rated again */
+      const miss = [];
       for(const r of Array.isArray(tp.notes) ? tp.notes : []){
         if(!isObj(r)) continue;
-        const ref = r.note || r.id || r.title, v = zLevel(r.level), n = zNote(tid, ref);
-        if(!n){ skip.push(`${tname}: poznámka „${esc(ref)}“ sa nenašla.`); continue; }
+        const ref = String(r.note || r.id || r.title || "").trim(), v = zLevel(r.level), n = zNote(tid, r.note || r.id, r.title);
+        if(!n){ if(ref) miss.push(ref); continue; }
         if(used.has(n.id) || !v || n.lv === v) continue;
         ops.push({kind:"note", tid, n:n.id, v});
         lines.push(`${tname}: poznámka „${esc(noteTitle(n))}“ ${n.lv ? `${lvTxt(n.lv)} → ` : ""}<b>${lvTxt(v)}</b>`);
       }
+      if(miss.length) skip.push(`${tname}: ${miss.length} ${plural(miss.length, "poznámka na nové hodnotenie sa v appke nenašla", "poznámky na nové hodnotenie sa v appke nenašli", "poznámok na nové hodnotenie sa v appke nenašlo")} (${zMiss(miss)}), ich hodnotenie sa preskočí.`);
     }
   }
   return {ops, lines, skip};
@@ -182,10 +194,10 @@ function zapisPrompt(withTopics){
    - "ok" (✓): správne na prvý pokus bez pomoci,
    - "part" (½): opravil som ju sám na ďalší pokus, po teórii alebo po podobnej úlohe,
    - "bad" (✗): až po „ukáž postup“, nevyriešil som ju alebo som hádal.
-   Ak má úloha v trackeri poznámku (poznámky ku každej úlohe, ktoré si mi písal), daj do "note" jej id z JSON-u trackera, a ak ho nepoznáš, jej presný názov ("title"). Tracker tú poznámku presunie k testu aj s celým textom, takže "title" ani "text" k nej už nepíš. Úlohe bez poznámky daj "title" (krátko, napr. "B2: definičný obor") a "text" (zadanie, postup, výsledok, 💡).
+   Ak má úloha v trackeri poznámku (poznámky ku každej úlohe, ktoré si mi písal), daj do "note" jej id presne skopírované z JSON-u trackera a do "title" jej presný názov. Id nikdy nevymýšľaj: ak ho v JSON-e nevidíš, daj len "title". Tracker tú poznámku presunie k testu aj s celým textom, takže "text" k nej už nepíš. Úlohe bez poznámky daj "title" (krátko, napr. "B2: definičný obor") a "text" (zadanie, postup, výsledok, 💡).
    Ak je celý test zapísaný v jednej poznámke, daj jej id alebo presný názov do "from_note" testu; tracker ju po prenesení zmaže.
 2. Úroveň každej témy zo session, ako som ju vedel na konci session: "neviem", "slabo", "ide to" alebo "perfektne" (perfektne až po 2 rôznych úlohách bez pomoci). Podtémy len ak poznáš ich presné názvy z trackera.
-3. Ostatné poznámky z tejto session (tie, ktoré nie sú úlohou testu): id alebo presný názov a úroveň "neviem", "slabo", "ide to" alebo "perfektne" podľa toho, ako sa mi tá úloha darila.
+3. Ostatné poznámky z tejto session (tie, ktoré nie sú úlohou testu): "note" (id z JSON-u trackera, nikdy nie vymyslené), "title" (presný názov) a úroveň "neviem", "slabo", "ide to" alebo "perfektne" podľa toho, ako sa mi tá úloha darila.
 
 "date" je deň tejto session (RRRR-MM-DD): vezmi ho z času poznámok ("c" v ms) alebo sa ma opýtaj. "topic" je id témy z trackera (a5, a12…), inak presný názov témy zo zoznamu tém.
 
@@ -204,13 +216,13 @@ Odpovedz krátkym zhrnutím a potom jedným blokom kódu presne v tomto tvare (p
           "date": "2026-11-12",
           "name": "Mini test",
           "tasks": [
-            {"res": "ok", "note": "id poznámky k úlohe A1"},
-            {"res": "part", "note": "id poznámky k úlohe A2"},
+            {"res": "ok", "note": "id poznámky k úlohe A1", "title": "jej presný názov"},
+            {"res": "part", "note": "id poznámky k úlohe A2", "title": "jej presný názov"},
             {"res": "bad", "title": "B1: definičný obor", "text": "Zadanie, postup, výsledok, 💡"}
           ]
         }
       ],
-      "notes": [{"note": "id alebo presný názov poznámky", "level": "slabo"}]
+      "notes": [{"note": "id poznámky", "title": "jej presný názov", "level": "slabo"}]
     }
   ]
 }
