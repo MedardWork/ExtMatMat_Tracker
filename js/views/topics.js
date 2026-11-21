@@ -93,7 +93,7 @@ function rowHtml(x){
   const nSub = subsOf(x.id).length, rated = ratedSubs(x.id);
   let meta = `<span class="sub-count" title="Ohodnotené podtémy">${subMeter(x.id)}${rated}/${nSub}</span>`;
   const lt = lastScored(x.id), nt = testsOf(x.id).length;
-  if(lt) meta += testBadge(x.id, lt, `test ${scoreTxt(lt)}${nt > 1 ? ` <em>· ${nt}×</em>` : ""}`);
+  if(lt) meta += testBadge(x.id, lt, `test ${scoreTxt(x.id, lt)}${nt > 1 ? ` <em>· ${nt}×</em>` : ""}`);
   if(x.src) meta += `<span class="src">${x.src}</span>`;
   if(state.upd[x.id]){
     const t = changedToday(x.id);

@@ -39,7 +39,7 @@ function planStatus(x){
   if(PLAN_REVIEW[x.id]){
     const w = PLAN_WEEKS.find(w => w.id === x.w), t = PLAN_REVIEW[x.id];
     return state.log.some(e => e.d >= w.from && e.links.some(l => l.t === t) && (e.text.trim() || !e.k))
-      || testsOf(t).some(y => y.d >= w.from && y.s != null) ? 2 : 0;
+      || testsOf(t).some(y => y.d >= w.from && hasScore(t, y)) ? 2 : 0;
   }
   if(isPlanTest(x)) return planScore(x.id) != null ? 2 : 0;
   const v = lv(x.id);
@@ -176,7 +176,7 @@ function slotBody(s, d, compact){
     const x = s.it, v = itemLevel(x), tid = planTopicOf(x);
     const which = compact ? `${s.n}/${s.of}` : s.n2 > s.n ? `bloky ${s.n}–${s.n2} z ${s.of}` : `blok ${s.n} z ${s.of}`;
     const lt = !compact && s.n2 >= s.of && itemKind(x) === "top" ? lastScored(tid) : null;
-    const end = compact || s.n2 < s.of || itemKind(x) !== "top" ? "" : lt ? ` · test ${scoreTxt(lt)}` : " · na konci krátky test";
+    const end = compact || s.n2 < s.of || itemKind(x) !== "top" ? "" : lt ? ` · test ${scoreTxt(tid, lt)}` : " · na konci krátky test";
     return `<a class="sl-it s${planStatus(x)}" href="#/tema/${tid}" title="${esc(x.n)} · ${LV[v].label} · blok ${s.n} z ${s.of}">
       <i class="dot l${v}"></i><span class="sl-n">${esc(compact ? itemName(x) : x.n)}</span>
       <span class="sl-meta">${itemKind(x) === "rev" ? "opakovanie · " : ""}${which}${s.k === "flex" ? " · v rezerve" : ""}${end}</span></a>`;
@@ -363,8 +363,8 @@ function notesWeek(anchor, map){
       if(r.why.has("rev")) tags.push("opakovanie podľa plánu");
       if(r.why.has("lv")) tags.push(`ohodnotené: ${LV[v].label}`);
       const tests = testsOf(r.t).filter(x => x.d === d).sort((a, b) => a.c - b.c).map(x => {
-        const bad = testTasks(r.t, x.id).filter(n => n.res === "bad" || n.res === "part").length;
-        return `<a class="cn-test ${testCls(x)}" href="${testHref(r.t, x)}" title="${esc(testTitle(r.t, x))}">${esc(testName(r.t, x))} <b>${scoreTxt(x)}</b>${pctTxt(x) ? ` · ${pctTxt(x)}` : ""}${bad ? ` · ✗ ${bad}` : ""}</a>`;
+        const p = pctTxt(r.t, x);
+        return `<a class="cn-test ${testCls(r.t, x)}" href="${testHref(r.t, x)}" title="${esc(testTitle(r.t, x))}">${esc(testName(r.t, x))} <b>${scoreTxt(r.t, x)}</b>${p ? ` · ${p}` : ""}</a>`;
       }).join("");
       const notes = r.notes.map(n => `<a class="cn-tnote" href="#/tema/${r.t}/n/${n.id}">✎ ${esc(noteTitle(n))}</a>`).join("");
       return `<div class="cn-topic" ${tn ? `id="cn-${tn.id}"` : ""}>

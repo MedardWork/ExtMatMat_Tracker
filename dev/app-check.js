@@ -38,11 +38,15 @@ const check = (cond, what) => { if(!cond) bad++; console.log(`${cond ? "ok  " : 
   await wait(300);
   await page.keyboard.press("t");
   await wait(200);
-  check(await ev(() => document.activeElement && document.activeElement.dataset.f === "s"), "T on a topic page: a new test, its score field focused");
-  await page.keyboard.type("8/10");
+  const focusedQuick = () => ev(() => { const a = document.activeElement; return !!a && a.dataset.act === "task-quick" && a.dataset.r === "ok"; });
+  check(await focusedQuick(), "T on a topic page: a new test, '+ ✓ správne' focused");
+  for(let i = 0; i < 3; i++){ await page.keyboard.press("Enter"); await wait(80); }
+  check(await focusedQuick() && await ev(() => state.notes.a5.length === 3 && state.notes.a5.every(n => n.res === "ok")), "Enter, Enter, Enter: three tasks marked ✓, the button keeps the focus");
+  await page.click('#tTests [data-act="task-quick"][data-r="part"]');
   await page.fill('[data-f="n"]', "Zbierka");
   await wait(150);
-  check(await ev(() => { const x = state.tests.a5[0]; return x.s === 8 && x.m === 10 && x.n === "Zbierka" && x.d === todayIso(); }), "typing 8/10 fills both numbers, the name is kept, the day is today");
+  check(await ev(() => { const x = state.tests.a5[0], r = testScore("a5", x); return r.s === 3.5 && r.m === 4 && x.s == null && x.n === "Zbierka" && x.d === todayIso(); }), "the score is counted from the marks (3,5/4), the name is kept, the day is today");
+  check(await ev(() => document.querySelectorAll("#tTests .task-chip").length === 4 && /3,5\/4/.test(document.querySelector("#tTests .tt-score").innerText)), "tasks with only a mark are chips, the card shows 3,5/4");
   await page.click('[data-act="task-new"]');
   await wait(150);
   await page.keyboard.type("Úloha 3");
@@ -50,13 +54,15 @@ const check = (cond, what) => { if(!cond) bad++; console.log(`${cond ? "ok  " : 
   await page.keyboard.type("Zabudol som na $a^2$.");
   await page.click('.note.task.editing [data-act="task-res"][data-r="bad"]');
   await page.click('[data-act="note-done"]');
-  await page.click('[data-act="task-new"]');
   await wait(150);
-  await page.click('.note.task.editing [data-act="task-res"][data-r="ok"]');
-  await page.click('[data-act="note-done"]');
+  check(await ev(() => /3,5\/5/.test(document.querySelector("#tTests .tt-score").innerText) && /70 %/.test(document.querySelector("#tTests .tt-p").innerText)), "a task with a note marked ✗: 3,5/5, 70 %");
+  await page.click('#tTests .task-chip [data-act="task-res"][data-r="ok"][aria-pressed="true"]');
+  await wait(100);
+  check(await ev(() => /2,5\/5/.test(document.querySelector("#tTests .tt-score").innerText) && /1 bez známky/.test(document.querySelector("#tTests .tt-meta").innerText)), "clearing a mark: 2,5/5, '1 bez známky'");
+  await page.click('#tTests .task-chip.r-no [data-act="task-res"][data-r="ok"]');
   await page.click('[data-act="test-done"]');
   await wait(200);
-  check(await ev(() => state.notes.a5.length === 2 && state.notes.a5.every(n => n.test) && !ui.testEdit), "two tasks bound to the test (one with only a mark), test closed");
+  check(await ev(() => state.notes.a5.length === 5 && state.notes.a5.every(n => n.test) && !ui.testEdit && scoreTxt("a5", state.tests.a5[0]) === "3,5/5"), "five tasks bound to the test, test closed, 3,5/5");
   check(await ev(() => !document.querySelector("#tNotes .note")), "tasks are not listed among the topic's notes");
 
   await page.goto(BASE + `#/kalendar/t/${d2}/p`);
@@ -77,10 +83,11 @@ const check = (cond, what) => { if(!cond) bad++; console.log(`${cond ? "ok  " : 
   await ev(([t, d]) => { const e = addLog(d, "", [{t}]); e.k = "t"; save(); rerenderCal(); }, [te.t, d2]);
   await page.click(`[data-act="cal-test-new"][data-t="${te.t}"]`);
   await wait(300);
-  await page.keyboard.type("6 z 9");
-  await page.keyboard.press("Enter");
+  for(let i = 0; i < 6; i++){ await page.keyboard.press("Enter"); await wait(60); }
+  for(let i = 0; i < 3; i++){ await page.click('#tTests [data-act="task-quick"][data-r="bad"]'); await wait(60); }
+  await page.click('[data-act="test-done"]');
   await wait(200);
-  check(await ev(t => { const x = state.tests[t][0]; return x.s === 6 && x.m === 9 && !ui.testEdit; }, te.t), "diary row: + test, '6 z 9', Enter closes");
+  check(await ev(t => { const x = state.tests[t][0]; return scoreTxt(t, x) === "6/9" && !ui.testEdit; }, te.t), "diary row: + test, six ✓ and three ✗ make 6/9");
   await page.goto(BASE + `#/kalendar/t/${d2}/p`);
   await wait(200);
   check(/6\/9/.test(await ev(() => document.querySelector(".cn-tests").innerText)), "the diary day shows the score next to its topic");
@@ -125,10 +132,20 @@ const check = (cond, what) => { if(!cond) bad++; console.log(`${cond ? "ok  " : 
   await page.click(`[data-act="test-del"][data-x="${xid}"]`);
   check(await ev(() => !state.tests.a5 && !state.notes.a5), "deleting a test deletes its tasks");
   await page.click('[data-act="toast-undo"]');
-  check(await ev(() => state.tests.a5.length === 1 && state.notes.a5.length === 2), "undo brings both back");
+  check(await ev(() => state.tests.a5.length === 1 && state.notes.a5.length === 5), "undo brings both back");
   await page.reload();
   await wait(500);
-  check(await ev(() => state.tests.a5[0].s === 8), "kept after reload");
+  check(await ev(() => scoreTxt("a5", state.tests.a5[0]) === "3,5/5"), "kept after reload");
+  /* a score typed by hand in the first version stays until it is switched to the tasks */
+  await ev(() => { const x = addTest("a7", todayIso()); updateTest("a7", x.id, {s:8, m:10}); const n = addNote("a7", "", x.id); n.res = "bad"; save(); });
+  await page.goto(BASE + "#/tema/a7");
+  await wait(250);
+  check(await ev(() => /8\/10/.test(document.querySelector("#tTests .tt-score").innerText) && /ručne/.test(document.querySelector("#tTests .tt-meta").innerText)), "a hand-typed score from before is kept and said to be typed by hand");
+  await page.click('#tTests [data-act="test-edit"]');
+  await page.click('[data-act="test-hand-off"]');
+  await wait(150);
+  check(await ev(() => scoreTxt("a7", state.tests.a7[0]) === "0/1"), "'Počítať z úloh' counts it from the tasks");
+  await ev(() => { removeTest("a7", state.tests.a7[0].id); ui.testEdit = null; save(); });
   const dump = await ev(() => JSON.stringify(state));
   await ev(d => { state = emptyState(); newEpoch(); save(); importText(d); }, dump);
   await wait(200);
@@ -136,9 +153,9 @@ const check = (cond, what) => { if(!cond) bad++; console.log(`${cond ? "ok  " : 
   const other = await ctx.newPage();
   await other.goto(BASE + "#/");
   await other.waitForTimeout(400);
-  await other.evaluate(() => { const x = addTest("a14", todayIso()); updateTest("a14", x.id, {s:9, m:10}); save(); });
+  await other.evaluate(() => { const x = addTest("a14", todayIso()); addNote("a14", "", x.id).res = "ok"; save(); });
   await wait(400);
-  check(await ev(() => !!state.tests.a14 && !!state.tests.a5), "a test added in another tab is merged in");
+  check(await ev(() => !!state.tests.a14 && !!state.tests.a5 && scoreTxt("a14", state.tests.a14[0]) === "1/1"), "a test added in another tab is merged in, with its task");
   await other.close();
 
   /* ---------- every page, both widths ---------- */

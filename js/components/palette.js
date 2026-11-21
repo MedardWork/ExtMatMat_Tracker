@@ -111,7 +111,7 @@ function palDraw(){
     const x = BY_ID[it.t];
     const n = it.n ? findNote(it.t, it.n) : null;
     const y = it.x ? findTest(it.t, it.x) : null, task = n && isTask(it.t, n) ? findTest(it.t, n.test) : null;
-    const main = y ? `Test: ${esc(testName(it.t, y))} · ${scoreTxt(y)}` : n ? `✎ ${esc(noteTitle(n))}` : esc(x.n);
+    const main = y ? `Test: ${esc(testName(it.t, y))} · ${scoreTxt(it.t, y)}` : n ? `✎ ${esc(noteTitle(n))}` : esc(x.n);
     const sub = y ? `${esc(shortName(x))} · ${fmtAgo(y.d)}`
       : task ? `${esc(shortName(x))} · úloha z testu ${esc(testName(it.t, task))} (${fmtAgo(task.d)})`
       : n ? `${esc(shortName(x))} · ${fmtAgo(isoOf(n.c))}`

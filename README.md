@@ -155,9 +155,10 @@ count is then spread over the topics still in play. Levels and notes stay; ↩ V
 ### Tests on a topic
 
 A short test at the end of a topic goes under **Testy** on the topic page (`+ Nový test` or `T`): the day you wrote
-it, how many points or tasks you got right out of how many (typing `8/10` into the first field fills both) and an
-optional name. Its tasks are notes that belong to that test, written in the same editor, each marked *správne*,
-*čiastočne* or *zle*; they don't show among the topic's own notes, but the quick search finds them.
+it, an optional name and its tasks, each marked ✓ *správne*, ½ *čiastočne* or ✗ *zle*. The score counts itself: every
+task is one point (½ is half a point), so `+ ✓ správne` pressed eight times and `+ ✗ zle` twice make 8/10 (with the
+button focused, Enter adds the next one). A task can also carry a note, written in the same editor as the topic's notes
+(`+ s poznámkou`, or ✎ on a task); tasks don't show among the topic's own notes, but the quick search finds them.
 
 - The colour of a result follows the levels: from 90 % *perfektne*, from 70 % *ide to*, from 40 % *slabo*, below that *neviem*.
 - A topic whose latest test is below 70 % is listed under *Na zopakovanie* on the overview and under the *Slabý test*

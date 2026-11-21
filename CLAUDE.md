@@ -185,16 +185,20 @@ ask for a change and paste the answer back; so the format is made to be easy for
 The person asked for a short test per topic (written at the end of learning it): a score, a day, and the tasks as notes bound
 to that test; shown in the calendar per day and topic, and wherever else it helps.
 
-- Data (js/state.js, "topic tests"): `state.tests = {topicId: [{id, d, n, s, m, c, u}]}`: d = the day written, n = optional name,
-  s points / tasks right out of m (null while not typed). Not `state.plan.tests` (the plan's past papers, scored /30).
+- Data (js/state.js, "topic tests"): `state.tests = {topicId: [{id, d, n, s, m, c, u}]}`: d = the day written, n = optional name.
+  Not `state.plan.tests` (the plan's past papers, scored /30). **The score is counted from the tasks** (the person, same day):
+  `testScore(tid, x)` = {s: sum of marks (✓ 1, ½ 0.5, ✗ 0), m: number of tasks, open: unmarked}. `testPct`, `scoreTxt`,
+  `pctTxt`, `testCls`, `hasScore` therefore all take `(topicId, test)`. `s`/`m` on a test are only a score typed by hand in the
+  first version; it wins until "Počítať z úloh" (`test-hand-off`) clears it.
   Its tasks are ordinary notes with `test` = the test's id and `res` = "ok" | "part" | "bad" | "", so editor, search, tombstones and
   merging are the notes' own. `topicNotes(id)` = the topic's own notes: use it wherever notes are listed or counted for a topic;
   `notesOf` stays for storage and search. A task whose test is gone shows as an ordinary note (`isTask`).
 - Merged per test by `u` in `mergeStates`; `removeTest` buries the test and its tasks, `restoreTest` is the undo.
   STATE_V stays 4: `tests` is an optional key. Never bump STATE_V for an optional key: an older app reads an unknown v as v1.
 - Topic page: js/views/topictests.js, section `#tTests` between subtopics and notes. `ui.testEdit` = the test whose fields are open,
-  `finishTest` drops a test left without score, name and tasks; route `#/tema/<id>/t/<testId>`; key T; "8/10" or "8 z 10" in the
-  score field fills both. The hint compares the latest score with the topic's level.
+  `finishTest` drops a test left without name and tasks; route `#/tema/<id>/t/<testId>`; key T. "+ ✓ / ½ / ✗" (`task-quick`) adds a
+  task with only its mark, shown as a chip (`bareTask`), and keeps the focus so Enter adds the next; "+ s poznámkou" opens the
+  editor. The hint compares the latest score with the topic's level.
 - Elsewhere through js/components/testcards.js (styles in css/tests.css): month cells and day heads of both calendar panes,
   diary rows (with "+ test": `ui.pendingTest` opens the topic with a new test on that day), the overview card "Testy z tém"
   (latest, na zopakovanie, hotové bez testu), the topic list (badge, filter "Slabý test"), quick search, "Naposledy",

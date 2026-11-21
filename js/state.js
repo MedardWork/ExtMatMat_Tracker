@@ -13,7 +13,8 @@
                                                 res = how that task went: "ok" | "part" | "bad" | "" (not marked)
      tests:  { topicId: [ {id, d:"YYYY-MM-DD", n, s, m, c, u} ] }
                                                 short tests on a topic: d = the day it was written, n = name (optional),
-                                                s points / tasks right out of m (null while not typed)
+                                                s, m = a score typed by hand (only tests from the first version; null now:
+                                                the score comes from the tasks, see testScore)
                                                 (not state.plan.tests: those are the plan's past papers, scored /30)
      upd:    { topicId: timestamp },            last change to levels or notes
      log:    [ {id, d:"YYYY-MM-DD", text, ts, u, links:[{t, n?}]} ]
@@ -519,9 +520,10 @@ function restoreNote(tid, n){
 const noteHaystack = id => notesOf(id).map(n => n.title + " " + n.body).concat(testsOf(id).map(x => x.n)).join(" ");
 
 /* ---------- topic tests ----------
-   A short test on one topic: when (d), how many points / tasks right (s) out of how many (m), an optional name (n).
-   Its tasks are notes of the topic with test = its id, written and edited like any note, plus a mark res. */
+   A short test on one topic: when (d) and an optional name (n). Its tasks are notes of the topic with test = its id,
+   written and edited like any note, plus a mark res; the score is counted from those marks (testScore). */
 const TASK_RES = ["ok", "part", "bad"];
+const TASK_PTS = {ok:1, part:0.5, bad:0};
 const TEST_WEAK = 0.7;       /* a topic whose latest test is below this is "na zopakovanie" */
 const testsOf = id => state.tests[id] || [];
 const findTest = (tid, xid) => testsOf(tid).find(x => x.id === xid);
@@ -529,35 +531,37 @@ const findTest = (tid, xid) => testsOf(tid).find(x => x.id === xid);
 const testsByDate = id => [...testsOf(id)].sort((a, b) => a.d.localeCompare(b.d) || a.c - b.c);
 const latestTest = id => { const l = testsByDate(id); return l[l.length - 1] || null; };
 /* the latest test that has a score */
-const lastScored = id => testsByDate(id).filter(x => testPct(x) != null).pop() || null;
+const lastScored = id => testsByDate(id).filter(x => testPct(id, x) != null).pop() || null;
 const testName = (tid, x) => x.n.trim() || `${testsByDate(tid).indexOf(x) + 1}. test`;
 const testTasks = (tid, xid) => notesOf(tid).filter(n => n.test === xid).sort((a, b) => a.c - b.c);
-/* share of the maximum, 0–1; null while the score or the maximum is missing */
-const testPct = x => x.s != null && x.m ? Math.min(1, x.s / x.m) : null;
+/* {s, m, open}: every task is one point (✓ 1, ½ 0.5, ✗ 0), so m = the number of tasks and s = the sum of their marks
+   (null until one is marked); open = tasks not marked yet. A score typed by hand (s, m on the test, first version)
+   wins until it is dropped: hand = true. */
+function testScore(tid, x){
+  if(x.s != null) return {s:x.s, m:x.m, open:0, hand:true};
+  const tasks = testTasks(tid, x.id), marked = tasks.filter(n => TASK_PTS[n.res] != null);
+  return {s: marked.length ? marked.reduce((a, n) => a + TASK_PTS[n.res], 0) : null, m: tasks.length || null, open: tasks.length - marked.length, hand:false};
+}
+/* share of the maximum, 0–1; null while nothing is marked */
+const testPct = (tid, x) => { const r = testScore(tid, x); return r.s != null && r.m ? Math.min(1, r.s / r.m) : null; };
 /* a result on the colour scale of the levels: from 90 % 4, from 70 % 3, from 40 % 2, below 1, no score 0 */
 const testGrade = p => p == null ? 0 : p >= 0.9 ? 4 : p >= TEST_WEAK ? 3 : p >= 0.4 ? 2 : 1;
 const numTxt = v => String(Math.round(v * 100) / 100).replace(".", ",");
-/* "8/10", "8 b." without a maximum, "—" without a score */
-const scoreTxt = x => x.s == null ? "—" : x.m ? `${numTxt(x.s)}/${numTxt(x.m)}` : `${numTxt(x.s)} b.`;
-const pctTxt = x => { const p = testPct(x); return p == null ? "" : `${Math.round(p * 100)} %`; };
+/* "8/10", "8 b." without a maximum (a hand-typed score), "—" without a score */
+const scoreTxt = (tid, x) => { const r = testScore(tid, x); return r.s == null ? "—" : r.m ? `${numTxt(r.s)}/${numTxt(r.m)}` : `${numTxt(r.s)} b.`; };
+const pctTxt = (tid, x) => { const p = testPct(tid, x); return p == null ? "" : `${Math.round(p * 100)} %`; };
+const hasScore = (tid, x) => testScore(tid, x).s != null;
 /* the topic's latest scored test is below TEST_WEAK */
-const weakTopic = id => { const x = lastScored(id); return !!x && testPct(x) < TEST_WEAK; };
+const weakTopic = id => { const x = lastScored(id); return !!x && testPct(id, x) < TEST_WEAK; };
 /* every test written on a day, as {t: topic id, x: test} */
 function testsOnDay(d){
   const out = [];
   for(const t in state.tests) for(const x of state.tests[t]) if(x.d === d && BY_ID[t]) out.push({t, x});
   return out.sort((a, b) => a.x.c - b.x.c);
 }
-/* the "out of" of the test entered last, offered for the next one */
-function lastMax(){
-  let best = null;
-  for(const t in state.tests) for(const x of state.tests[t]) if(x.m && (!best || x.c > best.c)) best = x;
-  return best ? best.m : null;
-}
-
 function addTest(tid, d = todayIso()){
   const now = Date.now();
-  const x = {id:uid(), d, n:"", s:null, m:lastMax(), c:now, u:now};
+  const x = {id:uid(), d, n:"", s:null, m:null, c:now, u:now};
   (state.tests[tid] ||= []).push(x);
   touch(tid);
   return x;
@@ -589,7 +593,7 @@ function restoreTest(tid, {x, tasks}){
   tasks.forEach(n => restoreNote(tid, n));
   touch(tid);
 }
-/* nothing typed yet: no score, no name, no tasks */
+/* nothing typed yet: no name, no tasks (and no hand-typed score) */
 const emptyTest = (tid, x) => x.s == null && !x.n.trim() && !testTasks(tid, x.id).length;
 const subHaystack = id => subsOf(id).map(x => x.n).join(" ");
 

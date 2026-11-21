@@ -33,7 +33,7 @@ function renderPlanToday(){
     const dn = dayNote(last);
     html += `<a class="pt-last" href="${calHash("t", last, true)}"><span class="rl-when">Naposledy · ${fmtAgo(last)}</span>
       ${dn ? `<span class="rl-text">${inline(plainText(dn.text, 140))}</span>` : ""}
-      ${tops.length ? `<span class="pt-tops">${tops.map(r => `<i class="dot l${lv(r.t)}"></i>${esc(shortName(BY_ID[r.t]))}${testsOf(r.t).filter(x => x.d === last && x.s != null).map(x => ` <span class="tt-badge ${testCls(x)}">test ${scoreTxt(x)}</span>`).join("")}`).join(" · ")}</span>` : ""}</a>`;
+      ${tops.length ? `<span class="pt-tops">${tops.map(r => `<i class="dot l${lv(r.t)}"></i>${esc(shortName(BY_ID[r.t]))}${testsOf(r.t).filter(x => x.d === last && hasScore(r.t, x)).map(x => ` <span class="tt-badge ${testCls(r.t, x)}">test ${scoreTxt(r.t, x)}</span>`).join("")}`).join(" · ")}</span>` : ""}</a>`;
   }
   html += `<div class="resume-acts">
     ${PLAN_NONE ? `<a class="btn" href="#/info" data-act="plan-goto">Vytvoriť plán</a>` : ""}

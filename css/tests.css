@@ -2,6 +2,7 @@
    TOPIC TESTS — the "Testy" section of the topic page (js/views/topictests.js),
    their badges in the topic list, calendar and overview (js/components/testcards.js)
    A result's colour: tg1–tg4 follow the level colours (testGrade in js/state.js), tg0 = no score yet.
+   The score is counted from the tasks' marks, so the test's own fields are only the day and the name.
    ============================================================ */
 .tg0{--gc:var(--l0);--gb:var(--track)}
 .tg1{--gc:var(--l1);--gb:var(--l1-bg)}
@@ -45,8 +46,7 @@ a.tt-badge:hover{border-color:var(--gc);color:var(--ink)}
 .tt-hd{flex:1;min-width:0}
 .tt-title{font:600 18px/1.3 var(--serif);margin:0}
 .tt-meta{font-size:12px;color:var(--ink-soft);margin-top:3px;display:flex;flex-wrap:wrap;gap:2px 8px;align-items:baseline}
-.tt-m{font-weight:600}
-.tt-m.r-ok{color:var(--l4)} .tt-m.r-part{color:var(--l2)} .tt-m.r-bad{color:var(--l1)}
+.tt-open{color:var(--flag);font-weight:600}
 .tt-score{flex:0 0 auto;text-align:right;line-height:1.1;padding-top:1px}
 .tt-s{display:block;font:600 22px/1.1 var(--serif);font-variant-numeric:tabular-nums}
 .tt-p{display:block;font:600 12px/1.3 var(--sans);color:var(--gc)}
@@ -60,20 +60,30 @@ a.tt-badge:hover{border-color:var(--gc);color:var(--ink)}
 /* fields while it is open */
 .tt-form{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:flex-end;margin:14px 0 0 30px;padding:12px;background:var(--dk-bg);border-radius:6px}
 .tt-f{display:flex;flex-direction:column;gap:4px;font:600 11.5px/1.2 var(--sans);color:var(--ink-soft)}
-.tt-f.tt-sc{flex-direction:row;flex-wrap:wrap;align-items:center;gap:6px}
-.tt-f.tt-sc > span:first-child{flex:1 1 100%}
 .tt-f input{font:14px var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--rule);border-radius:5px;padding:6px 8px;min-width:0}
 .tt-f input:focus{outline:2px solid var(--dk);outline-offset:-1px;border-color:transparent}
-.tt-f .tt-num{width:64px;font:600 17px var(--sans);text-align:center;font-variant-numeric:tabular-nums}
-.tt-f.tt-sc > span:not(:first-child){font:500 13px var(--sans);color:var(--ink-soft)}
 .tt-name{flex:1 1 220px}
 .tt-name input{width:100%}
-.tt-warn{margin:6px 0 0 30px;font-size:12.5px;color:var(--flag)}
-.tt-warn:empty{display:none}
+.tt-warn{margin:8px 0 0 30px;font-size:12.5px;color:var(--flag);display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
+.tt-warn .btn{font-size:12px;padding:4px 10px}
 .tt-foot{display:flex;align-items:center;justify-content:flex-end;gap:12px;margin:12px 0 0 30px}
 
-/* its tasks: notes bound to the test */
-.tt-tasks{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+/* its tasks: notes bound to the test. One with nothing written is a chip (number + mark), several to a row;
+   one with a title or text is a full note across the row. */
+.tt-tasks{display:grid;grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));gap:6px 8px;margin-bottom:10px}
+.tt-tasks > .note{grid-column:1 / -1}
+.task-chip{display:flex;align-items:center;gap:8px;min-width:0;padding:4px 4px 4px 10px;border:1px solid var(--rule);border-left:4px solid var(--l0);
+  border-radius:5px;background:color-mix(in srgb, var(--paper) 35%, var(--panel))}
+.task-chip.r-ok{border-left-color:var(--l4)} .task-chip.r-part{border-left-color:var(--l2)} .task-chip.r-bad{border-left-color:var(--l1)}
+.tk-no{font:500 13px/1.2 var(--sans);white-space:nowrap}
+.task-chip.r-no .tk-no{color:var(--flag)}
+.task-chip .tres{margin:0;flex-wrap:nowrap}
+.task-chip .tres button{font-size:12px;padding:3px 8px}
+.tk-acts{display:flex;gap:0;margin-left:auto;opacity:.5;transition:opacity .15s ease}
+.task-chip:hover .tk-acts, .task-chip:focus-within .tk-acts{opacity:1}
+.tk-acts button{appearance:none;cursor:pointer;background:none;border:1px solid transparent;border-radius:4px;font:500 13px/1 var(--sans);color:var(--ink-soft);padding:4px 6px}
+.tk-acts button:hover{border-color:var(--rule);color:var(--ink)}
+.tk-acts button.danger:hover{color:var(--flag)}
 .note.task{margin:0;padding:10px 14px 12px 8px;box-shadow:none;border-left:4px solid var(--l0);background:color-mix(in srgb, var(--paper) 35%, var(--panel))}
 .note.task.r-ok{border-left-color:var(--l4)} .note.task.r-part{border-left-color:var(--l2)} .note.task.r-bad{border-left-color:var(--l1)}
 .note.task .note-title{font-size:15.5px;margin:0}
@@ -86,10 +96,17 @@ a.tt-badge:hover{border-color:var(--gc);color:var(--ink)}
 .tres .tr-bad[aria-pressed="true"]{background:var(--l1)}
 .note.task.r-no:not(.editing) .tres{opacity:.6}
 .note.task:hover .tres{opacity:1}
-.tt-add{appearance:none;cursor:pointer;width:100%;text-align:left;background:none;border:1px dashed var(--rule);border-radius:5px;
-  font:500 13px/1.3 var(--sans);color:var(--dk);padding:7px 10px}
-.tt-add span{color:var(--ink-soft);font-weight:400}
-.tt-add:hover{border-color:var(--dk);background:var(--panel)}
+/* adding a task: with its mark at once, or with a note */
+.tt-adds{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.tt-adds-l{font:600 11.5px/1.2 var(--sans);color:var(--ink-soft);margin-right:2px}
+.tq{appearance:none;cursor:pointer;background:none;border:1px dashed var(--rule);border-radius:999px;font:500 12.5px/1 var(--sans);color:var(--ink);padding:6px 11px}
+.tq:hover, .tq:focus-visible{border-style:solid}
+.tq.tr-ok{border-color:color-mix(in srgb, var(--l4) 60%, transparent)} .tq.tr-ok:hover{background:var(--l4-bg)}
+.tq.tr-part{border-color:color-mix(in srgb, var(--l2) 60%, transparent)} .tq.tr-part:hover{background:var(--l2-bg)}
+.tq.tr-bad{border-color:color-mix(in srgb, var(--l1) 60%, transparent)} .tq.tr-bad:hover{background:var(--l1-bg)}
+.tq-note{color:var(--dk)}
+.tq-note:hover{border-color:var(--dk);background:var(--panel)}
+.tt-how{font-size:12px;color:var(--ink-soft);margin:8px 0 0}
 
 /* ---------- calendar ---------- */
 .ci.ck-tt{border-left-color:var(--gc);background:var(--gb)}
@@ -132,6 +149,7 @@ a.tt-badge:hover{border-color:var(--gc);color:var(--ink)}
   .tt-h{flex-wrap:wrap}
   .tt .note-acts{opacity:1;flex:1 1 100%;justify-content:flex-end}
   .tt-bar, .tt-body, .tt-form, .tt-warn, .tt-foot{margin-left:6px}
+  .tk-acts{opacity:1}
   .tt-s{font-size:19px}
   .cal-cell .ci.ck-tt{border:0;background:none;padding:0}
   .cal-cell .ci.ck-tt .ci-s{font-size:10px;color:var(--gc)}

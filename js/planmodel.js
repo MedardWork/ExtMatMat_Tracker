@@ -413,7 +413,7 @@ AKO APPKA RÁTA POKROK (to do plánu nepíš, appka to berie zo svojich dát)
 - Položka má byť hotová po poslednom dni, ktorý jej plán dáva; čo sa do týždňa nezmestí, do konca ďalšieho týždňa. Dovtedy nerobí sklz, a keď ju dokončím skôr, mám náskok.
 - Opakovanie je hotové, keď mám k jeho téme poznámku alebo test z tejto témy (s bodmi) z toho týždňa alebo neskôr.
 - Test je hotový, keď má zapísané body.
-- Testy z tém sú krátke testy, ktoré si zapisujem k jednotlivým témam (body z maxima). Do tempa sa nerátajú. Téma, ktorej posledný test je pod ${Math.round(TEST_WEAK * 100)} %, potrebuje opakovanie.`;
+- Testy z tém sú krátke testy, ktoré si zapisujem k jednotlivým témam (každá úloha 1 bod, čiastočne pol bodu). Do tempa sa nerátajú. Téma, ktorej posledný test je pod ${Math.round(TEST_WEAK * 100)} %, potrebuje opakovanie.`;
 }
 
 /* a small valid plan to show an AI the shape when there is no plan yet (generic, nothing personal) */
@@ -446,7 +446,7 @@ function planStarter(){
 }
 
 /* the latest scored topic test, for the AI texts: "8/10 (80 %, 21. 11.)" */
-const testForAi = id => { const x = lastScored(id); return x ? `${scoreTxt(x)} (${pctTxt(x)}, ${fmtD(x.d)})` : ""; };
+const testForAi = id => { const x = lastScored(id); return x ? `${scoreTxt(id, x)} (${pctTxt(id, x)}, ${fmtD(x.d)})` : ""; };
 
 /* no plan yet: ask the AI to make one, after asking the person what it needs */
 function planCreateText(){

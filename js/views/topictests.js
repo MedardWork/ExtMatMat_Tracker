@@ -1,14 +1,13 @@
 /* ============================================================
    TOPIC TESTS — the "Testy" section of the topic page (js/views/topic.js).
-   A short test on the topic: the day, how many points / tasks right out of how many, an optional name,
-   and its tasks: notes bound to the test (n.test), each marked správne / čiastočne / zle (n.res).
+   A short test on the topic: the day, an optional name and its tasks: notes bound to the test (n.test), each marked
+   správne / čiastočne / zle (n.res). The score is counted from the marks (testScore in js/state.js): a task is one point.
+   "+ ✓ / ½ / ✗" adds a task with only its mark (shown as a small chip); "+ s poznámkou" opens the note editor.
    Data: js/state.js ("topic tests"). The calendar, overview, topic list, search and the AI text show them too.
    Route #/tema/<id>/t/<testId> opens the topic scrolled to a test.
    ============================================================ */
 const TASK_MARK = {ok:["✓", "správne"], part:["½", "čiastočne"], bad:["✗", "zle"]};
 const skTasks = n => plural(n, "úloha", "úlohy", "úloh");
-/* "8" or "7,5" from what was typed; null for anything else (an empty field is handled by the caller) */
-const testNum = s => /^\d+(?:[.,]\d+)?$/.test(s) ? Math.round(parseFloat(s.replace(",", ".")) * 100) / 100 : null;
 
 function drawTTests(){
   const host = $("#tTests");
@@ -21,7 +20,7 @@ function drawTTests(){
   </div>`;
   if(!list.length){
     host.innerHTML = `${head}<p class="tt-empty">${v >= 3 ? `Téma je na <i>${LV[v].label}</i>, over si to krátkym testom.` : "Na konci témy si daj krátky test."}
-      Zapíšeš si, koľko si mal správne, a úlohy, v ktorých si chyboval, si k testu napíšeš ako poznámky. Body uvidíš aj v kalendári pri dni, keď si test písal.</p>`;
+      Každú úlohu testu si zapíšeš ako ✓, ½ alebo ✗ a body sa spočítajú samy. K úlohe, v ktorej si chyboval, si pripíšeš poznámku. Body uvidíš aj v kalendári pri dni, keď si test písal.</p>`;
     return;
   }
   host.innerHTML = `${head}<div id="ttHint">${testHintHtml(id)}</div>${testTrendHtml(id)}
@@ -33,35 +32,35 @@ function drawTTests(){
 function testHintHtml(id){
   const x = lastScored(id), v = lv(id);
   if(!x) return "";
-  const g = testGrade(testPct(x));
+  const g = testGrade(testPct(id, x)), sc = scoreTxt(id, x);
   const marked = testTasks(id, x.id).some(n => n.res === "bad" || n.res === "part");
-  if(g <= 2 && v >= 3) return `<p class="tt-hint">Posledný test (<b>${scoreTxt(x)}</b>) dopadol slabšie, než hovorí úroveň témy (<i>${LV[v].label}</i>). ${marked ? "Pozri úlohy označené ✗ a ½" : "Pozri, v ktorých úlohách si chyboval,"} a podľa toho uprav podtémy, ktoré ešte nejdú.</p>`;
-  if(g === 4 && v >= 1 && v <= 2) return `<p class="tt-hint good">Posledný test (<b>${scoreTxt(x)}</b>) dopadol výborne, no téma je len na <i>${LV[v].label}</i>. Možno si ju podceňuješ: skontroluj podtémy.</p>`;
+  if(g <= 2 && v >= 3) return `<p class="tt-hint">Posledný test (<b>${sc}</b>) dopadol slabšie, než hovorí úroveň témy (<i>${LV[v].label}</i>). ${marked ? "Pozri úlohy označené ✗ a ½" : "Pozri, v ktorých úlohách si chyboval,"} a podľa toho uprav podtémy, ktoré ešte nejdú.</p>`;
+  if(g === 4 && v >= 1 && v <= 2) return `<p class="tt-hint good">Posledný test (<b>${sc}</b>) dopadol výborne, no téma je len na <i>${LV[v].label}</i>. Možno si ju podceňuješ: skontroluj podtémy.</p>`;
   return "";
 }
 
 /* one bar per scored test, oldest on the left (from two tests on) */
 function testTrendHtml(id){
-  const scored = testsByDate(id).filter(x => testPct(x) != null).slice(-12);
+  const scored = testsByDate(id).filter(x => testPct(id, x) != null).slice(-12);
   if(scored.length < 2) return "";
-  return `<div class="tt-trend" role="img" aria-label="Výsledky testov po poradí: ${scored.map(pctTxt).join(", ")}">${scored.map(x => {
-    const p = testPct(x);
-    return `<a class="tg${testGrade(p)}" href="#/tema/${id}/t/${x.id}" title="${esc(testName(id, x))} · ${fmtIso(x.d)} · ${scoreTxt(x)} (${pctTxt(x)})">
+  return `<div class="tt-trend" role="img" aria-label="Výsledky testov po poradí: ${scored.map(x => pctTxt(id, x)).join(", ")}">${scored.map(x => {
+    const p = testPct(id, x);
+    return `<a class="tg${testGrade(p)}" href="#/tema/${id}/t/${x.id}" title="${esc(testName(id, x))} · ${fmtIso(x.d)} · ${scoreTxt(id, x)} (${pctTxt(id, x)})">
       <span>${Math.round(p * 100)}</span><i style="height:${Math.max(3, Math.round(p * 40))}px"></i><small>${fmtD(x.d)}</small></a>`;
   }).join("")}</div>`;
 }
 
 function testMetaHtml(id, x){
-  const tasks = testTasks(id, x.id);
-  const marks = TASK_RES.map(r => { const n = tasks.filter(t => t.res === r).length; return n ? `<span class="tt-m r-${r}" title="${TASK_MARK[r][1]}: ${n}">${TASK_MARK[r][0]} ${n}</span>` : ""; }).join("");
-  return `${weekdayOf(x.d)} ${fmtIso(x.d)}${tasks.length ? ` · ${tasks.length} ${skTasks(tasks.length)}` : ""}${marks}`;
+  const n = testTasks(id, x.id).length, r = testScore(id, x);
+  return `${weekdayOf(x.d)} ${fmtIso(x.d)}${n ? ` · ${n} ${skTasks(n)}` : ""}${r.hand ? ` · <span class="tt-open">body zadané ručne</span>`
+    : r.open ? ` · <span class="tt-open" title="Úloha bez ✓ ½ ✗ sa ráta ako 0 bodov">${r.open} bez známky</span>` : ""}`;
 }
-function testScoreHtml(x){
-  return `<b class="tt-s">${scoreTxt(x)}</b><span class="tt-p">${pctTxt(x)}</span>`;
+function testScoreHtml(id, x){
+  return `<b class="tt-s">${scoreTxt(id, x)}</b><span class="tt-p">${pctTxt(id, x)}</span>`;
 }
 
 function testCardHtml(id, x){
-  const p = testPct(x);
+  const p = testPct(id, x);
   const editing = !!(ui.testEdit && ui.testEdit.x === x.id);
   const folded = ui.collapsed.has(x.id) && !editing;
   const tasks = testTasks(id, x.id);
@@ -72,45 +71,51 @@ function testCardHtml(id, x){
         <h3 class="tt-title">${esc(testName(id, x))}</h3>
         <div class="tt-meta">${testMetaHtml(id, x)}</div>
       </div>
-      <div class="tt-score">${testScoreHtml(x)}</div>
+      <div class="tt-score">${testScoreHtml(id, x)}</div>
       <div class="note-acts">
         ${editing ? "" : `<button data-act="test-edit" data-x="${x.id}">Upraviť</button>`}
         <button class="danger" data-act="test-del" data-x="${x.id}" title="Zmazať test aj s jeho úlohami">Zmazať</button>
       </div>
     </header>
     <div class="tt-bar"><i style="width:${p == null ? 0 : Math.round(p * 1000) / 10}%"></i></div>
-    ${editing ? testFormHtml(x) : ""}
+    ${editing ? testFormHtml(id, x) : ""}
     <div class="tt-body">
       ${tasks.length ? `<div class="tt-tasks">${tasks.map((n, i) => taskHtml(id, n, i)).join("")}</div>` : ""}
-      <button class="tt-add" data-act="task-new" data-x="${x.id}">+ Úloha${tasks.length ? "" : "<span> — úlohu, v ktorej si chyboval, si sem zapíš ako poznámku</span>"}</button>
+      <div class="tt-adds" role="group" aria-label="Pridať úlohu">
+        <span class="tt-adds-l">Pridať úlohu</span>
+        ${TASK_RES.map(r => `<button class="tq tr-${r}" data-act="task-quick" data-x="${x.id}" data-r="${r}" title="Pridať úlohu, ktorú si mal ${TASK_MARK[r][1]}">+ ${TASK_MARK[r][0]} ${TASK_MARK[r][1]}</button>`).join("")}
+        <button class="tq tq-note" data-act="task-new" data-x="${x.id}" title="Pridať úlohu s poznámkou: zadanie, postup, kde bola chyba">+ s poznámkou</button>
+      </div>
+      ${tasks.length ? "" : `<p class="tt-how">Každá úloha je 1 bod: ✓ správne 1, ½ čiastočne 0,5, ✗ zle 0. Počet úloh aj body sa spočítajú samy.</p>`}
     </div>
     ${editing ? `<div class="tt-foot"><span class="muted small">Ukladá sa samo.</span><button class="btn" data-act="test-done">Hotovo</button></div>` : ""}
   </article>`;
 }
 
-function testFormHtml(x){
-  const val = v => v == null ? "" : numTxt(v);
+function testFormHtml(id, x){
   return `<div class="tt-form">
-    <label class="tt-f tt-sc"><span>Správne</span>
-      <input class="tt-num" data-in="test-f" data-f="s" data-x="${x.id}" value="${val(x.s)}" inputmode="decimal" autocomplete="off" aria-label="Koľko bodov alebo úloh si mal správne">
-      <span>z</span>
-      <input class="tt-num" data-in="test-f" data-f="m" data-x="${x.id}" value="${val(x.m)}" inputmode="decimal" autocomplete="off" placeholder="10" aria-label="Z koľkých bodov alebo úloh">
-    </label>
     <label class="tt-f"><span>Dátum</span><input type="date" data-in="test-f" data-f="d" data-x="${x.id}" value="${x.d}"></label>
     <label class="tt-f tt-name"><span>Názov</span><input data-in="test-f" data-f="n" data-x="${x.id}" value="${esc(x.n)}" maxlength="80" placeholder="nepovinné, napr. Zbierka str. 34"></label>
   </div>
-  <p class="tt-warn" id="ttWarn-${x.id}">${testWarn(x)}</p>`;
+  ${x.s != null ? `<p class="tt-warn">Body ${scoreTxt(id, x)} si k tomuto testu zadal ručne. Odteraz sa počítajú z úloh.
+    <button class="btn ghost" data-act="test-hand-off" data-x="${x.id}">Počítať z úloh</button></p>` : ""}`;
 }
-const testWarn = x => x.s != null && x.m && x.s > x.m ? "Správnych je viac ako maximum. Skontroluj čísla." : "";
 
 /* ---------- a task of a test: a note bound to it ---------- */
 const taskTitle = (n, i) => n.title.trim() || `Úloha ${i + 1}`;
-function taskResSeg(n){
+/* the three marks; short = symbols only (a task chip) */
+function taskResSeg(n, short){
   return `<div class="nlv tres" role="group" aria-label="Ako dopadla úloha">${TASK_RES.map(r =>
-    `<button class="tr-${r}" data-act="task-res" data-n="${n.id}" data-r="${r}" aria-pressed="${n.res === r}">${TASK_MARK[r][0]} ${TASK_MARK[r][1]}</button>`).join("")}</div>`;
+    `<button class="tr-${r}" data-act="task-res" data-n="${n.id}" data-r="${r}" aria-pressed="${n.res === r}"${short ? ` title="${TASK_MARK[r][1]}"` : ""}>${TASK_MARK[r][0]}${short ? "" : " " + TASK_MARK[r][1]}</button>`).join("")}</div>`;
 }
+/* a task with nothing written: only its number and mark */
+const bareTask = n => !n.title.trim() && !n.body.trim() && !n.sub;
 function taskHtml(tid, n, i){
   if(ui.editing && ui.editing.n === n.id) return noteEditorHtml(tid, n);
+  if(bareTask(n)) return `<div class="task-chip r-${n.res || "no"}" id="note-${n.id}">
+    <span class="tk-no">Úloha ${i + 1}</span>${taskResSeg(n, true)}
+    <span class="tk-acts"><button data-act="note-edit" data-n="${n.id}" title="Pripísať k úlohe poznámku">✎</button><button class="danger" data-act="note-del" data-n="${n.id}" title="Zmazať úlohu">×</button></span>
+  </div>`;
   const folded = ui.collapsed.has(n.id);
   const sn = n.sub && subName(tid, n.sub);
   return `<article class="note task r-${n.res || "no"}${folded ? " collapsed" : ""}" id="note-${n.id}" data-note="${tid}/${n.id}">
@@ -139,14 +144,15 @@ function startTest(tid, d){
   save();
   return x;
 }
+/* a new test waits for its first task: "+ ✓ správne" gets the focus, so Enter adds one task after another */
 function focusTest(xid){
   const art = $(`#test-${xid}`);
   if(!art) return;
   art.scrollIntoView({block:"center"});
-  const inp = $(`[data-f="s"]`, art);
-  if(inp){ inp.focus({preventScroll:true}); inp.select(); }
+  const b = $(`[data-act="task-quick"]`, art);
+  if(b) b.focus({preventScroll:true});
 }
-/* close the test's fields; a test left without a score, a name or a task is dropped */
+/* close the test's fields; a test left without a name or a task is dropped */
 function finishTest(silent){
   const te = ui.testEdit;
   if(!te) return;
@@ -158,18 +164,19 @@ function finishTest(silent){
   drawTTests(); drawTHead();
   flashEl($(`#test-${te.x}`));
 }
-/* after typing: score, bar and colour of the card, without redrawing the fields */
+/* after typing or marking: score, bar and colour of the card, the hint and the page head, without redrawing the fields */
 function testReadout(tid, x){
   const art = $(`#test-${x.id}`);
   if(!art) return;
-  const p = testPct(x);
+  const p = testPct(tid, x);
   art.className = art.className.replace(/\btg\d\b/, `tg${testGrade(p)}`);
-  $(".tt-score", art).innerHTML = testScoreHtml(x);
+  $(".tt-score", art).innerHTML = testScoreHtml(tid, x);
   $(".tt-title", art).textContent = testName(tid, x);
   $(".tt-meta", art).innerHTML = testMetaHtml(tid, x);
   $(".tt-bar i", art).style.width = `${p == null ? 0 : Math.round(p * 1000) / 10}%`;
-  const w = $(`#ttWarn-${x.id}`);
-  if(w) w.textContent = testWarn(x);
+  const h = $("#ttHint");
+  if(h) h.innerHTML = testHintHtml(tid);
+  drawTHead();
 }
 
 onInput("test-f", el => {
@@ -177,33 +184,11 @@ onInput("test-f", el => {
   if(!x) return;
   const val = el.value.trim();
   let patch;
-  if(f === "s" || f === "m"){
-    /* "8/10" (or "8 z 10") typed into the first field fills both; the field is tidied when it is left */
-    const both = f === "s" && val.match(/^(\d+(?:[.,]\d+)?)\s*(?:\/|z)\s*(\d+(?:[.,]\d+)?)?$/);
-    if(both){
-      patch = {s:testNum(both[1])};
-      if(both[2]){
-        patch.m = testNum(both[2]) || null;
-        const m = $(`[data-f="m"][data-x="${x.id}"]`);
-        if(m) m.value = both[2];
-      }
-    } else {
-      const v = val === "" ? null : testNum(val);
-      if(val !== "" && v == null) return;      /* half-typed ("7,") or not a number: keep what was there */
-      patch = {[f]: f === "m" ? v || null : v};
-    }
-  }
-  else if(f === "d"){ if(!/^\d{4}-\d\d-\d\d$/.test(val)) return; patch = {d:val}; }
+  if(f === "d"){ if(!/^\d{4}-\d\d-\d\d$/.test(val)) return; patch = {d:val}; }
   else patch = {n:el.value};
   updateTest(tid, x.id, patch);
   saveSoon();
   testReadout(tid, x);
-});
-document.addEventListener("change", e => {
-  const el = e.target;
-  if(!el.matches || !el.matches(".tt-num[data-f=\"s\"]")) return;
-  const x = findTest(ui.route.id, el.dataset.x);
-  if(x && /[^\d.,\s]/.test(el.value)) el.value = x.s == null ? "" : numTxt(x.s);
 });
 document.addEventListener("keydown", e => {
   if(!e.target.matches || !e.target.matches(".tt-form input")) return;
@@ -246,6 +231,14 @@ action("test-del", el => {
     if(ui.route.view === "tema" && ui.route.id === tid){ drawTTests(); drawTHead(); drawTSide(); }
   });
 });
+/* a score typed by hand in the first version: from now on it comes from the tasks */
+action("test-hand-off", el => {
+  const tid = ui.route.id;
+  if(!updateTest(tid, el.dataset.x, {s:null, m:null})) return;
+  save();
+  drawTTests(); drawTHead();
+  focusTest(el.dataset.x);
+});
 action("test-fold", el => {
   const xid = el.dataset.x;
   if(ui.collapsed.has(xid)) ui.collapsed.delete(xid); else ui.collapsed.add(xid);
@@ -265,17 +258,33 @@ action("task-new", el => {
   drawTTests(); drawTNotes(); drawTHead();
   focusEditor();
 });
+/* a task with only its mark, added at the end; the button keeps the focus, so Enter adds the next one */
+action("task-quick", el => {
+  if(ui.route.view !== "tema") return;
+  const tid = ui.route.id, xid = el.dataset.x, r = el.dataset.r;
+  if(!findTest(tid, xid) || !TASK_RES.includes(r)) return;
+  const wasEditing = !!ui.editing;
+  if(wasEditing){ finishEditing(true); $("#topicPage").classList.remove("editing"); }
+  const n = addNote(tid, "", xid);
+  n.res = r;
+  ui.collapsed.delete(xid);
+  save();
+  drawTTests(); drawTHead();
+  if(wasEditing){ drawTNotes(); drawTSide(); }
+  const b = $(`#test-${xid} [data-act="task-quick"][data-r="${r}"]`);
+  if(b) b.focus({preventScroll:true});
+});
+/* the mark of a task; clicking the chosen one again clears it. The card keeps its fields and focus. */
 action("task-res", el => {
   const tid = ui.route.id, nid = el.dataset.n, r = el.dataset.r;
   const n = findNote(tid, nid);
   if(!n) return;
-  updateNote(tid, nid, {res: n.res === r ? "" : r});   /* the chosen mark again clears it */
+  updateNote(tid, nid, {res: n.res === r ? "" : r});
   saveSoon();
-  if(ui.editing && ui.editing.n === nid){
-    const art = $(`#note-${nid}`);
+  const art = $(`#note-${nid}`), x = findTest(tid, n.test);
+  if(art){
     art.className = art.className.replace(/\br-\w+\b/, `r-${n.res || "no"}`);
     $$(`[data-act="task-res"]`, art).forEach(b => b.setAttribute("aria-pressed", b.dataset.r === n.res));
-    const x = findTest(tid, n.test), card = x && $(`#test-${x.id} .tt-meta`);
-    if(card) card.innerHTML = testMetaHtml(tid, x);
-  } else drawTTests();
+  }
+  if(x) testReadout(tid, x);
 });

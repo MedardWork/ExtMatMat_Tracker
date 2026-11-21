@@ -125,7 +125,7 @@ function drawTHead(){
   head.className = `t-head s${v}`;
   const upd = state.upd[id] ? `<span class="upd${changedToday(id) ? " today" : ""}">${changedToday(id) ? "zmenené dnes" : "zmenené " + fmtIso(isoOf(state.upd[id]))}</span>` : "";
   const lt = lastScored(id);
-  const test = lt ? `<a class="tt-badge tg${testGrade(testPct(lt))}" href="#/tema/${id}/t/${lt.id}" title="Posledný test: ${esc(testName(id, lt))}, ${fmtIso(lt.d)}">test ${scoreTxt(lt)}</a>` : "";
+  const test = lt ? `<a class="tt-badge tg${testGrade(testPct(id, lt))}" href="#/tema/${id}/t/${lt.id}" title="Posledný test: ${esc(testName(id, lt))}, ${fmtIso(lt.d)}">test ${scoreTxt(id, lt)}</a>` : "";
   const weight = isOff(id) ? `<span class="t-weight off">mimo odhadu</span>`
     : x.t !== "c" ? `<span class="t-weight">blok <b>${AREAS[x.area].w}</b> úloh v teste</span>` : "";
   head.innerHTML = `
@@ -436,14 +436,16 @@ action("note-del", el => {
   const n = findNote(tid, nid);
   if(!n) return;
   const empty = !n.title.trim() && !n.body.trim() && !n.res;
+  /* a task with nothing written is named by its number: "Úloha 3 zmazaná." */
+  const what = !n.test ? `Poznámka „${noteTitle(n)}“` : n.title.trim() || n.body.trim() ? `Úloha „${noteTitle(n)}“` : `Úloha ${testTasks(tid, n.test).indexOf(n) + 1}`;
   if(ui.editing && ui.editing.n === nid){ ui.editing = null; $("#topicPage").classList.remove("editing"); }
   removeNote(tid, nid);
   touch(tid);
   save();
-  drawTSubs(); drawTTests(); drawTNotes(); drawTSide();
-  if(!empty) toast(`${n.test ? "Úloha" : "Poznámka"} „${noteTitle(n)}“ zmazaná.`, () => {
+  drawTHead(); drawTSubs(); drawTTests(); drawTNotes(); drawTSide();
+  if(!empty) toast(`${what} zmazaná.`, () => {
     restoreNote(tid, n); save();
-    if(ui.route.view === "tema" && ui.route.id === tid){ drawTSubs(); drawTTests(); drawTNotes(); drawTSide(); }
+    if(ui.route.view === "tema" && ui.route.id === tid){ drawTHead(); drawTSubs(); drawTTests(); drawTNotes(); drawTSide(); }
   });
 });
 action("note-fold", el => {
