@@ -144,7 +144,7 @@ function ecSubBadge(tid, k){
   if(!EC.topic[tid]) return "";
   if(!o) return `<span class="ec-badge none" title="Na túto podtému sa externá časť v rokoch ${EC.first}–${EC.last} nepýtala.">v EČ nebola</span>`;
   const t = o.tasks.map(x => `${x.y}/${String(x.q).padStart(2, "0")} ${x.l}`).join("\n");
-  return `<span class="ec-badge${o.recent ? "" : " old"}" title="Úlohy z externej časti (rok/úloha):\n${esc(t)}">EČ ${o.years.length}× · ${ecPts(o.pts)}/test · ${ecNum(o.pph, 2)} b./h</span>`;
+  return `<span class="ec-badge${o.recent ? "" : " old"}" data-act="past-go" data-k="${k}" title="Úlohy z externej časti (rok/úloha), klik ich ukáže nižšie:\n${esc(t)}">EČ ${o.years.length}× · ${ecPts(o.pts)}/test · ${ecNum(o.pph, 2)} b./h</span>`;
 }
 function ecScopeSwitch(where){
   const cur = ecScope();
@@ -212,3 +212,27 @@ ${order.map(o => "  - " + fmt(o)).join("\n")}
 - Odhad času: 1 sedenie = 2 bloky po 45 min. ${fit ? `V pláne od dnes zostáva ${fit.bIn} blokov na témy v rozsahu a ${fit.bOut} blokov na témy mimo rozsahu${fit.overIn ? `, ${fit.overIn} blokov tém v rozsahu sa nezmestilo do svojich týždňov` : ""}${fit.missing.length ? `; v pláne chýbajú témy v rozsahu: ${fit.missing.map(m => `${m.id} (asi ${calNum(m.b / 2)} ${skSed(m.b / 2)})`).join(", ")}` : ""}.` : ""}
 `;
 }
+
+/* ---------- past tasks of a topic (topic page: js/views/topicpast.js) ---------- */
+const ecYearUrl = y => `https://maturita-nivam.nucem.sk/sk/merania/narodne-merania/maturita/roky/${y - 1}-${y}`;
+function ecTaskUrl(y, q){          /* the official test, opened on the page where task q starts; "" = not published */
+  const s = EC_SRC[y];
+  if(!s || !s.t) return "";
+  const pg = s.pg ? s.pg.split(" ")[q - 1] : "";
+  return EC_DL + s.t + (pg ? `#page=${pg}` : "");
+}
+const ecKeyUrl = y => EC_SRC[y] && EC_SRC[y].k ? EC_DL + EC_SRC[y].k : "";
+/* per topic, newest test first: {y, q, d, l, subs: keys of this topic's subtopics, main: topic of the main subtopic, note} */
+const EC_TASKS = (() => {
+  const r = {};
+  for(const t of EC_TESTS) t.t.forEach(([refs, d, l], i) => {
+    const list = refs.split(" ").map(ref => ref.split(".")).filter(([tid, ix]) => (SUBS[tid] || [])[+ix]);
+    if(!list.length) return;
+    const main = list[0][0];
+    for(const tid of new Set(list.map(x => x[0])))
+      (r[tid] ||= []).push({y:t.y, q:i + 1, d, l, main, note:t.note || "",
+        subs:list.filter(x => x[0] === tid).map(([, ix]) => subKey(SUBS[tid][+ix]))});
+  });
+  return r;
+})();
+const ecTasksOf = tid => EC_TASKS[tid] || [];

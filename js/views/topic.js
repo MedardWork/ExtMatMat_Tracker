@@ -21,7 +21,7 @@ VIEWS.tema = {
       startNote(id, ui.pendingSub != null ? ui.pendingSub : undefined);
       ui.pendingSub = null;
     }
-    if(nf.t !== id){ nf.t = id; nf.sub = null; nf.lv = null; ui.subSel = null; }
+    if(nf.t !== id){ nf.t = id; nf.sub = null; nf.lv = null; ui.subSel = null; ui.pastSub = null; ui.pastAll = false; }
     /* "+ Test" in the calendar: a new test on that day, its fields open */
     let newTest = null;
     if(ui.pendingTest && ui.pendingTest.t === id){ newTest = startTest(id, ui.pendingTest.d); ui.pendingTest = null; }
@@ -37,13 +37,14 @@ VIEWS.tema = {
       <div class="t-grid">
         <div class="t-main">
           <section class="card t-subs" id="tSubs" aria-label="Podtémy"></section>
+          <section class="card t-past" id="tPast" aria-label="Úlohy z maturít" hidden></section>
           <section class="t-tests" id="tTests" aria-label="Testy"></section>
           <section class="t-notes" id="tNotes" aria-label="Poznámky"></section>
         </div>
         <aside class="t-side" id="tSide"></aside>
       </div>
     </article>`;
-    drawTNav(); drawTHead(); drawTSubs(); drawTTests(); drawTNotes(); drawTSide();
+    drawTNav(); drawTHead(); drawTSubs(); drawTPast(); drawTTests(); drawTNotes(); drawTSide();
     /* the "Teória" links beside subtopics need to know which of them the theory covers */
     if(hasTheory(id) && !THEORY[id]) loadTheory(id).then(() => {
       if(ui.route.view === "tema" && ui.route.id === id && !ui.route.tab && $("#tSubs")) drawTSubs();
@@ -63,7 +64,7 @@ VIEWS.tema = {
   refresh(what){
     if(ui.route.tab === "teoria"){ refreshTheory(); return; }
     if(what === "level"){ drawTNav(); drawTHead(); drawTSubs(); drawTSide(); const h = $("#ttHint"); if(h) h.innerHTML = testHintHtml(ui.route.id); }
-    else { drawTNav(); drawTHead(); drawTSubs(); drawTTests(); drawTNotes(); drawTSide(); }
+    else { drawTNav(); drawTHead(); drawTSubs(); drawTPast(); drawTTests(); drawTNotes(); drawTSide(); }
   },
   key(e){
     const id = ui.route.id;

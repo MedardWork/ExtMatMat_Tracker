@@ -125,7 +125,8 @@ choose the folder).
   level (the topic's level and understanding % are computed from them; you can add your own
   subtopics), its tests (see *Tests on a topic* below), named notes (sorted by creation date, each with its own "rozumiem" level and optionally
   tied to a subtopic, filterable by both), description, prerequisites / what builds on it, and the
-  diary notes that mention it, with a box that writes today's diary note for the topic (saved as you type).
+  diary notes that mention it, with a box that writes today's diary note for the topic (saved as you type), and
+  *Úlohy z maturít*: the tasks of past external-part tests that need the topic (see *Rozsah učenia*).
 - **Teória** (`#/tema/a21/teoria`) — the topic explained in short pieces, each followed by an
   interactive example with only the relevant values unlocked. See *Theory and tools* below.
 - **Nástroje** — the same interactive tools on their own, fully unlocked: function graphs, sequences, a triangle
@@ -192,7 +193,12 @@ them, and can sort by points per hour). They don't count in a topic's level, the
 *Ďalej na rade*. The overview card shows what each scope covers, how many hours are left in yours, whether the plan
 still fits (blocks planned for topics out of scope are freed for the missing ones) and the subtopics with the most
 points per hour; *Preplánovať s AI* copies the plan for an AI with a section that says what to drop and what to add,
-ordered by points per hour. The Danish topics are not affected. The tests themselves are not part of the app.
+ordered by points per hour. The Danish topics are not affected.
+
+On a topic page, *Úlohy z maturít* lists the topic's tasks from those tests, newest first: year, task number, what the task
+asks, difficulty and the subtopics it needs (the chips filter by subtopic; so does the EČ badge of a subtopic). The task
+number opens the official test on the NIVAM website on the page where the task starts, *kľúč* the official answer key.
+The tests themselves are not part of the app: NIVAM holds their copyright and allows copies only for teaching at schools.
 
 ## Study plan
 
@@ -346,6 +352,7 @@ js/components/testcards.js         topic tests outside the topic page: badges, c
 js/views/overview.js               #/
 js/views/topics.js                 #/temy/a|c
 js/views/topic.js                  #/tema/<id>
+js/views/topicpast.js              the Úlohy z maturít section of the topic page (links to the official tests)
 js/views/topictests.js             the Testy section of the topic page (#/tema/<id>/t/<testId> opens one test)
 js/views/theory.js                 #/tema/<id>/teoria
 js/views/tools.js                  #/nastroje, #/nastroje/<tool>

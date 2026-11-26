@@ -238,7 +238,12 @@ no clear licence; only the derived mapping is).
   out-of-scope subtopics and shows badges (`ecSubBadge`). `planAiText` includes `ecAiText()` (empty in scope all).
 - `ecPlanFit()`: remaining plan blocks in / out of scope, in-scope topics missing from the plan, verdict and "Preplánovať s AI" on
   the overview card (js/components/scopecard.js, css/scope.css).
-- Later (the person): show the real past tasks under each topic.
+- **Úlohy z maturít** on the topic page (js/views/topicpast.js, section `#tPast` after the subtopics; 2026-11-26): the topic's past
+  tasks, newest first, filtered by subtopic (`ui.pastSub`; the EČ badge of a subtopic row sets it, `past-go`), 8 shown until
+  "Zobraziť všetky". **Copyright:** NIVAM (formerly NÚCEM) owns the tests and keys and allows copies only for teaching at schools
+  (its "Vyhlásenie o autorstve"), so the public app never shows a task's text, picture or answer: only our own one-line label and a
+  link. `EC_SRC` in js/data/ec.js = the official test and key PDFs under `EC_DL` (none for the test in 2005–2008) and `pg`, the
+  page each task starts on (read from the PDF text; `ecTaskUrl` adds `#page=`). `EC_TASKS` / `ecTasksOf(tid)` in js/ec.js.
 
 ### Tools on their own page (2026-11-16, Fable)
 

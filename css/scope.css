@@ -30,6 +30,8 @@
 
 .ec-badge{display:inline-flex;align-items:baseline;font:600 11px/1.2 var(--sans);font-variant-numeric:tabular-nums;white-space:nowrap;
   color:var(--ink-soft);border:1px solid var(--rule);border-radius:999px;padding:1px 7px;margin-right:8px;vertical-align:1px;cursor:help}
+.ec-badge[data-act]{cursor:pointer}
+.ec-badge[data-act]:hover{color:var(--ink);border-color:var(--ink-soft)}
 .ec-badge.old{opacity:.75}
 .ec-badge.none{border-style:dashed;opacity:.7}
 .sub-name .ec-badge{margin:0 0 0 4px;font-weight:500}
@@ -41,3 +43,35 @@
 .sub-row.ec-out .sub-name{color:var(--ink-soft)}
 .sub-row.ec-out{opacity:.7}
 .ci.ec-out, .sl-it.ec-out{opacity:.5}
+
+/* topic page: Úlohy z maturít (js/views/topicpast.js) */
+.t-past{scroll-margin-top:calc(var(--bar-h) + 16px)}
+.tp-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
+.tp-head h2{margin:0}
+.tp-head .muted{font-size:13px}
+.tp-note{font-size:12.5px;margin:6px 0 10px}
+.tp-chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.tp-chip{font:500 12px/1.2 var(--sans);padding:4px 10px;border:1px solid var(--rule);border-radius:999px;background:var(--paper);color:var(--ink-soft);cursor:pointer}
+.tp-chip b{font-weight:600;font-variant-numeric:tabular-nums;margin-left:2px}
+.tp-chip:hover{background:var(--hover);color:var(--ink)}
+.tp-chip.on{background:var(--ink);border-color:var(--ink);color:var(--on-ink)}
+.tp-chip.ec-out{opacity:.6}
+.tp-list{list-style:none;margin:0 0 8px;padding:0}
+.tp-row{display:grid;grid-template-columns:9.5em minmax(0, 1fr) auto auto;gap:2px 12px;align-items:baseline;padding:7px 0;border-top:1px solid var(--rule);font-size:13.5px}
+.tp-row:first-child{border-top:0}
+.tp-id{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--ink);text-decoration:none}
+a.tp-id:hover{text-decoration:underline}
+.tp-id.none{font-weight:500;color:var(--ink-soft)}
+.tp-d{font-size:10px;letter-spacing:1px;color:var(--ink-soft);white-space:nowrap;cursor:help}
+.tp-key{font-size:12.5px;color:var(--ink-soft)}
+.tp-key.none{opacity:.6}
+.tp-meta{grid-column:2 / -1;font-style:normal;font-size:12px;color:var(--ink-soft)}
+.tp-meta a{color:inherit}
+.tp-row.ec-out{opacity:.6}
+@media (max-width:560px){
+  .tp-row{grid-template-columns:minmax(0, 1fr) auto auto}
+  .tp-id{grid-row:1;grid-column:1}
+  .tp-d{grid-row:1;grid-column:2}
+  .tp-key{grid-row:1;grid-column:3}
+  .tp-l, .tp-meta{grid-column:1 / -1}
+}

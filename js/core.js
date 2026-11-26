@@ -28,7 +28,9 @@ const ui = {
   pendingSub: null,   /* …filed under this subtopic (set from the theory tab) */
   collapsed: new Set(),
   showOut: false,     /* topic list: also topics out of the chosen scope (js/ec.js) */
-  sortPph: false      /* topic list: by points per hour within a block */
+  sortPph: false,     /* topic list: by points per hour within a block */
+  pastSub: null,      /* topic page, Úlohy z maturít: only the tasks of this subtopic */
+  pastAll: false      /* … and all of them, not the newest few */
 };
 
 const VIEWS = {};

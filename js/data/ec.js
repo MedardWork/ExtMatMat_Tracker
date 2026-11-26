@@ -637,3 +637,30 @@ const EC_NEEDS = {
   "b22.0":["b21.1"], "b22.1":["b21.1"], "b23.0":["b21.1"],
   "b24.1":["b24.0"], "b24.2":["b24.0"], "b24.3":["b24.0"], "b14.1":["b14.0"], "b14.2":["b14.0"]
 };
+
+/* Where each test is published: NIVAM (formerly NÚCEM) holds the copyright of the tests and keys and allows copies only
+   for teaching at schools, so the app links to the official PDFs instead of quoting them. t = test, k = key, both under
+   EC_DL; "" = not published there (2005–2008: only some keys). pg = the page on which each task 1–30 starts (read from
+   the PDF text; where a task number was not found, the page of the last one found). Year pages: ecYearUrl(y). */
+const EC_DL = "https://www2.nucem.sk/dl/";
+const EC_SRC = {
+  2025:{t:"6154/251447_RT_MAT.pdf", k:"6198/2025_kluc_MAT_web.pdf", pg:"2 2 3 3 3 3 3 3 4 4 4 4 4 5 5 5 6 6 6 6 7 7 8 8 8 10 10 10 10 10"},
+  2024:{t:"5853/24%201447_RT_MAT.pdf", k:"5893/MAT_RT_2024_kluc.pdf", pg:"2 2 2 3 3 3 3 3 3 4 4 4 4 4 5 5 5 6 6 6 7 7 8 8 9 10 10 10 10 10"},
+  2023:{t:"5541/23_1447_MAT_MARCOVY-TERMIN.pdf", k:"5581/2023_kluc_MAT_web.pdf", pg:"2 2 2 2 2 3 3 3 3 4 4 4 4 4 5 5 5 5 6 6 7 7 8 8 8 9 9 10 10 10"},
+  2022:{t:"5182/RT_MAT_20-1447_2020.pdf", k:"5222/2022_kluc_MAT_web.pdf", pg:"2 2 2 2 2 3 3 3 4 4 4 4 5 5 5 5 5 5 6 6 7 7 8 8 8 9 9 9 10 10"},
+  2019:{t:"4302/RT_MAT_19%201447_2019.pdf", k:"4326/2019_kluc_MAT_web.pdf", pg:"2 2 2 2 3 3 3 4 4 4 4 5 5 5 5 6 6 6 6 6 7 7 8 8 8 9 9 9 10 10"},
+  2018:{t:"741/RT_MAT_7070_2018.pdf", k:"751/2018_kluc_MAT_web.pdf", pg:"2 2 2 2 2 2 3 3 3 3 3 4 4 4 4 4 5 5 5 5 6 6 6 7 7 7 8 9 9 10"},
+  2017:{t:"694/RT_7180_2017.pdf", k:"689/Kluc_spravnych_odpovedi_EC_MS_2017-matematika.pdf", pg:"2 2 2 2 2 3 3 3 3 4 4 4 4 4 4 5 5 5 5 5 6 6 7 7 8 9 9 10 10 10"},
+  2016:{t:"1515/RT_MAT_5178_2016.pdf", k:"1491/2016_kluc_MAT_web.pdf", pg:"2 2 2 2 2 3 3 3 3 4 4 4 4 4 5 5 5 6 6 6 7 7 8 8 8 9 9 10 10 10"},
+  2015:{t:"1669/MAT_1203.pdf", k:"1643/kluc_MAT_2015.pdf", pg:"2 2 2 2 3 3 3 3 4 4 4 4 5 5 5 6 6 6 6 6 7 7 7 8 8 8 9 9 10 10"},
+  2014:{t:"1780/MAT_2106.pdf", k:"1766/kluc_MAT_2014.pdf", pg:"2 2 2 2 3 3 3 3 4 4 4 5 5 5 5 5 6 6 6 6 7 7 7 8 8 8 9 9 10 10"},
+  2013:{t:"1900/MAT_8103.pdf", k:"1871/kluc_matematika.pdf", pg:"2 2 2 2 3 3 3 3 4 4 4 4 5 5 5 6 6 6 6 6 7 7 7 8 8 8 9 9 10 10"},
+  2012:{t:"2020/MA-6306.pdf", k:"1977/MAT_2012_kluc.pdf", pg:"2 2 2 2 3 3 3 3 3 3 3 3 4 4 4 5 5 5 5 5 6 6 7 7 7 7 7 7 7 7"},
+  2011:{t:"2104/MA-3306.pdf", k:"2125/MS_2011_RT_kluc_MAT.pdf", pg:"2 2 2 2 2 3 3 3 3 4 4 4 4 4 4 5 5 5 5 5 6 6 6 7 7 7 8 8 8 8"},
+  2010:{t:"2238/3504-MA.pdf", k:"2207/MAT_kluc_RT_2010.pdf", pg:"2 2 2 2 2 3 3 3 3 3 4 4 4 4 5 5 5 5 5 5 6 6 6 7 7 8 8 8 8 8"},
+  2009:{t:"2390/MA-3340.pdf", k:"2360/Kluce_MA_-_3340_3360_3345_3365_2009_RT.pdf", pg:"2 2 2 2 3 3 3 3 3 3 3 3 4 4 4 4 5 5 5 5 6 6 6 6 7 7 8 8 8 8"},
+  2008:{t:"", k:"2478/klucmatab.pdf"},
+  2007:{t:"", k:""},
+  2006:{t:"", k:""},
+  2005:{t:"", k:"2738/Kluc_spravnych_rieseni_MAA.pdf"}
+};

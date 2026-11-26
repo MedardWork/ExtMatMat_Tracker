@@ -42,6 +42,13 @@ for(const s of ctx.EC_SCOPES){
   const c = ctx.ecCover(s.k);
   console.log(`${s.k.padEnd(4)} ${c.topics} topics, ${c.subs} subtopics, ${n(c.pts)} of 30 points, about ${Math.round(c.h)} h from zero`);
 }
+for(const t of ctx.EC_TESTS){                     // official links (EC_SRC): every test listed, 30 nondecreasing pages
+  const s = ctx.EC_SRC[t.y];
+  if(!s){ console.log(`${t.y}: missing in EC_SRC`); bad++; continue; }
+  const pg = s.pg ? s.pg.split(" ").map(Number) : [];
+  if(s.pg && (pg.length !== 30 || pg.some((v, i) => !(v >= 1) || (i && v < pg[i - 1])))){ console.log(`${t.y}: EC_SRC pg is not 30 pages in order`); bad++; }
+  if(s.t && !s.pg){ console.log(`${t.y}: test link without pages`); bad++; }
+}
 if(Math.abs(total - 30) > 1e-6) bad++;
 console.log(bad ? `${bad} problem(s)` : "ok");
 process.exit(bad ? 1 : 0);
