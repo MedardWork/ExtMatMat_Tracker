@@ -122,12 +122,19 @@ choose the folder).
   without a test; at most 3 each).
 - **Témy** — the topic list with tabs, search (also inside notes), filters with counts (one of them: *Slabý test*),
   the latest test score of each topic and quick level buttons. Click a topic name to open it.
-- **Topic page** (`#/tema/a5`) — the whole topic on one page: its subtopics, each with its own
-  level (the topic's level and understanding % are computed from them; you can add your own
-  subtopics), its tests (see *Tests on a topic* below), named notes (sorted by creation date, each with its own "rozumiem" level and optionally
-  tied to a subtopic, filterable by both), description, prerequisites / what builds on it, and the
-  diary notes that mention it, with a box that writes today's diary note for the topic (saved as you type), and
-  *Úlohy z maturít*: the tasks of past external-part tests that need the topic (see *Rozsah učenia*).
+- **Topic page** (`#/tema/a5`) — one topic under its header (level, understanding %, latest test, how often the
+  external part asked it), in four tabs; each tab says what it holds (number of past tasks, tests, notes):
+  - **Podtémy** — the subtopics, each with its own level (the topic's level and understanding % are computed from
+    them; you can add your own subtopics), its EČ badge, theory link and notes; beside them what the topic is about
+    and its prerequisites / what builds on it.
+  - **Teória** (`/teoria`) — see below.
+  - **Precvičovanie** (`/precvic`) — the topic's own tests (see *Tests on a topic* below) and *Úlohy z maturít*,
+    the tasks of past external-part tests that need the topic (see *Rozsah učenia*); beside them *Téma v maturitách*:
+    a column per past test with a square per task (click a year or a subtopic to filter the tasks) and the subtopics'
+    points per test with your level.
+  - **Poznámky** (`/poznamky`) — named notes (sorted by creation date, each with its own "rozumiem" level and
+    optionally tied to a subtopic, filterable by both); beside them a box that writes today's diary note for the
+    topic (saved as you type) and the earlier diary notes that mention it.
 - **Teória** (`#/tema/a21/teoria`) — the topic explained in short pieces, each followed by an
   interactive example with only the relevant values unlocked. See *Theory and tools* below.
 - **Nástroje** — the same interactive tools on their own, fully unlocked: function graphs, sequences, a triangle
@@ -145,7 +152,8 @@ choose the folder).
   data sources.
 
 Press `/` (or Ctrl+K) anywhere to jump to a topic or note. On a topic page: `←` `→` previous /
-next topic, `↑` `↓` pick a subtopic, `0`–`4` set its level, `N` new note, `T` new test, `Esc` back to the list.
+next topic on the same tab, `↑` `↓` pick a subtopic, `0`–`4` set its level (on Podtémy), `N` new note (opens Poznámky),
+`T` new test (opens Precvičovanie), `Esc` back to the list.
 
 ### How levels add up
 
@@ -161,7 +169,7 @@ count is then spread over the topics still in play. Levels and notes stay; ↩ V
 
 ### Tests on a topic
 
-A short test at the end of a topic goes under **Testy** on the topic page (`+ Nový test` or `T`): the day you wrote
+A short test at the end of a topic goes under **Testy** on the topic page's tab Precvičovanie (`+ Nový test` or `T`): the day you wrote
 it, an optional name and its tasks, each marked ✓ *správne*, ½ *čiastočne* or ✗ *zle*. The score counts itself: every
 task is one point (½ is half a point), so `+ ✓ správne` pressed eight times and `+ ✗ zle` twice make 8/10 (with the
 button focused, Enter adds the next one). A task can also carry a note, written in the same editor as the topic's notes
@@ -202,7 +210,8 @@ points per hour; *Preplánovať s AI* copies the plan for an AI with a section t
 ordered by points per hour. The Danish topics are not affected.
 
 On a topic page, *Úlohy z maturít* lists the topic's tasks from those tests, newest first: year, task number, what the task
-asks, difficulty and the subtopics it needs (the chips filter by subtopic; so does the EČ badge of a subtopic). The task
+asks, difficulty and the subtopics it needs (the chips filter by subtopic; so do the EČ badge of a subtopic and the
+side card *Téma v maturitách*, whose year columns filter by test). The task
 number opens the official test on the NIVAM website on the page where the task starts, *kľúč* the official answer key.
 The tests themselves are not part of the app: NIVAM holds their copyright and allows copies only for teaching at schools.
 
@@ -278,7 +287,7 @@ ukaz: hodnoty, kroky, sucet
 
 ## Theory and tools
 
-Every topic page has two faces: **Podtémy a poznámky** (your own work) and **Teória**. Theory is split
+Every topic page has a **Teória** tab beside your own work (Podtémy, Precvičovanie, Poznámky). Theory is split
 into short pieces of text, each followed by an interactive tool that shows what was just said. Inside
 theory a tool is pre-filled for that one point and only the values that matter there can be changed —
 *Odomknúť všetko* frees the rest, *Otvoriť v Nástrojoch* opens it on its own page with the same values.
@@ -358,7 +367,7 @@ js/components/testcards.js         topic tests outside the topic page: badges, c
 js/views/overview.js               #/
 js/views/topics.js                 #/temy/a|c
 js/views/topic.js                  #/tema/<id>
-js/views/topicpast.js              the Úlohy z maturít section of the topic page (links to the official tests)
+js/views/topicpast.js              Úlohy z maturít on the topic page (links to the official tests) and the card Téma v maturitách
 js/views/topictests.js             the Testy section of the topic page (#/tema/<id>/t/<testId> opens one test)
 js/views/theory.js                 #/tema/<id>/teoria
 js/views/tools.js                  #/nastroje, #/nastroje/<tool>

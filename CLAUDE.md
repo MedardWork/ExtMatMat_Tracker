@@ -195,7 +195,7 @@ to that test; shown in the calendar per day and topic, and wherever else it help
   `notesOf` stays for storage and search. A task whose test is gone shows as an ordinary note (`isTask`).
 - Merged per test by `u` in `mergeStates`; `removeTest` buries the test and its tasks, `restoreTest` is the undo.
   STATE_V stays 4: `tests` is an optional key. Never bump STATE_V for an optional key: an older app reads an unknown v as v1.
-- Topic page: js/views/topictests.js, section `#tTests` between subtopics and notes. `ui.testEdit` = the test whose fields are open,
+- Topic page: js/views/topictests.js, section `#tTests` on the tab Precvičovanie. `ui.testEdit` = the test whose fields are open,
   `finishTest` drops a test left without name and tasks; route `#/tema/<id>/t/<testId>`; key T. "+ ✓ / ½ / ✗" (`task-quick`) adds a
   task with only its mark, shown as a chip (`bareTask`), and keeps the focus so Enter adds the next; "+ s poznámkou" opens the
   editor. The hint compares the latest score with the topic's level.
@@ -238,7 +238,7 @@ no clear licence; only the derived mapping is).
   out-of-scope subtopics and shows badges (`ecSubBadge`). `planAiText` includes `ecAiText()` (empty in scope all).
 - `ecPlanFit()`: remaining plan blocks in / out of scope, in-scope topics missing from the plan, verdict and "Preplánovať s AI" on
   the overview card (js/components/scopecard.js, css/scope.css).
-- **Úlohy z maturít** on the topic page (js/views/topicpast.js, section `#tPast` after the subtopics; 2026-11-26): the topic's past
+- **Úlohy z maturít** on the topic page (js/views/topicpast.js, section `#tPast` on the tab Precvičovanie after the tests; 2026-11-26): the topic's past
   tasks, newest first, filtered by subtopic (`ui.pastSub`; the EČ badge of a subtopic row sets it, `past-go`), 8 shown until
   "Zobraziť všetky". **Copyright:** NIVAM (formerly NÚCEM) owns the tests and keys and allows copies only for teaching at schools
   (its "Vyhlásenie o autorstve"), so the public app never shows a task's text, picture or answer: only our own one-line label and a
@@ -261,6 +261,13 @@ icons in the nav, five level buttons, dense rows) and rejected an Apple-like res
   today, same numbers as the verdict), the Plán card (`planCardHtml`, moved from Info; a plan pasted in Nastavenia goes
   here via `ui.openPlan`), pace, milestones, rules. Links that changed the plan (`plan-goto`) point here.
 - **Kalendár → Poznámky → Mriežka** (`#/kalendar/g/<iso>/p`, `notesGrid`): the old diary heatmap, 17 weeks back to the exam.
+- **Topic page, four tabs** (`topicPane()` in topic.js; `topicTabs` in theory.js shows counts): Podtémy (`#/tema/<id>`: subtopics,
+  O čom to je, Súvislosti), Teória, Precvičovanie (`/precvic`, also `/t/<testId>` and a task's `/n/<id>`: #tTests, #tPast, side card
+  *Téma v maturitách* `ecVizHtml` in topicpast.js: squares per past test, subtopic points with level dots; year / subtopic filter
+  `ui.pastYear` / `ui.pastSub`), Poznámky (`/poznamky`, `/n/<id>`: #tNotes, Dnes v denníku). Every section is drawn on every tab and
+  hidden by `data-tp` (css/topic.css), so the draw functions need no guards. A new note / test asked for from elsewhere
+  (`ui.pendingNew`, `ui.pendingTest`) moves the page to its tab with `history.replaceState`; N, T, "+ poznámka", "✎ n" and the EČ
+  badge (`ui.pastJump`) switch tabs themselves; ← → keep the tab.
 - Not wanted (asked 2026-11-26): a map of all topics by points, a "road to the exam" of weeks, a points-per-hour chart.
 
 ### Tools on their own page (2026-11-16, Fable)

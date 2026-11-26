@@ -5,13 +5,17 @@
    ============================================================ */
 let thSpy = null;
 
-/* the switch between the two faces of a topic */
+/* the switch between the four faces of a topic (cur = topicPane()), each with what it holds */
 function topicTabs(id, cur){
-  const has = hasTheory(id);
-  return `<nav class="t-tabs" aria-label="Zobrazenie témy">
-    <a href="#/tema/${id}"${cur === "notes" ? ` aria-current="page"` : ""}>Podtémy a poznámky</a>
-    <a href="#/tema/${id}/teoria"${cur === "teoria" ? ` aria-current="page"` : ""}>Teória${has ? "" : ` <small>pripravuje sa</small>`}</a>
-  </nav>`;
+  const past = ecTasksOf(id).length, tests = testsOf(id).length, notes = topicNotes(id).length;
+  const pr = [past ? `${past} ${skTasks(past)}` : "", tests ? `${tests} ${plural(tests, "test", "testy", "testov")}` : ""].filter(Boolean).join(", ");
+  const a = (k, path, label, small) => `<a href="#/tema/${id}${path}"${cur === k ? ` aria-current="page"` : ""}>${label}${small ? ` <small>${small}</small>` : ""}</a>`;
+  return `<nav class="t-tabs" aria-label="Zobrazenie témy">${a("subs", "", "Podtémy")}${a("teoria", "/teoria", "Teória", hasTheory(id) ? "" : "pripravuje sa")}${a("precvic", "/precvic", "Precvičovanie", pr)}${a("poznamky", "/poznamky", "Poznámky", notes ? String(notes) : "")}</nav>`;
+}
+/* the tabs again after notes or tests changed (their counts) */
+function drawTTabs(){
+  const t = $("#topicPage > .t-tabs");
+  if(t) t.outerHTML = topicTabs(ui.route.id, topicPane());
 }
 
 function renderTheory(host){
@@ -88,5 +92,5 @@ action("th-jump", (el, e) => {
 action("th-note", el => {
   ui.pendingNew = ui.route.id;
   ui.pendingSub = el.dataset.k;
-  go(`#/tema/${ui.route.id}`);
+  go(`#/tema/${ui.route.id}/poznamky`);
 });

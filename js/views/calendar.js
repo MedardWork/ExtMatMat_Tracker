@@ -564,7 +564,7 @@ action("cn-del", el => {
 /* a new test on a topic, written on day d: the topic page opens with its fields */
 function calTestNew(t, d){
   ui.pendingTest = {t, d};
-  go(`#/tema/${t}`);
+  go(`#/tema/${t}/precvic`);
 }
 action("cal-test-new", el => calTestNew(el.dataset.t, el.dataset.d));
 action("cal-test-pick", el => {

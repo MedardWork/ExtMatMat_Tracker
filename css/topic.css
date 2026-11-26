@@ -96,6 +96,37 @@
 .note-edit-foot .saved{margin-right:auto;font-size:12px;color:var(--l4)}
 .note-edit-foot .saved.busy{color:var(--ink-soft)}
 
+/* ---------- tabs: each section shows on its own tab (data-tp; topicPane in topic.js) ---------- */
+#topicPage[data-pane="subs"] [data-tp]:not([data-tp="subs"]),
+#topicPage[data-pane="precvic"] [data-tp]:not([data-tp="precvic"]),
+#topicPage[data-pane="poznamky"] [data-tp]:not([data-tp="poznamky"]){display:none}
+#topicPage[data-pane="precvic"] .t-past{margin-top:18px}
+
+/* ---------- Precvičovanie: "Téma v maturitách" (ecVizHtml in topicpast.js) ---------- */
+.t-ecviz h3{font:600 12px/1.3 var(--sans);margin:16px 0 6px;display:flex;justify-content:space-between;gap:8px}
+.t-ecviz h3 span{font-weight:500;color:var(--ink-soft)}
+.ev-cap{font-size:12.5px;line-height:1.45;color:var(--ink-soft);margin:0 0 10px}
+.ev-cap b{color:var(--ink)}
+.ev-years{display:grid;grid-template-columns:repeat(19,minmax(0,1fr));gap:3px;align-items:end;min-height:34px}
+.ev-y{display:flex;flex-direction:column-reverse;gap:2px;align-items:stretch;padding:2px 0 0;border:0;border-radius:3px;background:none;cursor:pointer}
+.ev-y:disabled{cursor:default}
+.ev-y:not(:disabled):hover,.ev-y.on{background:var(--hover)}
+.ev-y i{display:block;height:9px;border-radius:2px;background:var(--dk)}
+.ev-y i.side{background:var(--dk-bg);box-shadow:inset 0 0 0 1px var(--dk)}
+.ev-y i.z{height:2px;background:var(--rule)}
+.ev-y.on i:not(.z){background:var(--ink)}
+.ev-yl{display:grid;grid-template-columns:repeat(19,minmax(0,1fr));gap:3px;margin-top:3px;font:500 10px/1 var(--sans);color:var(--ink-soft);text-align:center;font-variant-numeric:tabular-nums}
+.ev-yl .old{opacity:.55}
+.ev-s{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) 34px;gap:8px;align-items:center;width:100%;padding:5px 4px;border:0;border-top:1px solid var(--rule);background:none;color:var(--ink);font:13px/1.3 var(--sans);text-align:left;cursor:pointer}
+.ev-s:disabled{cursor:default;color:var(--ink-soft)}
+.ev-s:not(:disabled):hover,.ev-s.on{background:var(--hover)}
+.ev-s.on .nm{font-weight:600}
+.ev-s .nm{display:flex;gap:6px;align-items:baseline;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ev-s .br{height:7px;background:var(--rule);border-radius:4px;overflow:hidden}
+.ev-s .br i{display:block;height:100%;background:var(--dk)}
+.ev-s .v{text-align:right;font-size:12px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.ev-s.ec-out{opacity:.55}
+
 /* ---------- side column ---------- */
 .t-desc p{margin:0;font-size:14px;line-height:1.55}
 .t-desc .ex{margin-top:10px;padding:9px 11px;background:var(--dk-bg);border-radius:5px;font-size:13.5px}

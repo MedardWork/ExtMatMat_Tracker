@@ -4,9 +4,12 @@
    with data-act="name" and inputs with data-in="name".
    Routes:  #/            overview
             #/temy/a|c|x  topic list for a tab (x = Nerelevantné; old #/temy/b links land on a)
-            #/tema/<id>[/n/<noteId>]   one topic, optionally a note
-            #/tema/<id>/t/<testId>     one topic, scrolled to one of its tests
+            #/tema/<id>                one topic: its subtopics (tab Podtémy)
             #/tema/<id>/teoria[/<sub>] the topic's theory, optionally scrolled to a subtopic
+            #/tema/<id>/precvic        past tasks of the external part + the topic's tests
+            #/tema/<id>/t/<testId>     …scrolled to one of its tests
+            #/tema/<id>/poznamky       the topic's notes and today's diary line
+            #/tema/<id>/n/<noteId>     …scrolled to a note (a test's task: Precvičovanie)
             #/nastroje[/<toolId>]      interactive tools, all of them or one
             #/dennik[/<entryId>]       old diary links → the diary week in the calendar
             #/nastavenia  backup, import, shortcuts, sources (old #/info links land here)
@@ -57,7 +60,7 @@ function parseRoute(){
   switch(p[0]){
     case "temy":   return {view:"temy", tab:p[1] === "c" || p[1] === "x" ? p[1] : p[1] ? "a" : ui.tab};
     case "tema":   return BY_ID[p[1]] ? {view:"tema", id:p[1], note:p[2] === "n" ? p[3] || null : null, test:p[2] === "t" ? p[3] || null : null,
-                                         tab:p[2] === "teoria" ? "teoria" : null, sub:p[2] === "teoria" ? p[3] || null : null}
+                                         tab:["teoria", "precvic", "poznamky"].includes(p[2]) ? p[2] : null, sub:p[2] === "teoria" ? p[3] || null : null}
                                       : {view:"temy", tab:ui.tab};
     case "nastroje": return {view:"nastroje", tool:TOOLS[p[1]] ? p[1] : null};
     case "dennik": { const e = p[1] && p[1] !== "t" && state.log.find(x => x.id === p[1]);
@@ -102,7 +105,7 @@ window.addEventListener("hashchange", e => {
   render();
   const key = location.hash || "#/";
   if(ui.route.view === "temy" && scrollMem[key] != null) window.scrollTo(0, scrollMem[key]);
-  else if(!(ui.route.view === "tema" && (ui.route.note || ui.route.test || ui.testEdit)) && !(ui.route.view === "kalendar" && ui.route.entry)) window.scrollTo(0, 0);
+  else if(!(ui.route.view === "tema" && (ui.route.note || ui.route.test || ui.testEdit || ui.editing)) && !(ui.route.view === "kalendar" && ui.route.entry)) window.scrollTo(0, 0);
 });
 
 /* ---------- another tab (or window) saved ---------- */

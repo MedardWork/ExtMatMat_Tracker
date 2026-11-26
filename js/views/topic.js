@@ -1,10 +1,22 @@
 /* ============================================================
    TOPIC — one topic on the whole page: subtopics with their own levels, tests on the topic
    (js/views/topictests.js), named notes, description, prerequisites and the diary entries that mention it
-   Keys (when not typing): ← → previous / next topic · ↑ ↓ pick a subtopic · 0–4 its level
-                           N new note · T new test · Esc back to list
+   Four tabs (topicPane): Podtémy (subtopics, what it is about, prerequisites), Teória (js/views/theory.js),
+   Precvičovanie (the topic's tests, past tasks of the external part, "Téma v maturitách"), Poznámky (notes, diary).
+   All sections are drawn, the tab only shows its own (data-tp, css/topic.css).
+   Keys (when not typing): ← → previous / next topic, same tab · ↑ ↓ pick a subtopic · 0–4 its level (Podtémy)
+                           N new note · T new test (each opens its tab) · Esc back to list
    ============================================================ */
 const nf = {t:null, sub:null, lv:null};   /* note filter on the open topic: subtopic key, note level */
+
+/* the tab of the open topic page: a test opens Precvičovanie, a note Poznámky (a test's task Precvičovanie) */
+function topicPane(r = ui.route){
+  if(r.tab) return r.tab;
+  if(r.test) return "precvic";
+  if(r.note){ const n = findNote(r.id, r.note); return n && isTask(r.id, n) ? "precvic" : "poznamky"; }
+  return "subs";
+}
+const paneSuffix = p => p === "subs" ? "" : "/" + p;
 
 VIEWS.tema = {
   title: r => shortName(BY_ID[r.id]),
@@ -16,12 +28,16 @@ VIEWS.tema = {
     ui.lastTopic = id;
     if(!ui.seq || !ui.seq.includes(id)){ ui.seq = itemsOf(tabOf(x)).map(y => y.id); ui.seqLabel = ""; }
     if(ui.route.tab === "teoria"){ renderTheory(host); return; }
+    /* a fresh note or test asked for from elsewhere opens on its own tab */
+    const want = ui.pendingNew === id ? "poznamky" : ui.pendingTest && ui.pendingTest.t === id ? "precvic" : null;
+    if(want && topicPane() !== want){ history.replaceState(null, "", `#/tema/${id}/${want}`); ui.route = parseRoute(); }
+    const pane = topicPane();
     if(ui.pendingNew === id){
       ui.pendingNew = null;
       startNote(id, ui.pendingSub != null ? ui.pendingSub : undefined);
       ui.pendingSub = null;
     }
-    if(nf.t !== id){ nf.t = id; nf.sub = null; nf.lv = null; ui.subSel = null; ui.pastSub = null; ui.pastAll = false; }
+    if(nf.t !== id){ nf.t = id; nf.sub = null; nf.lv = null; ui.subSel = null; ui.pastSub = null; ui.pastYear = null; ui.pastAll = false; }
     /* "+ Test" in the calendar: a new test on that day, its fields open */
     let newTest = null;
     if(ui.pendingTest && ui.pendingTest.t === id){ newTest = startTest(id, ui.pendingTest.d); ui.pendingTest = null; }
@@ -30,16 +46,16 @@ VIEWS.tema = {
     if(routed && routed.test) ui.collapsed.delete(routed.test);
     if(ui.route.test) ui.collapsed.delete(ui.route.test);
 
-    host.innerHTML = `<article class="page topic${ui.editing ? " editing" : ""}" id="topicPage">
+    host.innerHTML = `<article class="page topic${ui.editing ? " editing" : ""}" id="topicPage" data-pane="${pane}">
       <div class="t-nav" id="tNav"></div>
       <header class="t-head" id="tHead"></header>
-      ${topicTabs(id, "notes")}
+      ${topicTabs(id, pane)}
       <div class="t-grid">
         <div class="t-main">
-          <section class="card t-subs" id="tSubs" aria-label="Podtémy"></section>
-          <section class="card t-past" id="tPast" aria-label="Úlohy z maturít" hidden></section>
-          <section class="t-tests" id="tTests" aria-label="Testy"></section>
-          <section class="t-notes" id="tNotes" aria-label="Poznámky"></section>
+          <section class="card t-subs" id="tSubs" aria-label="Podtémy" data-tp="subs"></section>
+          <section class="t-tests" id="tTests" aria-label="Testy" data-tp="precvic"></section>
+          <section class="card t-past" id="tPast" aria-label="Úlohy z maturít" data-tp="precvic" hidden></section>
+          <section class="t-notes" id="tNotes" aria-label="Poznámky" data-tp="poznamky"></section>
         </div>
         <aside class="t-side" id="tSide"></aside>
       </div>
@@ -52,6 +68,10 @@ VIEWS.tema = {
 
     if(newTest) focusTest(newTest.id);
     else if(ui.editing) focusEditor();
+    else if(ui.pastJump){     /* the EČ badge of a subtopic: its past tasks (after the route's scroll to the top) */
+      ui.pastJump = false;
+      requestAnimationFrame(() => { const s = $("#tPast"); if(s && !s.hidden) s.scrollIntoView({block:"start"}); });
+    }
     else if(ui.route.test){
       const el = $(`#test-${ui.route.test}`);
       if(el){ el.scrollIntoView({block:"start"}); flashEl(el); }
@@ -64,7 +84,7 @@ VIEWS.tema = {
   refresh(what){
     if(ui.route.tab === "teoria"){ refreshTheory(); return; }
     if(what === "level"){ drawTNav(); drawTHead(); drawTSubs(); drawTSide(); const h = $("#ttHint"); if(h) h.innerHTML = testHintHtml(ui.route.id); }
-    else { drawTNav(); drawTHead(); drawTSubs(); drawTPast(); drawTTests(); drawTNotes(); drawTSide(); }
+    else { drawTNav(); drawTHead(); drawTTabs(); drawTSubs(); drawTPast(); drawTTests(); drawTNotes(); drawTSide(); }
   },
   key(e){
     const id = ui.route.id;
@@ -76,11 +96,11 @@ VIEWS.tema = {
       else if(e.key === "Escape"){ go(`#/tema/${id}`); }
       return;
     }
-    const subs = subsOf(id);
+    const subs = subsOf(id), pane = topicPane();
     const i = subs.findIndex(x => x.k === ui.subSel);
-    if(e.key === "ArrowLeft" && prev){ e.preventDefault(); go(`#/tema/${prev}`); }
-    else if(e.key === "ArrowRight" && next){ e.preventDefault(); go(`#/tema/${next}`); }
-    else if(e.key === "ArrowDown" || e.key === "ArrowUp"){
+    if(e.key === "ArrowLeft" && prev){ e.preventDefault(); go(`#/tema/${prev}${paneSuffix(pane)}`); }
+    else if(e.key === "ArrowRight" && next){ e.preventDefault(); go(`#/tema/${next}${paneSuffix(pane)}`); }
+    else if(pane === "subs" && (e.key === "ArrowDown" || e.key === "ArrowUp")){
       e.preventDefault();
       const j = i < 0 ? 0 : Math.max(0, Math.min(subs.length - 1, i + (e.key === "ArrowDown" ? 1 : -1)));
       ui.subSel = subs[j].k;
@@ -88,7 +108,7 @@ VIEWS.tema = {
       const row = $(`#tSubs .sub-row.sel`);
       if(row) row.scrollIntoView({block:"nearest"});
     }
-    else if(/^[0-4]$/.test(e.key)){
+    else if(pane === "subs" && /^[0-4]$/.test(e.key)){
       const k = i < 0 ? subs[0].k : ui.subSel;
       ui.subSel = k;
       setSubLevel(id, k, Number(e.key)); save(); refresh("level");
@@ -109,7 +129,7 @@ function drawTNav(){
   const id = ui.route.id, x = BY_ID[id];
   const [prev, next] = neighbours(id);
   const pos = ui.seq.indexOf(id);
-  const tab = ui.route.tab === "teoria" ? "/teoria" : "";
+  const tab = paneSuffix(topicPane());
   const arrow = (to, cls, label, key) => to
     ? `<a class="t-step ${cls}" href="#/tema/${to}${tab}" title="${esc(BY_ID[to].n)} (${key})"><span>${label}</span><b>${esc(shortName(BY_ID[to]))}</b></a>`
     : `<span class="t-step ${cls} off"><span>${label}</span></span>`;
@@ -214,10 +234,10 @@ action("sub-del", el => {
   save(); refresh();
   toast(`Podtéma „${x.n}“ odstránená.`, () => { restoreSub(tid, x); save(); refresh(); });
 });
-action("sub-filter", el => {
+action("sub-filter", el => {          /* "✎ n" beside a subtopic: its notes, on the tab Poznámky */
+  if(topicPane() !== "poznamky"){ nf.sub = el.dataset.k; go(`#/tema/${ui.route.id}/poznamky`); return; }
   nf.sub = nf.sub === el.dataset.k ? null : el.dataset.k;
   drawTSubs(); drawTNotes();
-  $("#tNotes").scrollIntoView({behavior:"smooth", block:"start"});
 });
 
 /* ---------- notes ---------- */
@@ -292,6 +312,7 @@ function drawTNotes(){
     </article>`;
   }
   $("#tNotes").innerHTML = html;
+  drawTTabs();
   mountEditors($("#tNotes"));
 }
 
@@ -399,8 +420,12 @@ document.addEventListener("paste", e => {
 
 action("note-new", el => {
   if(ui.route.view !== "tema") return;
-  if(ui.editing) finishEditing(true);
   const sub = el && el.dataset && el.dataset.sub;
+  if(topicPane() !== "poznamky"){
+    ui.pendingNew = ui.route.id; ui.pendingSub = sub === undefined ? null : sub;
+    go(`#/tema/${ui.route.id}/poznamky`); return;
+  }
+  if(ui.editing) finishEditing(true);
   finishTest(true);
   startNote(ui.route.id, sub === undefined ? undefined : sub);
   save();
@@ -485,7 +510,7 @@ function drawTSide(){
   let html = "";
 
   const dsc = DESC[id];
-  if(dsc) html += `<section class="card t-desc">
+  if(dsc) html += `<section class="card t-desc" data-tp="subs">
     <h2>O čom to je</h2>
     <p>${esc(dsc[0])}</p>
     <div class="ex"><b>Typická úloha</b>${esc(dsc[1])}</div>
@@ -497,7 +522,7 @@ function drawTSide(){
     const group = (label, ids, hint) => ids.length
       ? `<div class="rel"><h3>${label}</h3>${hint ? `<p class="rel-hint">${hint}</p>` : ""}<div class="chips">${ids.map(i => linkChip({t:i})).join("")}</div></div>` : "";
     const b = blocked(x);
-    html += `<section class="card t-rel">
+    html += `<section class="card t-rel" data-tp="subs">
       <h2>Súvislosti</h2>
       ${group("Najprv treba vedieť", pre, b.length ? `Ešte nie na <i>ide to</i>: ${b.map(i => esc(shortName(BY_ID[i]))).join(", ")}` : "")}
       ${group("Na toto nadväzuje", deps.map(d => d.id))}
@@ -506,7 +531,8 @@ function drawTSide(){
 
   const today = todayIso(), tn = topicNote(today, id);
   const logs = logFor(id).filter(e => e.text.trim() && e !== tn);
-  html += `<section class="card t-log">
+  html += ecVizHtml(id);
+  html += `<section class="card t-log" data-tp="poznamky">
     <h2>Dnes v denníku</h2>
     <div class="qlog">
       <textarea id="qlogText" data-in="qlog" rows="3" placeholder="Čo si dnes k tejto téme robil? Stačí pár slov.">${esc(tn ? tn.text : "")}</textarea>

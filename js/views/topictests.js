@@ -12,6 +12,7 @@ const skTasks = n => plural(n, "úloha", "úlohy", "úloh");
 function drawTTests(){
   const host = $("#tTests");
   if(!host) return;
+  drawTTabs();
   const id = ui.route.id, v = lv(id);
   const list = testsByDate(id).reverse();     /* newest first */
   const head = `<div class="tt-head">
@@ -198,6 +199,7 @@ document.addEventListener("keydown", e => {
 
 action("test-new", () => {
   if(ui.route.view !== "tema") return;
+  if(topicPane() !== "precvic"){ ui.pendingTest = {t:ui.route.id, d:todayIso()}; go(`#/tema/${ui.route.id}/precvic`); return; }
   const x = startTest(ui.route.id);
   drawTTests(); drawTHead(); drawTNotes(); drawTSide();
   $("#topicPage").classList.remove("editing");

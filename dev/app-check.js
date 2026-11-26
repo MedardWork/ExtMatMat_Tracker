@@ -39,7 +39,7 @@ const check = (cond, what) => { if(!cond) bad++; console.log(`${cond ? "ok  " : 
   await page.keyboard.press("t");
   await wait(200);
   const focusedQuick = () => ev(() => { const a = document.activeElement; return !!a && a.dataset.act === "task-quick" && a.dataset.r === "ok"; });
-  check(await focusedQuick(), "T on a topic page: a new test, '+ ✓ správne' focused");
+  check(await focusedQuick() && await ev(() => location.hash === "#/tema/a5/precvic"), "T on a topic page: Precvičovanie with a new test, '+ ✓ správne' focused");
   for(let i = 0; i < 3; i++){ await page.keyboard.press("Enter"); await wait(80); }
   check(await focusedQuick() && await ev(() => state.notes.a5.length === 3 && state.notes.a5.every(n => n.res === "ok")), "Enter, Enter, Enter: three tasks marked ✓, the button keeps the focus");
   await page.click('#tTests [data-act="task-quick"][data-r="part"]');
@@ -96,7 +96,7 @@ const check = (cond, what) => { if(!cond) bad++; console.log(`${cond ? "ok  " : 
   check(await ev(() => document.querySelectorAll(".nt-tests .tt-badge").length === 2), "diary month: a score badge on both days");
 
   await ev(t => { setLevel(t, 3); save(); }, te.t);
-  await page.goto(BASE + `#/tema/${te.t}`);
+  await page.goto(BASE + `#/tema/${te.t}/precvic`);
   await wait(200);
   check(/slabšie/.test(await ev(() => document.querySelector("#ttHint").innerText)), "a weak test on a topic at ide to: the hint says so");
   await page.goto(BASE + "#/temy/a");
@@ -105,7 +105,7 @@ const check = (cond, what) => { if(!cond) bad++; console.log(`${cond ? "ok  " : 
   check(await ev(t => [...document.querySelectorAll("#list .row")].map(r => r.id).join() === "row-" + t, te.t), "topic list: Slabý test lists only that topic");
 
   const nid = await ev(() => state.notes.a5[0].id), xid = await ev(() => state.tests.a5[0].id);
-  await page.goto(BASE + "#/tema/a5");
+  await page.goto(BASE + "#/tema/a5/precvic");
   await wait(200);
   await page.click(`[data-act="test-fold"][data-x="${xid}"]`);
   await page.goto(BASE + `#/tema/a5/n/${nid}`);
@@ -127,7 +127,7 @@ const check = (cond, what) => { if(!cond) bad++; console.log(`${cond ? "ok  " : 
   check(plan.rev === 2, "a scored test that week counts as the plan's review of the topic");
   check(/Testy z tém \(môj posledný test z témy\): .*6\/9/.test(plan.ai) && /na zopakovanie: /.test(plan.ai), "the text for an AI lists topic tests and weak topics");
 
-  await page.goto(BASE + "#/tema/a5");
+  await page.goto(BASE + "#/tema/a5/precvic");
   await wait(200);
   await page.click(`[data-act="test-del"][data-x="${xid}"]`);
   check(await ev(() => !state.tests.a5 && !state.notes.a5), "deleting a test deletes its tasks");
@@ -138,7 +138,7 @@ const check = (cond, what) => { if(!cond) bad++; console.log(`${cond ? "ok  " : 
   check(await ev(() => scoreTxt("a5", state.tests.a5[0]) === "3,5/5"), "kept after reload");
   /* a score typed by hand in the first version stays until it is switched to the tasks */
   await ev(() => { const x = addTest("a7", todayIso()); updateTest("a7", x.id, {s:8, m:10}); const n = addNote("a7", "", x.id); n.res = "bad"; save(); });
-  await page.goto(BASE + "#/tema/a7");
+  await page.goto(BASE + "#/tema/a7/precvic");
   await wait(250);
   check(await ev(() => /8\/10/.test(document.querySelector("#tTests .tt-score").innerText) && /ručne/.test(document.querySelector("#tTests .tt-meta").innerText)), "a hand-typed score from before is kept and said to be typed by hand");
   await page.click('#tTests [data-act="test-edit"]');
@@ -220,6 +220,35 @@ const check = (cond, what) => { if(!cond) bad++; console.log(`${cond ? "ok  " : 
   await wait(150);
   check(await ev(() => !state.tests.a12 && topicNotes("a12").some(n => n.title === "Test z nerovníc") && topicNotes("a12").some(n => n.title === "A1: zlomok")), "Späť takes the whole zápis back");
 
+  /* ---------- the topic page's four tabs ---------- */
+  await page.goto(BASE + "#/tema/a6");
+  await wait(250);
+  const shown = sel => ev(q => { const el = document.querySelector(q); return !!el && el.offsetParent !== null; }, sel);
+  check(await ev(() => document.querySelectorAll(".t-tabs a").length === 4 && document.querySelector(".t-tabs [aria-current]").textContent.trim() === "Podtémy")
+    && await shown("#tSubs") && !(await shown("#tTests")) && !(await shown("#tNotes")) && await shown(".t-desc"), "topic: four tabs, Podtémy shows only the subtopics and what the topic is about");
+  const k6 = await ev(() => document.querySelector('#tSubs [data-act="past-go"]').dataset.k);
+  await page.click(`#tSubs [data-act="past-go"][data-k="${k6}"]`);
+  await wait(300);
+  check(await ev(k => location.hash === "#/tema/a6/precvic" && ui.pastSub === k, k6) && await shown("#tPast") && await shown("#tTests") && !(await shown("#tSubs")),
+    "the EČ badge of a subtopic opens Precvičovanie filtered to it");
+  check(await ev(() => document.querySelectorAll(".t-ecviz .ev-y").length === EC_TESTS.length && document.querySelectorAll(".t-ecviz .ev-s").length > 0), "Téma v maturitách: a column per past test and the subtopics");
+  const y6 = await ev(() => Number(document.querySelector(".ev-y:not(:disabled)").dataset.y));
+  await page.click(`.ev-y[data-y="${y6}"]`);
+  await wait(150);
+  check(await ev(y => ui.pastYear === y && [...document.querySelectorAll("#tPast .tp-id")].every(a => a.textContent.startsWith(y + " ")), y6), "a year column filters the past tasks to that test");
+  await page.keyboard.press("ArrowRight");
+  await wait(250);
+  check(await ev(() => /^#\/tema\/[^/]+\/precvic$/.test(location.hash) && location.hash !== "#/tema/a6/precvic"), "→ walks to the next topic on the same tab");
+  await page.goto(BASE + "#/tema/a6");
+  await wait(200);
+  await page.keyboard.press("n");
+  await wait(300);
+  check(await ev(() => location.hash === "#/tema/a6/poznamky" && !!ui.editing && document.activeElement && !!document.activeElement.closest("#tNotes")), "N on Podtémy: Poznámky with a new note, typing in it");
+  await page.keyboard.press("Escape");
+  await wait(150);
+  await ev(() => { if(ui.editing) finishEditing(true); });
+  check(await shown(".t-log") && !(await shown(".t-desc")), "Poznámky: the diary line on the side");
+
   /* ---------- the layout of 2026-11-26: overview, Stav plánu, the diary's grid, Nastavenia ---------- */
   await page.goto(BASE + "#/");
   await wait(250);
@@ -250,7 +279,7 @@ const check = (cond, what) => { if(!cond) bad++; console.log(`${cond ? "ok  " : 
   check(await ev(() => location.hash === "#/kalendar/s" && !document.querySelector("#planBox").hidden), "a plan pasted in Nastavenia opens in Stav plánu");
 
   /* ---------- every page, both widths ---------- */
-  const pages = ["#/", "#/temy/a", "#/tema/a5", `#/tema/a5/t/${xid}`, "#/kalendar/m", "#/kalendar/t", `#/kalendar/m/${d2}/p`, `#/kalendar/t/${d2}/p`, `#/kalendar/g/${d2}/p`, "#/kalendar/s", "#/nastavenia"];
+  const pages = ["#/", "#/temy/a", "#/tema/a5", "#/tema/a5/precvic", "#/tema/a5/poznamky", `#/tema/a5/t/${xid}`, "#/kalendar/m", "#/kalendar/t", `#/kalendar/m/${d2}/p`, `#/kalendar/t/${d2}/p`, `#/kalendar/g/${d2}/p`, "#/kalendar/s", "#/nastavenia"];
   for(const w of [1280, 400]){
     await page.setViewportSize({ width: w, height: 880 });
     for(const h of pages){

@@ -3,11 +3,11 @@
    ============================================================ */
 const SHORTCUTS = [
   ["<kbd>/</kbd> alebo <kbd>Ctrl</kbd>+<kbd>K</kbd>", "hľadať tému alebo poznámku"],
-  ["<kbd>←</kbd> <kbd>→</kbd>", "predošlá / ďalšia téma"],
-  ["<kbd>↑</kbd> <kbd>↓</kbd>", "vybrať podtému v otvorenej téme"],
+  ["<kbd>←</kbd> <kbd>→</kbd>", "predošlá / ďalšia téma (na tej istej záložke)"],
+  ["<kbd>↑</kbd> <kbd>↓</kbd>", "vybrať podtému (záložka Podtémy)"],
   ["<kbd>0</kbd> – <kbd>4</kbd>", "nastaviť úroveň vybranej podtémy"],
-  ["<kbd>N</kbd>", "nová poznámka k otvorenej téme"],
-  ["<kbd>T</kbd>", "nový test k otvorenej téme"],
+  ["<kbd>N</kbd>", "nová poznámka k otvorenej téme (otvorí Poznámky)"],
+  ["<kbd>T</kbd>", "nový test k otvorenej téme (otvorí Precvičovanie)"],
   ["<kbd>Esc</kbd>", "zavrieť editor, späť na zoznam"],
   ["<kbd>Ctrl</kbd>+<kbd>Enter</kbd>", "uložiť a zavrieť poznámku"],
   ["Kalendár: <kbd>←</kbd> <kbd>→</kbd> · <kbd>M</kbd> <kbd>T</kbd> <kbd>G</kbd> · <kbd>P</kbd> · <kbd>S</kbd>", "predošlý / ďalší · mesiac / týždeň / mriežka poznámok · témy alebo poznámky · stav plánu"],
