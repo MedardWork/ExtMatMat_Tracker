@@ -72,6 +72,7 @@ function planPace(){
   let ex = 0, done = 0;
   const open = [];
   for(const x of PLAN_ITEMS){
+    if(!planItemIn(x)) continue;          /* out of the chosen scope (js/ec.js): neither helps nor hurts */
     const fin = planStatus(x) === 2;
     if(fin) done += x.s;
     if(planEndOf(x) < t){ ex += x.s; if(!fin) open.push(x); }
@@ -90,9 +91,9 @@ function itemName(x, full){ const t = planTopicOf(x); return !full && t && itemK
 /* an item as a chip in a month cell */
 function itemChip(p){
   const x = p.it, s = planStatus(x), tid = planTopicOf(x), v = itemLevel(x);
-  const title = `${x.n} · ${p.blocks} ${skBlocks(p.blocks)}${p.first ? "" : " (pokračovanie)"}${itemKind(x) === "top" ? ` · ${LV[v].label}` : ""}`;
+  const title = `${x.n} · ${p.blocks} ${skBlocks(p.blocks)}${p.first ? "" : " (pokračovanie)"}${itemKind(x) === "top" ? ` · ${LV[v].label}` : ""}${planItemIn(x) ? "" : " · mimo rozsahu"}`;
   const inner = `<i class="dot l${v}"></i><span class="ci-n">${!p.first ? "↳ " : ""}${esc(itemName(x))}</span>`;
-  const cls = `ci ck-${itemKind(x)} s${s}${p.first ? "" : " cont"}`;
+  const cls = `ci ck-${itemKind(x)} s${s}${p.first ? "" : " cont"}${planItemIn(x) ? "" : " ec-out"}`;
   return tid ? `<a class="${cls}" href="#/tema/${tid}" title="${esc(title)}">${inner}</a>` : `<span class="${cls}" title="${esc(title)}">${inner}</span>`;
 }
 function scoreInput(test){
@@ -177,9 +178,10 @@ function slotBody(s, d, compact){
     const which = compact ? `${s.n}/${s.of}` : s.n2 > s.n ? `bloky ${s.n}–${s.n2} z ${s.of}` : `blok ${s.n} z ${s.of}`;
     const lt = !compact && s.n2 >= s.of && itemKind(x) === "top" ? lastScored(tid) : null;
     const end = compact || s.n2 < s.of || itemKind(x) !== "top" ? "" : lt ? ` · test ${scoreTxt(tid, lt)}` : " · na konci krátky test";
-    return `<a class="sl-it s${planStatus(x)}" href="#/tema/${tid}" title="${esc(x.n)} · ${LV[v].label} · blok ${s.n} z ${s.of}">
+    const out = planItemIn(x) ? "" : " ec-out";
+    return `<a class="sl-it s${planStatus(x)}${out}" href="#/tema/${tid}" title="${esc(x.n)} · ${LV[v].label} · blok ${s.n} z ${s.of}${out ? " · mimo rozsahu" : ""}">
       <i class="dot l${v}"></i><span class="sl-n">${esc(compact ? itemName(x) : x.n)}</span>
-      <span class="sl-meta">${itemKind(x) === "rev" ? "opakovanie · " : ""}${which}${s.k === "flex" ? " · v rezerve" : ""}${end}</span></a>`;
+      <span class="sl-meta">${out ? "mimo rozsahu · " : ""}${itemKind(x) === "rev" ? "opakovanie · " : ""}${which}${s.k === "flex" ? " · v rezerve" : ""}${end}</span></a>`;
   }
   const test = s.k === "test" && planTestOn(d);
   if(test) return `<span class="sl-n">${esc(test.n)} · NÚCEM ${test.y}</span>${scoreInput(test)}`;

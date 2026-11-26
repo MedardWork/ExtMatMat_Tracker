@@ -215,8 +215,30 @@ to that test; shown in the calendar per day and topic, and wherever else it help
 - `testGrade`: from 90 / 70 / 40 % = colours tg4–tg1 (the level colours); `TEST_WEAK` = 0.7 (weak topic, hint, AI text).
 - A scored test counts as the plan's review (`opak:<topic>`) from that week on (`planStatus`). Tests don't feed the pace or the
   estimate. `planFormatText`, `planAiText` and `planCreateText` mention them.
+- `node dev/eccheck.js` checks the EČ data (see *EČ scope*).
 - `node dev/app-check.js` drives the app's own pages and the tests end to end (fresh profile, file://, about 30 s; `SHOTS=<dir>`
   saves pictures). Run it after touching state, the topic page, the calendar or the overview.
+
+### EČ scope (2026-11-26)
+
+The person wanted to learn only what the external part (EČ) asks. They gave the past tests with keys (PDFs, not in the repo:
+no clear licence; only the derived mapping is).
+
+- `js/data/ec.js`: `EC_TESTS` = 19 tests 2005–2025, 30 tasks each (all 1 point), a task = `["a6.0 b38.1", difficulty 1–3, label]`.
+  A ref is `<topic>.<index into SUBS[topic]>`, the first one the main subtopic (weight 2, the others 1). **Refs are indices: after
+  reordering, inserting or renaming in `SUBS`, fix the refs and run `node dev/eccheck.js`** (`list` prints every subtopic with its
+  numbers). `EC_NEEDS`: what a subtopic builds on; pulled into a scope with it. The 2022 file was the test prepared for 2020
+  (`note`); 2005–2008 are level A. Difficulty is a judgement from the task and its key (the keys hold only answers).
+- `js/ec.js` (definitions in its header): year weights `ecYearW`, points per subtopic normalised to 30 per average test,
+  hours `0.5 + 0.5·difficulty` (1 h if never asked), `EC.set.min` / `.ec`, `ecScope()` = `state.prefs.scope` ("min" | "ec" | "all",
+  default all). Danish topics and own subtopics are always in scope.
+- What the scope changes: `lv` / `understanding` read `scopeSubs(id)` (all subtopics when none is in scope); `ecItems`; the gauge
+  (`areaStats` weighs subtopics by their EČ points); `planPace` and "Ďalej na rade" skip `!planItemIn(x)`; calendar chips and slots
+  get `ec-out`; Témy hides out-of-scope topics (`ui.showOut`) and sorts by points per hour (`ui.sortPph`); the topic page fades
+  out-of-scope subtopics and shows badges (`ecSubBadge`). `planAiText` includes `ecAiText()` (empty in scope all).
+- `ecPlanFit()`: remaining plan blocks in / out of scope, in-scope topics missing from the plan, verdict and "Preplánovať s AI" on
+  the overview card (js/components/scopecard.js, css/scope.css).
+- Later (the person): show the real past tasks under each topic.
 
 ### Tools on their own page (2026-11-16, Fable)
 

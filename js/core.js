@@ -26,7 +26,9 @@ const ui = {
   pendingTest: null,  /* {t, d}: open topic t with a new test written on day d (from the calendar) */
   pendingNew: null,   /* topic id that should open with a fresh note */
   pendingSub: null,   /* …filed under this subtopic (set from the theory tab) */
-  collapsed: new Set()
+  collapsed: new Set(),
+  showOut: false,     /* topic list: also topics out of the chosen scope (js/ec.js) */
+  sortPph: false      /* topic list: by points per hour within a block */
 };
 
 const VIEWS = {};

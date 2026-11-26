@@ -1,18 +1,22 @@
 /* ============================================================
-   SCORING — weighted by the real test blueprint
+   SCORING — each subtopic weighs what it was worth in the past tests (js/ec.js)
    ============================================================ */
 function areaStats(key){
-  /* the block's items spread over the topics still in play */
-  const items = ecItems().filter(x => x.area === key);
-  const n = items.length || 1;
-  let sum = 0, s4 = 0, mid = 0;
-  items.forEach(x => {
-    const v = lv(x.id);
-    sum += understanding(x.id);
-    if(v === 4) s4++; else if(v >= 2) mid++;
-  });
-  const w = AREAS[key].w;
-  return { n, s4, mid, w, solidFrac: s4/n, midFrac: mid/n, est: sum / n * w };
+  /* what share of the block's points (from the past tests, js/ec.js) your levels cover, in the chosen scope;
+     a subtopic out of scope or a topic in Nerelevantné brings nothing */
+  const items = T.filter(x => x.t === "a" && x.area === key);
+  let all = 0, got = 0, solid = 0, mid = 0;
+  for(const x of items) for(const s of SUB_LIST[x.id]){
+    const o = ecSub(x.id, s.k);
+    if(!o) continue;
+    all += o.pts;
+    if(isOff(x.id) || !subIn(x.id, s.k)) continue;
+    const v = subLv(x.id, s.k);
+    got += o.pts * LV[v].w;
+    if(v === 4) solid += o.pts; else if(v >= 2) mid += o.pts;
+  }
+  const w = AREAS[key].w, n = all || 1;
+  return { w, solidFrac: solid / n, midFrac: mid / n, est: got / n * w };
 }
 
 function renderGauge(){
@@ -35,13 +39,15 @@ function renderGauge(){
   host.innerHTML = html;
 
   const rounded = Math.round(total*10)/10;
+  const sc = ecScope(), cov = ecCover(sc);
+  const scopeNote = sc === "all" ? "" : ` Rozsah <b>${ecScopeOf(sc).label}</b> pokrýva ${ecNum(cov.pts)} z 30 bodov, viac sa z neho získať nedá.`;
   document.getElementById("score").innerHTML = `${rounded}<span> / 30 odhad na EČ</span>`;
   document.getElementById("barFill").style.width = (total/30*100).toFixed(1)+"%";
 
   const v = document.getElementById("verdict");
   const pct = Math.round(total/30*100);
   if(total === 0){
-    v.innerHTML = "Odhad rastie z toho, čo si označíš nižšie — <b>perfektne</b> celé, <b>ide to</b> za dve tretiny, <b>slabo</b> za tretinu.";
+    v.innerHTML = "Odhad rastie z toho, čo si označíš nižšie — <b>perfektne</b> celé, <b>ide to</b> za dve tretiny, <b>slabo</b> za tretinu. Každá podtéma váži toľko, koľko bodov za ňu bývalo v minulých testoch." + scopeNote;
   } else {
     let msg;
     if(pct < 25)      msg = "Zatiaľ pod oboma hranicami. Najrýchlejší posun dostaneš z blokov, kde má jedna téma najväčšiu váhu.";
@@ -49,7 +55,7 @@ function renderGauge(){
     else if(pct < 60) msg = "Nad hranicami. Odtiaľto už ide o percentil, nie o prejdenie.";
     else if(pct < 85) msg = "Silné pásmo. Rozdiel teraz robia úlohy na hodnotenie a tvorenie — tých býva 6 až 8.";
     else              msg = "Takmer plná mapa. Zvyšok je rýchlosť a presnosť pod 150 minútami.";
-    v.innerHTML = `Približne <b>${pct} %</b> testu. ${msg}`;
+    v.innerHTML = `Približne <b>${pct} %</b> testu. ${msg}${scopeNote}`;
   }
 
   /* distribution across the five levels */

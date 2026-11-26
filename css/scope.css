@@ -1,0 +1,43 @@
+/* ============================================================
+   EČ SCOPE — the switch, the overview card, badges from the past tests (js/ec.js)
+   ============================================================ */
+.ec-scope{display:inline-flex;flex-wrap:wrap;gap:0;border:1px solid var(--rule);border-radius:999px;overflow:hidden;vertical-align:middle;background:var(--paper)}
+.ec-opt{font:600 12.5px/1 var(--sans);padding:7px 12px;border:0;background:transparent;color:var(--ink-soft);cursor:pointer}
+.ec-opt + .ec-opt{border-left:1px solid var(--rule)}
+.ec-opt:hover{background:var(--hover);color:var(--ink)}
+.ec-opt.on{background:var(--ink);color:var(--on-ink)}
+.ec-line{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:10px;font-size:13px}
+
+.ec-card h2{margin-bottom:10px}
+.ec-card h3{font:600 13px/1.3 var(--sans);margin:16px 0 6px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em}
+.ec-card > p.muted{margin:10px 0 0;font-size:13px}
+.ec-cols{display:grid;grid-template-columns:repeat(3, minmax(0, 1fr));gap:8px;margin:12px 0}
+.ec-col{display:flex;flex-direction:column;gap:2px;padding:8px 10px;border:1px solid var(--rule);border-radius:8px;font-size:12.5px;color:var(--ink-soft);min-width:0}
+.ec-col b{color:var(--ink);font-size:13px}
+.ec-col.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.ec-left{font-size:14px;margin:6px 0}
+.ec-fit{margin-top:10px;padding-top:10px;border-top:1px solid var(--rule)}
+.ec-fit p{margin:0 0 6px;font-size:13.5px}
+.ec-verdict.ok b{color:var(--l4)}
+.ec-verdict.late b{color:var(--flag)}
+.ec-fit .tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.ec-prio{margin:0;padding-left:20px;font-size:13.5px}
+.ec-prio li{margin:3px 0}
+.ec-prio a{display:inline-flex;align-items:center;gap:6px;color:var(--ink);text-decoration:none;font-weight:600}
+.ec-prio a:hover{text-decoration:underline}
+.ec-prio em{display:block;font-style:normal;font-size:12px;color:var(--ink-soft)}
+@media (max-width:560px){ .ec-cols{grid-template-columns:1fr} }
+
+.ec-badge{display:inline-flex;align-items:baseline;font:600 11px/1.2 var(--sans);font-variant-numeric:tabular-nums;white-space:nowrap;
+  color:var(--ink-soft);border:1px solid var(--rule);border-radius:999px;padding:1px 7px;margin-right:8px;vertical-align:1px;cursor:help}
+.ec-badge.old{opacity:.75}
+.ec-badge.none{border-style:dashed;opacity:.7}
+.sub-name .ec-badge{margin:0 0 0 4px;font-weight:500}
+.sub-out{font-style:normal;font-size:11px;color:var(--ink-soft);margin-left:4px}
+.t-ec{font-size:13px;color:var(--ink-soft);margin-top:8px}
+
+/* out of the chosen scope: kept, but quiet */
+.row.ec-out{opacity:.55}
+.sub-row.ec-out .sub-name{color:var(--ink-soft)}
+.sub-row.ec-out{opacity:.7}
+.ci.ec-out, .sl-it.ec-out{opacity:.5}

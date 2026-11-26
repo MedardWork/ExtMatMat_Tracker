@@ -50,15 +50,32 @@ VIEWS.temy = {
 function renderTabs(){
   /* Nerelevantné only appears once something is in it */
   $("#tabs").innerHTML = TABS.filter(t => t.k !== "x" || ui.tab === "x" || itemsOf("x").length).map(t => {
-    const left = t.k === "x" ? itemsOf("x").length : itemsOf(t.k).filter(x => lv(x.id) < 4).length;
+    const left = t.k === "x" ? itemsOf("x").length : itemsOf(t.k).filter(x => topicIn(x.id) && lv(x.id) < 4).length;
     return `<a class="tab" role="tab" href="#/temy/${t.k}" aria-selected="${ui.tab === t.k}">
       ${t.label}<span class="count" title="ešte nie na perfektne">${left}</span></a>`;
   }).join("");
-  $("#intro").innerHTML = TABS.find(t => t.k === ui.tab).intro;
+  $("#intro").innerHTML = TABS.find(t => t.k === ui.tab).intro + (ui.tab === "a" ? scopeLine() : "");
 }
 
+/* the scope switch over the Slovak list (js/ec.js) */
+function scopeLine(){
+  const sc = ecScope(), c = ecCover(sc);
+  const out = itemsOf("a").filter(x => !topicIn(x.id)).length;
+  return `<span class="ec-line">${ecScopeSwitch("list")}
+    <span class="muted">${sc === "all" ? `Všetko · ${ecNum(c.pts)} z 30 bodov testu` : `${c.topics} ${skPieces(c.topics)}, ${ecNum(c.pts)} z 30 bodov testu`}${out ? ` · <button class="linkish" data-act="ec-show-out">${ui.showOut ? "skryť" : "ukázať"} ${out} mimo rozsahu</button>` : ""}
+    · <button class="linkish" data-act="ec-sort" aria-pressed="${!!ui.sortPph}">${ui.sortPph ? "zoradené podľa bodov za hodinu" : "zoradiť podľa bodov za hodinu"}</button></span></span>`;
+}
+const listItems = () => itemsOf(ui.tab).filter(x => ui.tab !== "a" || ui.showOut || topicIn(x.id));
+/* a block's topics as listed: the shown ones, by points per hour when asked */
+function areaItems(key){
+  const l = T.filter(x => tabOf(x) === ui.tab && x.area === key && (ui.tab !== "a" || ui.showOut || topicIn(x.id)));
+  return ui.sortPph && ui.tab === "a" ? l.map(x => [x, ecTopicIn(x.id).pph]).sort((a, b) => b[1] - a[1]).map(a => a[0]) : l;
+}
+action("ec-show-out", () => { ui.showOut = !ui.showOut; VIEWS.temy.refresh(); });
+action("ec-sort", () => { ui.sortPph = !ui.sortPph; VIEWS.temy.refresh(); });
+
 function renderFilters(){
-  const items = itemsOf(ui.tab);
+  const items = listItems();
   $("#filters").innerHTML = FILTERS.map(F => {
     const n = items.filter(F.test).length;
     return `<button data-act="filter" data-f="${F.f}" aria-pressed="${ui.filter === F.f}"${!n && F.f !== "all" ? " disabled" : ""}>
@@ -78,7 +95,7 @@ function passes(x){
 /* ids in the order they're shown, for ‹ › in the topic view */
 function visibleIds(){
   const areas = areasOf(ui.tab);
-  return Object.keys(areas).flatMap(key => T.filter(x => tabOf(x) === ui.tab && x.area === key && passes(x)).map(x => x.id));
+  return Object.keys(areas).flatMap(key => areaItems(key).filter(passes).map(x => x.id));
 }
 
 const gluedArrow = name => {
@@ -94,6 +111,11 @@ function rowHtml(x){
   let meta = `<span class="sub-count" title="Ohodnotené podtémy">${subMeter(x.id)}${rated}/${nSub}</span>`;
   const lt = lastScored(x.id), nt = testsOf(x.id).length;
   if(lt) meta += testBadge(x.id, lt, `test ${scoreTxt(x.id, lt)}${nt > 1 ? ` <em>· ${nt}×</em>` : ""}`);
+  const ec = EC.topic[x.id];
+  if(ec){
+    const r = ecTopicIn(x.id);
+    meta += `<span class="ec-badge${ec.years ? "" : " none"}" title="V externej časti ${EC.first}–${EC.last}: v ${ec.years} z ${EC.nTests} testov, priemerne ${ecNum(ec.pts, 2)} bodu z 30 na test.${ecScope() !== "all" ? ` V rozsahu ${ecNum(r.pts, 2)} b., asi ${ecNum(r.h)} h učenia.` : ""} Body za hodinu: ${ecNum(r.pph, 2)}.">EČ ${ec.years}/${EC.nTests} · ${ecPts(ec.pts)}</span>`;
+  }
   if(x.src) meta += `<span class="src">${x.src}</span>`;
   if(state.upd[x.id]){
     const t = changedToday(x.id);
@@ -118,7 +140,7 @@ function rowHtml(x){
     ? `<a class="note-btn has" href="#/tema/${x.id}" data-act="from-list" data-id="${x.id}" title="${notes.length} ${skNotes(notes.length)}">✎ ${notes.length}</a>`
     : `<a class="note-btn" href="#/tema/${x.id}" data-act="from-list" data-id="${x.id}" data-new="1" title="Otvorí tému s novou poznámkou">+ Poznámka</a>`;
 
-  return `<div class="row s${v}" id="row-${x.id}">
+  return `<div class="row s${v}${x.t === "a" && !topicIn(x.id) ? " ec-out" : ""}" id="row-${x.id}">
     <div class="row-main">
       <a class="row-name" href="#/tema/${x.id}" data-act="from-list" data-id="${x.id}">${gluedArrow(x.n)}</a>
       ${descHtml}
@@ -139,12 +161,12 @@ function renderList(){
   let html = "", shown = 0, jump = "";
 
   for(const key in areas){
-    const all = T.filter(x => tabOf(x) === ui.tab && x.area === key);
+    const all = areaItems(key);
     const items = all.filter(passes);
     if(!items.length) continue;
     shown += items.length;
 
-    const done = all.filter(x => lv(x.id) === 4).length;
+    const done = all.filter(x => lv(x.id) === 4).length;   /* in a narrowed scope: done in that scope */
     const badge = ui.tab === "x" ? `${all.length} ${skPieces(all.length)} mimo odhadu`
       : ui.tab === "c" ? `<b>${done}</b> / ${all.length} perfektne`
       : `<b>${AREAS[key].w}</b> úloh v teste · ${done} / ${all.length} perfektne`;

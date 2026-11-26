@@ -34,6 +34,7 @@ VIEWS.prehlad = {
             <div class="dist" id="dist"></div>
             <div class="dist-legend" id="distLegend"></div>
           </section>
+          <section class="card ec-card" id="scopeCard"></section>
           <section class="card resume plan-today" id="planToday"></section>
           <section class="next" id="next"></section>
         </div>
@@ -46,7 +47,7 @@ VIEWS.prehlad = {
         </div>
       </div>
     </div>`;
-    renderClock(); renderGauge(); renderPlanToday(); renderPlanNext(); renderPlanPace(); renderTestsCard(); renderMilestones();
+    renderClock(); renderGauge(); renderScopeCard(); renderPlanToday(); renderPlanNext(); renderPlanPace(); renderTestsCard(); renderMilestones();
   }
 };
 

@@ -128,6 +128,12 @@ function drawTHead(){
   const test = lt ? `<a class="tt-badge tg${testGrade(testPct(id, lt))}" href="#/tema/${id}/t/${lt.id}" title="Posledný test: ${esc(testName(id, lt))}, ${fmtIso(lt.d)}">test ${scoreTxt(id, lt)}</a>` : "";
   const weight = isOff(id) ? `<span class="t-weight off">mimo odhadu</span>`
     : x.t !== "c" ? `<span class="t-weight">blok <b>${AREAS[x.area].w}</b> úloh v teste</span>` : "";
+  const ec = EC.topic[id], sc = ecScope();
+  const ecLine = !ec ? "" : `<div class="t-ec">${ec.years
+      ? `V externej časti v <b>${ec.years} z ${EC.nTests}</b> testov (${EC.first}–${EC.last}), priemerne <b>${ecPts(ec.pts)}</b> z 30 na test.`
+      : `Na túto tému sa externá časť v rokoch ${EC.first}–${EC.last} nepýtala.`}
+    ${sc === "all" ? "" : topicIn(id) ? ` Rozsah <b>${ecScopeOf(sc).label}</b>: ${scopeSubs(id).length} z ${subsOf(id).length} podtém, úroveň témy sa počíta len z nich.`
+      : ` <b>Mimo rozsahu ${ecScopeOf(sc).label}</b>: nepočíta sa do tempa ani do odhadu.`}</div>`;
   head.innerHTML = `
     <div class="t-kicker">${esc(areaName(x))} · ${TAB_LABEL[tabOf(x)]}${x.src ? ` <span class="src">${x.src}</span>` : ""}${weight}</div>
     <h1 class="t-title">${x.n}</h1>
@@ -141,6 +147,7 @@ function drawTHead(){
     <div class="t-rel">${isOff(id)
       ? `<span class="t-rel-note">Táto téma je v <b>Nerelevantné</b> — nepočíta sa do odhadu ani do „Čo ďalej“.</span> <button class="btn ghost small" data-act="rel" data-id="${id}">↩ Vrátiť ${TAB_INTO[x.t]}</button>`
       : `<button class="linkish rel-link" data-act="rel" data-id="${id}">⊘ Nebude na teste — vyradiť z odhadu</button>`}</div>
+    ${ecLine}
     ${x.m ? `<p class="t-remark">${x.m}</p>` : ""}`;
 }
 
@@ -154,9 +161,9 @@ function drawTSubs(){
   const rows = subs.map(x => {
     const v = subLv(id, x.k);
     const n = counts[x.k] || 0;
-    return `<div class="sub-row s${v}${ui.subSel === x.k ? " sel" : ""}" data-act="sub-sel" data-k="${x.k}">
+    return `<div class="sub-row s${v}${ui.subSel === x.k ? " sel" : ""}${subIn(id, x.k) ? "" : " ec-out"}" data-act="sub-sel" data-k="${x.k}">
       <div class="sub-main">
-        <span class="sub-name">${esc(x.n)}${x.own ? ` <em class="sub-own">vlastná</em>` : ""}</span>
+        <span class="sub-name">${esc(x.n)}${x.own ? ` <em class="sub-own">vlastná</em>` : ""} ${x.own ? "" : ecSubBadge(id, x.k)}${subIn(id, x.k) ? "" : ` <em class="sub-out">mimo rozsahu</em>`}</span>
         <span class="sub-tools">
           ${inTheory.has(x.k) ? `<a class="sub-th" href="#/tema/${id}/teoria/${x.k}" title="Teória k tejto podtéme">Teória</a>` : ""}
           ${n ? `<button class="sub-notes${nf.sub === x.k ? " on" : ""}" data-act="sub-filter" data-k="${x.k}" title="Zobraziť len poznámky k tejto podtéme">✎ ${n}</button>` : ""}

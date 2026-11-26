@@ -49,7 +49,7 @@ function renderPlanNext(){
   host.style.display = PLAN_NONE ? "none" : "";
   if(PLAN_NONE) return;
   const t = todayIso();
-  const left = PLAN_ITEMS.filter(x => !isPlanTest(x) && planStatus(x) !== 2);
+  const left = PLAN_ITEMS.filter(x => !isPlanTest(x) && planStatus(x) !== 2 && planItemIn(x));
   if(!left.length){ host.innerHTML = `<h2>Ďalej na rade podľa plánu</h2><p class="done">Všetky témy z plánu sú hotové. Teraz testy na čas.</p>`; return; }
   const list = left.slice(0, 5).map(x => {
     const days = planDaysOf(x), tid = planTopicOf(x), v = itemLevel(x);

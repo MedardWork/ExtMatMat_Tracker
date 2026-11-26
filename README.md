@@ -117,7 +117,8 @@ choose the folder).
 
 - **Prehľad** — countdown, score estimate by test block, and from your study plan: today's blocks, what comes
   next, pace (ahead or behind), milestones and the plan's rules; plus the last day you studied and your topic
-  tests (the latest results, topics to go over again, finished topics without a test).
+  tests (the latest results, topics to go over again, finished topics without a test); the scope switch
+  (*Rozsah učenia*, see below) with the subtopics worth the most points per hour of study.
 - **Témy** — the topic list with tabs, search (also inside notes), filters with counts (one of them: *Slabý test*),
   the latest test score of each topic and quick level buttons. Click a topic name to open it.
 - **Topic page** (`#/tema/a5`) — the whole topic on one page: its subtopics, each with its own
@@ -145,7 +146,7 @@ next topic, `↑` `↓` pick a subtopic, `0`–`4` set its level, `N` new note, 
 Each subtopic is rated on the five-level scale. The topic's level is the rounded average of its
 subtopics (between *neviem* and *ide to*), *perfektne* only when every subtopic is, and *nepozreté*
 while none is rated. The score estimate counts each subtopic by weight (*perfektne* 1, *ide to* ⅔,
-*slabo* ⅓). The level buttons in the topic list set all subtopics at once (with undo). Note levels
+*slabo* ⅓) times the points it was worth in past tests (see *Rozsah učenia*). The level buttons in the topic list set all subtopics at once (with undo). Note levels
 are for your orientation only and don't feed the estimate.
 
 Topics you know won't be on the test can be marked ⊘ (row button or topic page). They move to the
@@ -172,6 +173,26 @@ session wrote for the test's tasks move under the test with their text, so nothi
 - A scored test counts as the plan's review of that topic (*opak:*) in the week it was written. Tests don't feed the
   score estimate or the pace.
 - Tests are part of the saved progress, the backup and the text for an AI (Info → Plán v kalendári).
+
+### Rozsah učenia (what the external part asks)
+
+Every task of 19 external-part tests from 2005 to 2025 (30 tasks each) is mapped to the subtopics it needs
+(`js/data/ec.js`; the main subtopic counts double, newer tests weigh more). So the app knows, per subtopic, in how
+many tests it came up and how many points of an average test it is worth; the difficulty of each task (1–3, judged
+from the task and its key) gives an estimate of the hours needed. The switch on the overview and above the topic
+list picks the scope:
+
+- **Nutné minimum** — the subtopics with the most points per hour of study, until they cover half of an average test
+  (15 of 30 points), plus what they build on.
+- **Externá časť** — everything asked at least twice, or at least once since 2017, plus what it builds on.
+- **Celá maturita** — everything (the default).
+
+Topics and subtopics out of scope stay visible but faded (the topic list hides out-of-scope topics until you ask for
+them, and can sort by points per hour). They don't count in a topic's level, the score estimate, the plan's pace or
+*Ďalej na rade*. The overview card shows what each scope covers, how many hours are left in yours, whether the plan
+still fits (blocks planned for topics out of scope are freed for the missing ones) and the subtopics with the most
+points per hour; *Preplánovať s AI* copies the plan for an AI with a section that says what to drop and what to add,
+ordered by points per hour. The Danish topics are not affected. The tests themselves are not part of the app.
 
 ## Study plan
 
@@ -299,11 +320,13 @@ css/markdown.css                   how rendered notes look
 css/editor.css, css/palette.css    note editor, quick search
 css/theory.css                     Teória tab, tool widgets, Nástroje pages
 css/tests.css                      topic tests: the section on the topic page, scores in the list, calendar, overview
+css/scope.css                      the scope switch, the overview card Rozsah učenia, EČ badges, faded out-of-scope rows
 vendor/katex/                      KaTeX 0.16 (MIT) — formula rendering, bundled for offline use
 vendor/jsxgraph/                   JSXGraph 1.13 (MIT) — graphs and geometry; loaded when first needed
 js/data/levels.js                  test areas (with item counts), levels, tab labels
 js/data/topics.js                  topic list T, plus BY_ID / EC_ITEMS lookups
 js/data/subtopics.js               SUBS: the subtopics of every topic
+js/data/ec.js                      every task of the past external-part tests mapped to subtopics; EC_NEEDS
 js/data/descriptions.js            "O čom to je" text and a typical task per topic
 js/data/theory/index.js            which topics have theory
 js/data/theory/<id>.js             one topic's theory; loaded when its Teória tab opens
@@ -311,12 +334,14 @@ js/utils.js                        escaping, dates, Slovak plurals, plain-text s
 js/markdown.js                     Markdown + math → HTML (escapes everything first)
 js/state.js                        saved data (v4), migration, load/save, levels, notes + diary helpers, topic tests
 js/core.js                         UI state, routing (#/…), data-act click handling, toast
+js/ec.js                           scopes, points and hours per subtopic, does the plan fit, the AI text section
 js/theory.js                       theory blocks → HTML, loading theory files
 js/tools/core.js                   tool engine: expressions, sliders and locking, mounting, drawing helpers
 js/tools/<id>.js                   the tools themselves, one file each (the table in CLAUDE.md lists them)
 js/components/editor.js            note editor: toolbar, symbols, live preview, list keys
 js/components/palette.js           quick search / topic picker
 js/components/{countdown,gauge,plancards}.js   pieces of the overview (plancards: today / next / pace / milestones from the plan)
+js/components/scopecard.js         the overview card Rozsah učenia (switch, coverage, plan fit, points per hour)
 js/components/testcards.js         topic tests outside the topic page: badges, calendar chips, the overview card
 js/views/overview.js               #/
 js/views/topics.js                 #/temy/a|c
@@ -331,6 +356,7 @@ js/views/info.js                   #/info
 js/main.js                         theme, global keys, startup
 
 dev/check.js                       opens theory and tool pages in a browser and reports errors
+dev/eccheck.js                     checks js/data/ec.js against the subtopics and prints the scopes (`list`: every subtopic)
 dev/app-check.js                   drives the app's own pages (overview, list, topic, calendar, Info) incl. topic tests
 dev/desktop-check.js               starts the real desktop app and checks pages, saving, export, links, closing
 CLAUDE.md                          notes for continuing the theory work with Claude Code

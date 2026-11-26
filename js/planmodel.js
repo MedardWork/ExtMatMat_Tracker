@@ -491,7 +491,7 @@ function planAiText(){
   const topicTests = T.filter(x => testForAi(x.id)).map(x => `${x.id} ${testForAi(x.id)}`);
   const weak = T.filter(x => !(state.rel[x.id] && state.rel[x.id].off) && weakTopic(x.id)).map(x => x.id);
   const inPlanIds = new Set(PLAN_ITEMS.map(planTopicOf).filter(Boolean));
-  const outside = T.filter(x => /^[ab]/.test(x.id) && !inPlanIds.has(x.id) && !(state.rel[x.id] && state.rel[x.id].off))
+  const outside = T.filter(x => /^[ab]/.test(x.id) && !inPlanIds.has(x.id) && !(state.rel[x.id] && state.rel[x.id].off) && topicIn(x.id))
     .map(x => `${x.id} ${shortName(x)} (${LV[lv(x.id)].label})`);
   const pace = t < PLAN_START ? `plán ešte nezačal (začína ${fmtD(PLAN_START)})`
     : `podľa plánu som mal mať do dnes hotové ${calNum(pc.ex)} ${skSed(pc.ex)}, mám ${calNum(pc.done)} (hotová téma = od „ide to“)` +
@@ -515,7 +515,7 @@ ${weeks.join("\n")}
 - Testy z tém (môj posledný test z témy): ${topicTests.length ? topicTests.join("; ") : "zatiaľ žiadne"}.${weak.length ? `
 - Slabý posledný test (pod ${Math.round(TEST_WEAK * 100)} %), na zopakovanie: ${weak.join(", ")}.` : ""}
 - Témy, ktoré v pláne nie sú (id, názov, moja úroveň): ${outside.join("; ") || "žiadne"}.
-
+${ecAiText()}
 PLÁN
 ${F}json
 ${planJson(def)}

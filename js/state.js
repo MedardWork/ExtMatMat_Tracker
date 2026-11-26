@@ -22,7 +22,7 @@
      del:    { noteOrEntryId: timestamp },      tombstones, so a deletion survives merging
      epoch:  timestamp,                         bumped by import / reset: a newer epoch wins outright
      recent: [ topicId ],                       last opened topics, newest first
-     prefs:  { noteOrder: "new" | "old" }
+     prefs:  { noteOrder: "new" | "old", scope: "min" | "ec" | "all" (js/ec.js) }
    }
    Three places progress can live:
      1. window.storage — exists when this page runs inside Claude
@@ -399,7 +399,7 @@ const subName = (tid, k) => (subsOf(tid).find(x => x.k === k) || {}).n || "";
 
 /* all perfektne → perfektne; nothing rated → nepozreté; otherwise the rounded average, between neviem and ide to */
 function lv(id){
-  const subs = subsOf(id);
+  const subs = scopeSubs(id);         /* only the subtopics in the chosen scope (js/ec.js) */
   let sum = 0, any = false, all4 = true;
   for(const x of subs){
     const v = subLv(id, x.k);
@@ -413,7 +413,7 @@ function lv(id){
 }
 /* 0–1: how much of the topic you have — what the score estimate counts */
 function understanding(id){
-  const subs = subsOf(id);
+  const subs = scopeSubs(id);
   return subs.reduce((a, x) => a + LV[subLv(id, x.k)].w, 0) / subs.length;
 }
 const ratedSubs = id => subsOf(id).filter(x => subLv(id, x.k)).length;
@@ -468,7 +468,7 @@ function setOff(id, off){ state.rel[id] = {off, at:Date.now()}; touch(id); }
 const tabOf = x => isOff(x.id) ? "x" : x.t;
 function itemsOf(k){ return T.filter(x => tabOf(x) === k); }
 /* the topics that count toward the external-part estimate */
-const ecItems = () => T.filter(x => x.t === "a" && !isOff(x.id));
+const ecItems = () => T.filter(x => x.t === "a" && !isOff(x.id) && topicIn(x.id));
 
 /* ---------- notes ---------- */
 /* notesOf = every note of the topic, the tasks of its tests included; topicNotes = the topic's own notes */
