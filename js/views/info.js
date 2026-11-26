@@ -10,16 +10,19 @@ const SHORTCUTS = [
   ["<kbd>T</kbd>", "nový test k otvorenej téme"],
   ["<kbd>Esc</kbd>", "zavrieť editor, späť na zoznam"],
   ["<kbd>Ctrl</kbd>+<kbd>Enter</kbd>", "uložiť a zavrieť poznámku"],
-  ["Kalendár: <kbd>←</kbd> <kbd>→</kbd> · <kbd>M</kbd> <kbd>T</kbd> · <kbd>P</kbd>", "predošlý / ďalší · mesiac / týždeň · témy alebo poznámky"],
+  ["Kalendár: <kbd>←</kbd> <kbd>→</kbd> · <kbd>M</kbd> <kbd>T</kbd> <kbd>G</kbd> · <kbd>P</kbd> · <kbd>S</kbd>", "predošlý / ďalší · mesiac / týždeň / mriežka poznámok · témy alebo poznámky · stav plánu"],
   ["<kbd>Ctrl</kbd>+<kbd>B</kbd> · <kbd>Ctrl</kbd>+<kbd>I</kbd>", "tučné · kurzíva"],
   ["<kbd>Ctrl</kbd>+<kbd>M</kbd>", "vzorec"]
 ];
 
-VIEWS.info = {
-  title: () => "Info a záloha",
+/* the gear in the top bar (#/nastavenia; old #/info links land here). The plan's card (planCardHtml below)
+   is shown in the calendar's "Stav plánu" (js/views/calendar.js). */
+VIEWS.nastavenia = {
+  title: () => "Nastavenia",
   render(host){
     host.innerHTML = `<div class="page info">
-      <header class="page-head"><h1>Info a záloha</h1></header>
+      <header class="page-head"><h1>Nastavenia</h1>
+        <p class="sub">Záloha a obnova postupu, import starých testov, klávesové skratky a odkiaľ sú dáta. Študijný plán sa mení v <a href="#/kalendar/s">Kalendári → Stav plánu</a>.</p></header>
 
       <section class="card">
         <h2>Záloha</h2>
@@ -41,8 +44,6 @@ VIEWS.info = {
           <div id="zapisCheck"></div>
         </div>
       </section>
-
-      ${planCardHtml()}
 
       ${store === "server" ? `<section class="card">
         <h2>História</h2>
@@ -69,9 +70,6 @@ VIEWS.info = {
     renderStoreNote();
     if(store === "server") renderHistory();
     if(ui.openImport){ ui.openImport = false; $("#importBox").hidden = false; $("#importArea").focus(); }
-    if(ui.openPlan != null){ const t = ui.openPlan; ui.openPlan = null; openPlanBox(t); }
-    /* from "Zmeniť plán" in the calendar; after the route's own scroll to the top */
-    if(ui.showPlan){ ui.showPlan = false; setTimeout(() => { const c = $("#planCard"); if(c) c.scrollIntoView({block:"start"}); }, 0); }
   }
 };
 
@@ -153,7 +151,8 @@ function importText(txt){
   const pl = (!data || data.format === PLAN_FORMAT) && planFromText(txt);
   if(pl && pl.def && pl.def.format === PLAN_FORMAT){
     $("#importBox").hidden = true;
-    openPlanBox(txt);
+    ui.openPlan = txt;
+    go("#/kalendar/s");
     toast("Toto je plán, nie celý postup. Skontroluj zmeny v karte Plán a potvrď ich.");
     return;
   }
@@ -210,7 +209,7 @@ function planCardHtml(){
   const h = state.plan.hist;
   const count = d => d.weeks.reduce((a, w) => a + (w.items || []).length, 0);
   return `<section class="card" id="planCard">
-    <h2>Plán v kalendári</h2>
+    <h2>Plán</h2>
     <p>${PLAN_NONE ? "Zatiaľ nemáš študijný plán." : `${planIsCustom() ? `${PLAN_DEFAULT ? "Upravený plán" : "Plán"} z ${fmtStamp(state.plan.at)}` : "Pôvodný plán"} · ${nWeeks(PLAN_WEEKS.length)} · ${nItems(PLAN_ITEMS.length)} · ${calNum(PLAN_TOTAL)} ${skSed(PLAN_TOTAL)} · maturita ${fmtD(PLAN_EXAM)}`}</p>
     ${PLAN_ERR ? `<p class="warn">Uložený plán sa nedá použiť${PLAN_NONE ? "" : ", kalendár preto ukazuje pôvodný"}: ${esc(PLAN_ERR.slice(0, 3).join(" · "))}</p>` : ""}
     <p class="muted">${PLAN_NONE

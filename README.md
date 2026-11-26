@@ -6,7 +6,7 @@ Three ways to run it:
 |---|---|---|
 | **Desktop app** (recommended) | Install it once, then open it like any other app | Its own database on your computer, saved automatically |
 | **Docker** | `docker compose up -d`, then open <http://localhost:8080> | The same database, in `./data` next to `docker-compose.yml` |
-| **Plain file** | Open `maturita-matematika-tracker.html` in a browser | The browser's `localStorage` — back it up by hand from *Info* |
+| **Plain file** | Open `maturita-matematika-tracker.html` in a browser | The browser's `localStorage` — back it up by hand from *Nastavenia* (the gear) |
 
 ## Desktop app
 
@@ -45,7 +45,7 @@ other files, no programs); the study plan always stays the installed one.
 
 ### Nothing gets lost
 
-- **History** (*Info → História*): while you work, the database keeps the earlier version every 10
+- **History** (*Nastavenia → História*): while you work, the database keeps the earlier version every 10
   minutes, and always before an import, a restore or *Vymazať všetko*. Everything from the last two
   days stays; older versions thin out to one per day. Any of them can be restored or downloaded —
   restoring keeps the current state in the history too.
@@ -115,10 +115,11 @@ choose the folder).
 
 ## What's in it
 
-- **Prehľad** — countdown, score estimate by test block, and from your study plan: today's blocks, what comes
-  next, pace (ahead or behind), milestones and the plan's rules; plus the last day you studied and your topic
-  tests (the latest results, topics to go over again, finished topics without a test); the scope switch
-  (*Rozsah učenia*, see below) with the subtopics worth the most points per hour of study.
+- **Prehľad** — on top the score estimate drawn as the test itself: 30 boxes in the five blocks, each filled by
+  what your levels bring (teal *perfektne*, amber in progress), with marks at 33 % and 80 % (a block opens its topics);
+  then from your study plan today's blocks and what comes next, and the last day you studied. On the side the
+  countdown, pace (ahead or behind) and your topic tests (the latest, topics to go over again, finished topics
+  without a test; at most 3 each).
 - **Témy** — the topic list with tabs, search (also inside notes), filters with counts (one of them: *Slabý test*),
   the latest test score of each topic and quick level buttons. Click a topic name to open it.
 - **Topic page** (`#/tema/a5`) — the whole topic on one page: its subtopics, each with its own
@@ -135,9 +136,13 @@ choose the folder).
   block with its topic (see *Study plan* below); switch to **Poznámky** for the study diary: a note for each day
   and for each topic taken that day (topics appear by themselves when rated, noted or tested), saved as you type.
   Both views show the topic tests written on each day with their score; *+ test* starts one for a topic and day.
+  *Mriežka* shows the diary as a grid of days (17 weeks back and on to the exam, darker = more done that day).
   Replaced the old Denník tab; old `#/dennik` links land here.
-- **Info** — data sources, backup (copy / download / paste / load a file), the study plan (make or change it
-  with an AI), history of earlier versions (desktop app and Docker), keyboard shortcuts.
+  **Stav plánu** (`#/kalendar/s`) holds everything about the plan as a whole: *Rozsah učenia* (see below) with
+  *Zmestí sa?*, the pace, milestones, the plan's rules, and the plan itself (make or change it with an AI, history).
+- **Nastavenia** (the gear, `#/nastavenia`; old `#/info` links land here) — backup (copy / download / paste / load
+  a file), old tests from an AI session, history of earlier versions (desktop app and Docker), keyboard shortcuts,
+  data sources.
 
 Press `/` (or Ctrl+K) anywhere to jump to a topic or note. On a topic page: `←` `→` previous /
 next topic, `↑` `↓` pick a subtopic, `0`–`4` set its level, `N` new note, `T` new test, `Esc` back to the list.
@@ -162,7 +167,7 @@ task is one point (½ is half a point), so `+ ✓ správne` pressed eight times 
 button focused, Enter adds the next one). A task can also carry a note, written in the same editor as the topic's notes
 (`+ s poznámkou`, or ✎ on a task); tasks don't show among the topic's own notes, but the quick search finds them.
 
-Tests written earlier with an AI (kept only as notes) come over through *Info → Vložiť postup → Skopírovať pokyny
+Tests written earlier with an AI (kept only as notes) come over through *Nastavenia → Vložiť postup → Skopírovať pokyny
 pre AI*: paste the instructions into that old session, then paste its whole answer back into *Vložiť postup*. The app
 shows what it will add (the tests with their tasks, the topic's level as of that day, notes rated again); notes the
 session wrote for the test's tasks move under the test with their text, so nothing is there twice and adds it to the progress without replacing anything; *Späť* takes it back.
@@ -173,14 +178,14 @@ session wrote for the test's tasks move under the test with their text, so nothi
 - The calendar shows every test on the day it was written, with its score, in the plan and in the diary.
 - A scored test counts as the plan's review of that topic (*opak:*) in the week it was written. Tests don't feed the
   score estimate or the pace.
-- Tests are part of the saved progress, the backup and the text for an AI (Info → Plán v kalendári).
+- Tests are part of the saved progress, the backup and the text for an AI (Kalendár → Stav plánu).
 
 ### Rozsah učenia (what the external part asks)
 
 Every task of 19 external-part tests from 2005 to 2025 (30 tasks each) is mapped to the subtopics it needs
 (`js/data/ec.js`; the main subtopic counts double, newer tests weigh more). So the app knows, per subtopic, in how
 many tests it came up and how many points of an average test it is worth; the difficulty of each task (1–3, judged
-from the task and its key) gives an estimate of the hours needed. The switch on the overview and above the topic
+from the task and its key) gives an estimate of the hours needed. The switch in *Kalendár → Stav plánu* and above the topic
 list picks the scope:
 
 - **Nutné minimum** — the subtopics with the most points per hour of study, until they cover half of an average test
@@ -190,8 +195,9 @@ list picks the scope:
 
 Topics and subtopics out of scope stay visible but faded (the topic list hides out-of-scope topics until you ask for
 them, and can sort by points per hour). They don't count in a topic's level, the score estimate, the plan's pace or
-*Ďalej na rade*. The overview card shows what each scope covers, how many hours are left in yours, whether the plan
-still fits (blocks planned for topics out of scope are freed for the missing ones) and the subtopics with the most
+*Ďalej na rade*. The card in *Stav plánu* shows what each scope covers, how many hours are left in yours, whether the plan
+still fits (blocks planned for topics out of scope are freed for the missing ones; *Zmestí sa?* draws it for all three
+scopes as bars of hours against the line of what the plan has from today, a bar switches the scope) and the subtopics with the most
 points per hour; *Preplánovať s AI* copies the plan for an AI with a section that says what to drop and what to add,
 ordered by points per hour. The Danish topics are not affected.
 
@@ -207,7 +213,7 @@ starts without one; you make it with an AI chat (Claude, ChatGPT, …) and never
 
 **Making a plan**
 
-1. Open **Info → Plán v kalendári** and click **Vytvoriť plán s AI**. The app copies a text to the clipboard:
+1. Open **Kalendár → Stav plánu** and click **Vytvoriť plán s AI**. The app copies a text to the clipboard:
    what the plan looks like, how the app reads it, your topics with your current levels, and a small example plan.
 2. Paste it into a chat with an AI. It asks you what it needs: when your exam is and when you want to start,
    what a normal week looks like (school, training, other subjects) and how much time each day has for maths,
@@ -326,7 +332,7 @@ css/markdown.css                   how rendered notes look
 css/editor.css, css/palette.css    note editor, quick search
 css/theory.css                     Teória tab, tool widgets, Nástroje pages
 css/tests.css                      topic tests: the section on the topic page, scores in the list, calendar, overview
-css/scope.css                      the scope switch, the overview card Rozsah učenia, EČ badges, faded out-of-scope rows
+css/scope.css                      the scope switch, the card Rozsah učenia (+ Zmestí sa?), EČ badges, faded out-of-scope rows
 vendor/katex/                      KaTeX 0.16 (MIT) — formula rendering, bundled for offline use
 vendor/jsxgraph/                   JSXGraph 1.13 (MIT) — graphs and geometry; loaded when first needed
 js/data/levels.js                  test areas (with item counts), levels, tab labels
@@ -346,8 +352,8 @@ js/tools/core.js                   tool engine: expressions, sliders and locking
 js/tools/<id>.js                   the tools themselves, one file each (the table in CLAUDE.md lists them)
 js/components/editor.js            note editor: toolbar, symbols, live preview, list keys
 js/components/palette.js           quick search / topic picker
-js/components/{countdown,gauge,plancards}.js   pieces of the overview (plancards: today / next / pace / milestones from the plan)
-js/components/scopecard.js         the overview card Rozsah učenia (switch, coverage, plan fit, points per hour)
+js/components/{countdown,gauge,plancards}.js   pieces of the overview (gauge: the 30-box estimate; plancards: today / next / pace, and milestones / rules for Stav plánu)
+js/components/scopecard.js         the card Rozsah učenia in Kalendár → Stav plánu (switch, coverage, Zmestí sa? bars, plan fit, points per hour)
 js/components/testcards.js         topic tests outside the topic page: badges, calendar chips, the overview card
 js/views/overview.js               #/
 js/views/topics.js                 #/temy/a|c
@@ -357,14 +363,14 @@ js/views/topictests.js             the Testy section of the topic page (#/tema/<
 js/views/theory.js                 #/tema/<id>/teoria
 js/views/tools.js                  #/nastroje, #/nastroje/<tool>
 js/views/calendar.js               #/kalendar (plan + diary; data in js/data/plan.js)
-js/planmodel.js                    the plan as data: compile, check, compare, copy for an AI (Info → Plán v kalendári)
+js/planmodel.js                    the plan as data: compile, check, compare, copy for an AI (Kalendár → Stav plánu)
 js/data/plan.js                    the default plan (none in the public app: PLAN_DEFAULT = null)
 js/views/info.js                   #/info
 js/main.js                         theme, global keys, startup
 
 dev/check.js                       opens theory and tool pages in a browser and reports errors
 dev/eccheck.js                     checks js/data/ec.js against the subtopics and prints the scopes (`list`: every subtopic)
-dev/app-check.js                   drives the app's own pages (overview, list, topic, calendar, Info) incl. topic tests
+dev/app-check.js                   drives the app's own pages (overview, list, topic, calendar, Stav plánu, Nastavenia) incl. topic tests
 dev/desktop-check.js               starts the real desktop app and checks pages, saving, export, links, closing
 CLAUDE.md                          notes for continuing the theory work with Claude Code
 

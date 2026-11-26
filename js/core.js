@@ -9,8 +9,9 @@
             #/tema/<id>/teoria[/<sub>] the topic's theory, optionally scrolled to a subtopic
             #/nastroje[/<toolId>]      interactive tools, all of them or one
             #/dennik[/<entryId>]       old diary links → the diary week in the calendar
-            #/info        sources, backup, shortcuts
-            #/kalendar[/m|t[/<iso>[/p]]]  the study plan as a month or week calendar; p = the diary
+            #/nastavenia  backup, import, shortcuts, sources (old #/info links land here)
+            #/kalendar[/m|t|g[/<iso>[/p]]]  the study plan as a month or week calendar; p = the diary (g = its grid of days)
+            #/kalendar/s  the state of the plan: scope, pace, milestones, the plan itself
    ============================================================ */
 const ui = {
   route: {view:"prehlad"},
@@ -61,8 +62,9 @@ function parseRoute(){
     case "nastroje": return {view:"nastroje", tool:TOOLS[p[1]] ? p[1] : null};
     case "dennik": { const e = p[1] && p[1] !== "t" && state.log.find(x => x.id === p[1]);
                      return {view:"kalendar", mode:"t", d:e ? e.d : null, notes:true, entry:e ? e.id : null}; }
-    case "info":   return {view:"info"};
-    case "kalendar": return {view:"kalendar", mode:p[1] === "t" ? "t" : "m", d:/^\d{4}-\d\d-\d\d$/.test(p[2] || "") ? p[2] : null, notes:p.includes("p")};
+    case "info": case "nastavenia": return {view:"nastavenia"};
+    case "kalendar": return p[1] === "s" ? {view:"kalendar", pane:"s", mode:"m", d:null, notes:false}
+      : {view:"kalendar", mode:p[1] === "t" ? "t" : p[1] === "g" && p.includes("p") ? "g" : "m", d:/^\d{4}-\d\d-\d\d$/.test(p[2] || "") ? p[2] : null, notes:p.includes("p")};
     default:       return {view:"prehlad"};
   }
 }
@@ -74,7 +76,7 @@ function render(){
   ensurePlan();
   const r = ui.route;
   const v = VIEWS[r.view];
-  $$("#mainnav [data-nav]").forEach(a => a.toggleAttribute("aria-current", a.dataset.nav === r.view || (r.view === "tema" && a.dataset.nav === "temy")));
+  $$(".appbar [data-nav]").forEach(a => a.toggleAttribute("aria-current", a.dataset.nav === r.view || (r.view === "tema" && a.dataset.nav === "temy")));
   document.body.dataset.view = r.view;
   document.title = (v.title ? v.title(r) + " · " : "") + "Maturita z matematiky";
   v.render($("#view"));

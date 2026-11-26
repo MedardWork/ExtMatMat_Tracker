@@ -157,7 +157,7 @@ Reworked the same day on their request:
   lead. `open` = past their end and unfinished, in plan order: the pace card's "Najprv dotiahni" (tests: "zapíš body"), "mešká"
   in "Ďalej na rade", and the AI text. Keep these three on `planEndOf`.
 
-**The plan is data (2026-11-18).** The person never edits it by hand: they copy it for an AI in Info → *Plán v kalendári*,
+**The plan is data (2026-11-18).** The person never edits it by hand: they copy it for an AI in Kalendár → *Stav plánu* (card Plán),
 ask for a change and paste the answer back; so the format is made to be easy for the next Claude to read and edit.
 
 - `js/data/plan.js` holds `PLAN_DEFAULT`, a JSON object in the format `"maturita-plan-1"` (weeks with ordered items
@@ -172,13 +172,13 @@ ask for a change and paste the answer back; so the format is made to be easy for
 - Template of a date: a test that day → `"test"`; else the first `periods` entry it falls in (`weekdays_only` skips
   Sat/Sun); else `weekdays`. Ids: a topic id, `"opak:<topic>"` for a review, or a test id; each at most once.
 - The UI (card, preview, history, `setPlan`) is in `js/views/info.js`. "Skopírovať len plán" copies `planText(planDef())` (the bare JSON, no AI instructions; 2026-11-20). Pasting a plan into "Vložiť postup" routes it to the plan card.
-- A stored def that fails `validatePlan` is not used: the calendar falls back to the default and Info says why (`PLAN_ERR`).
+- A stored def that fails `validatePlan` is not used: the calendar falls back to the default and the Plán card says why (`PLAN_ERR`).
 - No plan at all (`PLAN_DEFAULT = null` and nothing pasted, the public app): `PLAN_NONE`, empty tables; the calendar's Témy,
-  the overview and Info offer "Vytvoriť plán s AI", whose text (`planCreateText`) asks the AI to ask the person first and
+  the overview and Stav plánu offer "Vytvoriť plán s AI", whose text (`planCreateText`) asks the AI to ask the person first and
   shows it `planStarter()`, a small valid example plan. Test the public variant by copying the tree, putting
   `dev/public/plan.js` in, and opening it from `file://`.
 - Check after touching the model: the compiled default must not change (compare `PLAN_SLOTS`/`PLAN_OVER` before and after
-  in a browser), then paste a changed plan in Info and apply it.
+  in a browser), then paste a changed plan in Stav plánu and apply it.
 
 ### Topic tests (2026-11-21)
 
@@ -204,7 +204,7 @@ to that test; shown in the calendar per day and topic, and wherever else it help
   (latest, na zopakovanie, hotové bez testu), the topic list (badge, filter "Slabý test"), quick search, "Naposledy",
   and "na konci krátky test" / the score on a topic's last block in "Dnes podľa plánu".
 - **Zápis zo session** (js/zapis.js, 2026-11-21): the person moves tests kept as notes in old AI study sessions into tests.
-  `zapisPrompt()` (button in Info's import box) asks that session's AI for a `"maturita-zapis-1"` block: per topic a level
+  `zapisPrompt()` (button in the import box of Nastavenia) asks that session's AI for a `"maturita-zapis-1"` block: per topic a level
   (as of the session day; skipped for a subtopic rated on a later day), tests with tasks, `from_note` (the note that held the
   test, removed), notes re-rated. The person's tutor (their own rules, 2026-11-21) writes **one note per task**, mini tests too
   (part A + B, "Ako sa darilo"), so a task names its note (`note`: id, plus `title`: its exact title, tried when the id is not in the app; an AI that lacks the ids makes up plausible ones, 2026-11-21) and that note **moves** under the test with its
@@ -244,6 +244,24 @@ no clear licence; only the derived mapping is).
   (its "Vyhlásenie o autorstve"), so the public app never shows a task's text, picture or answer: only our own one-line label and a
   link. `EC_SRC` in js/data/ec.js = the official test and key PDFs under `EC_DL` (none for the test in 2005–2008) and `pg`, the
   page each task starts on (read from the PDF text; `ecTaskUrl` adds `#page=`). `EC_TASKS` / `ecTasksOf(tid)` in js/ec.js.
+
+### Layout (2026-11-26)
+
+The person asked to reorder the app; they **keep its look** (Georgia titles, paper grey, indigo, level colours, the line
+icons in the nav, five level buttons, dense rows) and rejected an Apple-like restyle. Only the order changed:
+
+- Nav: Prehľad · Témy · Kalendár · Nástroje; Info became **Nastavenia**, a gear in the top bar (`VIEWS.nastavenia` in
+  js/views/info.js, `#/nastavenia`, old `#/info` lands there): backup, zápis import, history, shortcuts, sources.
+- **Prehľad**: on top the estimate as the test's 30 boxes per block (`renderGauge`, a box fills from the bottom: teal from
+  subtopics on perfektne, amber from those in progress), marks at 33 % and 80 % (`GAUGE_MARKS`; the person's choice, not
+  the old 25/33 % "hranice úspešnosti"); then Dnes podľa plánu, Ďalej na rade. Side: countdown, pace, Testy z tém
+  (Posledné / Na zopakovanie / Hotové bez testu, at most 3 each). No scope card here.
+- **Kalendár → Stav plánu** (`#/kalendar/s`, `stavHtml` in calendar.js): Rozsah učenia (scopecard.js, with the
+  *Zmestí sa?* bars `fitBarsHtml`: per scope `ecPlanFit(scope)` blocks in plan + missing against the plan's blocks from
+  today, same numbers as the verdict), the Plán card (`planCardHtml`, moved from Info; a plan pasted in Nastavenia goes
+  here via `ui.openPlan`), pace, milestones, rules. Links that changed the plan (`plan-goto`) point here.
+- **Kalendár → Poznámky → Mriežka** (`#/kalendar/g/<iso>/p`, `notesGrid`): the old diary heatmap, 17 weeks back to the exam.
+- Not wanted (asked 2026-11-26): a map of all topics by points, a "road to the exam" of weeks, a points-per-hour chart.
 
 ### Tools on their own page (2026-11-16, Fable)
 

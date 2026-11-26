@@ -163,29 +163,29 @@ action("ec-scope", el => {
 
 /* ---------- the plan and the scope ---------- */
 /* a plan item counts in the scope when its topic does (a test or an item without a topic always does) */
-const planItemIn = x => { const t = planTopicOf(x); return !t || topicIn(t); };
+const planItemIn = (x, scope = ecScope()) => { const t = planTopicOf(x); return !t || topicIn(t, scope); };
 const EC_BLOCK_H = EC_SESSION_H / 2;
 /* does the plan still fit the scope? Blocks still to come for unfinished items in and out of scope, blocks
    of items in scope that did not fit into their week, and the topics in scope the plan lacks */
-function ecPlanFit(){
+function ecPlanFit(scope = ecScope()){
   const t = todayIso(), r = {bIn:0, bOut:0, overIn:0, missing:[], missBlocks:0};
   if(PLAN_NONE) return null;
   for(const d in PLAN_BY_DAY){
     if(d < t) continue;
     for(const e of PLAN_BY_DAY[d]){
       if(isPlanTest(e.it) || planStatus(e.it) === 2) continue;
-      if(planItemIn(e.it)) r.bIn += e.blocks; else r.bOut += e.blocks;
+      if(planItemIn(e.it, scope)) r.bIn += e.blocks; else r.bOut += e.blocks;
     }
   }
   for(const w of PLAN_WEEKS){
     if(w.to < t) continue;
-    for(const o of PLAN_OVER[w.id] || []) if(planItemIn(o.it) && planStatus(o.it) !== 2) r.overIn += o.blocks;
+    for(const o of PLAN_OVER[w.id] || []) if(planItemIn(o.it, scope) && planStatus(o.it) !== 2) r.overIn += o.blocks;
   }
   const planned = new Set(PLAN_ITEMS.map(x => x.id));
   for(const x of T){
-    if(x.t === "c" || isOff(x.id) || planned.has(x.id) || !topicIn(x.id) || lv(x.id) >= 3) continue;
+    if(x.t === "c" || isOff(x.id) || planned.has(x.id) || !topicIn(x.id, scope) || lv(x.id) >= 3) continue;
     let h = 0;
-    for(const s of SUB_LIST[x.id]) if(subIn(x.id, s.k)){ const o = ecSub(x.id, s.k); h += (o ? o.h : EC_DEFAULT_H) * (1 - LV[subLv(x.id, s.k)].w); }
+    for(const s of SUB_LIST[x.id]) if(subIn(x.id, s.k, scope)){ const o = ecSub(x.id, s.k); h += (o ? o.h : EC_DEFAULT_H) * (1 - LV[subLv(x.id, s.k)].w); }
     const b = Math.max(1, Math.round(h / EC_BLOCK_H));
     r.missing.push({id:x.id, b}); r.missBlocks += b;
   }

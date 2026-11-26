@@ -33,6 +33,7 @@
 .search-btn:hover{color:var(--ink);border-color:var(--ink-soft)}
 .theme-btn{appearance:none;cursor:pointer;background:none;border:1px solid transparent;border-radius:6px;padding:6px;color:var(--ink-soft);display:flex}
 .theme-btn:hover{color:var(--ink);border-color:var(--rule)}
+.gear-btn[aria-current]{color:var(--ink);background:var(--track)}
 
 /* ---------- pages ---------- */
 .view{min-height:calc(100vh - var(--bar-h))}
@@ -54,6 +55,8 @@
 .info .card{margin-bottom:14px}
 .info .card p{font-size:14px;margin:0 0 10px;max-width:70ch}
 .info .tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+#planCard p{font-size:14px;margin:0 0 10px;max-width:70ch}
+#planCard .tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .info code{font:12px/1.4 var(--mono);word-break:break-all}
 .history ul{list-style:none;margin:0;padding:0;max-height:360px;overflow-y:auto;border-top:1px solid var(--rule)}
 .history li{display:flex;align-items:center;gap:6px 12px;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid var(--rule);font-size:14px}

@@ -1,6 +1,6 @@
 /* ============================================================
-   SCOPE CARD (overview) — Nutné minimum / Externá časť / Celá maturita, what each covers,
-   whether the plan still fits, and the subtopics with the most points per hour (js/ec.js)
+   SCOPE CARD (calendar → Stav plánu) — Nutné minimum / Externá časť / Celá maturita, what each covers,
+   whether the plan still fits (in words and as bars, "Zmestí sa?"), and the subtopics with the most points per hour (js/ec.js)
    ============================================================ */
 function renderScopeCard(){
   const host = $("#scopeCard");
@@ -16,6 +16,7 @@ function renderScopeCard(){
     <p class="muted">${ecScopeOf(sc).desc} Podľa ${EC.nTests} testov externej časti z rokov ${EC.first}–${EC.last}; novšie testy vážia viac.</p>
     <div class="ec-cols">${cols}</div>
     <p class="ec-left">Podľa tvojich úrovní ti v tomto rozsahu zostáva asi <b>${Math.round(left.h)} h</b> učenia na <b>${ecNum(left.pts)} b.</b> testu.</p>
+    ${fitBarsHtml(sc)}
     ${planFitHtml(sc)}
     ${prioritiesHtml(sc)}`;
 }
@@ -35,9 +36,28 @@ function planFitHtml(sc){
     <p class="ec-verdict ${cls}"><b>${verdict}</b></p>
     <p class="muted">${lines.join(" ")}</p>
     ${replan ? `<div class="tools"><button class="btn${cls === "late" ? "" : " ghost"}" data-act="ec-replan" title="Skopíruje plán s pokynmi pre AI: vyhodiť témy mimo rozsahu, doplniť chýbajúce a zoradiť ich podľa bodov za hodinu">Preplánovať s AI</button>
-      <a class="btn ghost" href="#/info" data-act="plan-goto">Vložiť nový plán</a></div>
+      <a class="btn ghost" href="#/kalendar/s" data-act="plan-goto">Vložiť nový plán</a></div>
     <textarea id="ecOut" class="plan-out" readonly hidden></textarea>` : ""}
   </div>`;
+}
+
+/* "Zmestí sa?": per scope, the blocks its unfinished topics need from today (those already in the plan and those
+   the plan lacks) against the blocks the plan has from today; what lies past the line does not fit. Same numbers
+   as the verdict below (ecPlanFit), shown in hours. A row switches the scope. */
+function fitBarsHtml(sc){
+  if(PLAN_NONE) return "";
+  const rows = EC_SCOPES.map(s => { const f = ecPlanFit(s.k); return {s, inPlan:f.bIn, need:f.bIn + f.need, cap:f.bIn + f.bOut}; });
+  const cap = rows[0].cap, max = Math.max(cap, ...rows.map(r => r.need)) || 1;
+  const pc = b => (b / max * 100).toFixed(2) + "%", hh = b => `${Math.round(b * EC_BLOCK_H)} h`;
+  return `<h3>Zmestí sa?</h3>
+    <div class="fit-bars" style="--capf:${(cap / max).toFixed(4)}">${rows.map(r => `<button class="fit-row${r.s.k === sc ? " on" : ""}" data-act="ec-scope" data-k="${r.s.k}" data-w="fit"
+      title="${esc(r.s.label)}: v pláne ${hh(r.inPlan)}, v pláne chýba ${hh(r.need - r.inPlan)}${r.need > cap ? `, nezmestí sa ${hh(r.need - cap)}` : ""}">
+      <span class="fit-n">${r.s.label}</span>
+      <span class="fit-tr"><i class="fit-in" style="width:${pc(r.inPlan)}"></i><i class="fit-miss" style="left:${pc(r.inPlan)};width:${pc(r.need - r.inPlan)}"></i>${r.need > cap ? `<i class="fit-over" style="left:${pc(cap)};width:${pc(r.need - cap)}"></i>` : ""}</span>
+      <span class="fit-v">${hh(r.need)}</span></button>`).join("")}
+      <div class="fit-cap"><span>plán od dnes ${hh(cap)}</span></div>
+    </div>
+    <p class="fit-legend"><span><i class="fit-in"></i>témy v pláne</span><span><i class="fit-miss"></i>v pláne chýbajú</span><span><i class="fit-over"></i>nezmestí sa</span><span>čiara: bloky, ktoré má plán od dnes</span></p>`;
 }
 
 function prioritiesHtml(sc){
@@ -51,6 +71,6 @@ function prioritiesHtml(sc){
 action("ec-replan", async () => {
   ensurePlan();
   const txt = planAiText() + "\nUprav plán podľa časti ROZSAH UČENIA.\n";
-  try{ await navigator.clipboard.writeText(txt); toast("Plán s rozsahom je v schránke. Vlož ho do chatu s AI, jej odpoveď potom do Info → Vložiť plán."); }
+  try{ await navigator.clipboard.writeText(txt); toast("Plán s rozsahom je v schránke. Vlož ho do chatu s AI, jej odpoveď potom sem cez Vložiť plán."); }
   catch(err){ const o = $("#ecOut"); if(o){ o.hidden = false; o.value = txt; o.select(); } toast("Skopíruj text z poľa nižšie."); }
 });

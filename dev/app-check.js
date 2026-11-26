@@ -220,8 +220,37 @@ const check = (cond, what) => { if(!cond) bad++; console.log(`${cond ? "ok  " : 
   await wait(150);
   check(await ev(() => !state.tests.a12 && topicNotes("a12").some(n => n.title === "Test z nerovníc") && topicNotes("a12").some(n => n.title === "A1: zlomok")), "Späť takes the whole zápis back");
 
+  /* ---------- the layout of 2026-11-26: overview, Stav plánu, the diary's grid, Nastavenia ---------- */
+  await page.goto(BASE + "#/");
+  await wait(250);
+  check(await ev(() => document.querySelectorAll("#blocks .cell").length === 30 && !document.querySelector("#scopeCard") && !document.querySelector("#milestones")),
+    "overview: the estimate as 30 boxes of the test; scope and milestones are not here");
+  check(await ev(() => document.querySelectorAll("#testsCard .tc-list li").length === 3 && document.querySelectorAll("#testsCard .tc-weak li").length <= 3), "overview: Testy z tém shows the 3 latest, at most 3 to go over");
+  await page.goto(BASE + "#/kalendar/s");
+  await wait(250);
+  check(await ev(() => !!document.querySelector("#planCard") && !!document.querySelector("#scopeCard h2") && document.querySelectorAll(".fit-row").length === 3 && !!document.querySelector("#milestones")),
+    "Stav plánu: scope with the three Zmestí sa? bars, the plan card and the milestones");
+  await page.click('.fit-row[data-k="min"]');
+  await wait(150);
+  check(await ev(() => ecScope() === "min" && document.querySelector('.fit-row.on').dataset.k === "min"), "Stav plánu: a bar switches the scope");
+  await ev(() => { state.prefs.scope = "all"; save(); render(); });
+  await page.goto(BASE + `#/kalendar/g/${d2}/p`);
+  await wait(250);
+  check(await ev(() => document.querySelectorAll(".hm-cell[data-act]").length > 100 && !!document.querySelector(".hm-cell.today")), "Poznámky → Mriežka: the days as a grid, today marked");
+  await page.click(`.hm-cell[data-d="${d2}"]`);
+  await wait(200);
+  check(await ev(d => location.hash === `#/kalendar/t/${d}/p`, d2), "a day of the grid opens its week with notes");
+  await page.goto(BASE + "#/info");
+  await wait(200);
+  check(await ev(() => document.body.dataset.view === "nastavenia" && !!document.querySelector(".gear-btn[aria-current]") && !document.querySelector("#planCard")), "old #/info links open Nastavenia (no plan card there)");
+  await page.click('[data-act="import-toggle"]');
+  await page.fill("#importArea", await ev(() => "Tu je plán:\n" + JSON.stringify(planDef())));
+  await page.click('[data-act="import"]');
+  await wait(300);
+  check(await ev(() => location.hash === "#/kalendar/s" && !document.querySelector("#planBox").hidden), "a plan pasted in Nastavenia opens in Stav plánu");
+
   /* ---------- every page, both widths ---------- */
-  const pages = ["#/", "#/temy/a", "#/tema/a5", `#/tema/a5/t/${xid}`, "#/kalendar/m", "#/kalendar/t", `#/kalendar/m/${d2}/p`, `#/kalendar/t/${d2}/p`, "#/info"];
+  const pages = ["#/", "#/temy/a", "#/tema/a5", `#/tema/a5/t/${xid}`, "#/kalendar/m", "#/kalendar/t", `#/kalendar/m/${d2}/p`, `#/kalendar/t/${d2}/p`, `#/kalendar/g/${d2}/p`, "#/kalendar/s", "#/nastavenia"];
   for(const w of [1280, 400]){
     await page.setViewportSize({ width: w, height: 880 });
     for(const h of pages){

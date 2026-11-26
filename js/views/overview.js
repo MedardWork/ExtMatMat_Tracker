@@ -1,5 +1,6 @@
 /* ============================================================
-   OVERVIEW — countdown, score estimate, today by the plan, next in the plan, pace, topic tests, milestones
+   OVERVIEW — score estimate (the test's 30 boxes), today by the plan, next in the plan; countdown, pace, topic tests.
+   Scope, milestones and the plan's rules live in the calendar's "Stav plánu".
    ============================================================ */
 VIEWS.prehlad = {
   title: () => "Prehľad",
@@ -14,12 +15,13 @@ VIEWS.prehlad = {
         <p>Postup sa odteraz ukladá sám do databázy aplikácie — nič už nemusíš kopírovať. Ak máš postup zo starej verzie, prenes si ho sem jedenkrát: súbor zo „Stiahnuť ako súbor“ alebo skopírovaný text.</p>
         <div class="tools">
           <button class="btn" data-act="import-file">Načítať zo súboru</button>
-          <a class="btn ghost" href="#/info" data-act="open-import">Vložiť skopírovaný text</a>
+          <a class="btn ghost" href="#/nastavenia" data-act="open-import">Vložiť skopírovaný text</a>
         </div>
       </section>` : ""}
       <div class="ov-grid">
         <div class="ov-main">
           <section class="gauge">
+            <h2 class="gauge-h">Odhad bodov na externej časti <span>30 úloh, každá 1 bod · klik na blok otvorí jeho témy</span></h2>
             <div class="blocks" id="blocks"></div>
             <div class="readout">
               <div><div class="score" id="score">0<span> / 30</span></div></div>
@@ -27,14 +29,12 @@ VIEWS.prehlad = {
             </div>
             <div class="bar">
               <div class="bar-fill" id="barFill" style="width:0%"></div>
-              <div class="tick" style="left:25%"></div>
-              <div class="tick" style="left:33.3%"></div>
+              ${GAUGE_MARKS.map(m => `<div class="tick" style="left:${m}%"></div>`).join("")}
             </div>
-            <div class="tick-labels"><span>0</span><span>25 % a 33 % — hranice úspešnosti</span><span>30</span></div>
+            <div class="tick-labels"><span>0</span>${GAUGE_MARKS.map(m => `<span class="tl" style="left:${m}%">${Math.round(m)} %</span>`).join("")}<span>30</span></div>
             <div class="dist" id="dist"></div>
             <div class="dist-legend" id="distLegend"></div>
           </section>
-          <section class="card ec-card" id="scopeCard"></section>
           <section class="card resume plan-today" id="planToday"></section>
           <section class="next" id="next"></section>
         </div>
@@ -42,12 +42,10 @@ VIEWS.prehlad = {
           <div class="clock" id="clockEc"></div>
           <section class="card plan-pace" id="planPace"></section>
           <section class="card tests-card" id="testsCard"></section>
-          <section class="card" id="milestones"></section>
-          ${planRulesHtml()}
         </div>
       </div>
     </div>`;
-    renderClock(); renderGauge(); renderScopeCard(); renderPlanToday(); renderPlanNext(); renderPlanPace(); renderTestsCard(); renderMilestones();
+    renderClock(); renderGauge(); renderPlanToday(); renderPlanNext(); renderPlanPace(); renderTestsCard();
   }
 };
 

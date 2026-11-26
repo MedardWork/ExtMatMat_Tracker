@@ -48,12 +48,12 @@ function renderTestsCard(){
     const avg = scored.length ? scored.reduce((a, r) => a + testPct(r.t, r.x), 0) / scored.length : null;
     const topics = new Set(all.map(r => r.t)).size;
     html += `<p class="tc-sum"><b>${all.length}</b> ${plural(all.length, "test", "testy", "testov")} z ${topics} ${plural(topics, "témy", "tém", "tém")}${avg != null ? ` · priemer <b>${Math.round(avg * 100)} %</b>` : ""}</p>
-      <ul class="tc-list">${all.slice(0, 5).map(r => `<li><a href="${testHref(r.t, r.x)}" title="${esc(testTitle(r.t, r.x))}">
-        <span class="tc-d">${fmtAgo(r.x.d)}</span><span class="tc-n">${esc(shortName(BY_ID[r.t]))}</span><span class="tt-badge ${testCls(r.t, r.x)}">${scoreTxt(r.t, r.x)}</span></a></li>`).join("")}</ul>`;
+      <h3>Posledné</h3><ul class="tc-list">${all.slice(0, 3).map(r => `<li><a href="${testHref(r.t, r.x)}" title="${esc(testTitle(r.t, r.x))}">
+        <span class="tc-d">${fmtAgo(r.x.d)}</span><span class="tc-n">${esc(shortName(BY_ID[r.t]))}</span><span class="tt-badge ${testCls(r.t, r.x)}">${scoreTxt(r.t, r.x)}</span></a></li>`).join("")}</ul>${more(all.length, 3)}`;
   }
   if(weak.length) html += `<h3>Na zopakovanie</h3><p class="tc-note">Posledný test z témy pod ${Math.round(TEST_WEAK * 100)} %.</p>
-    <ul class="tc-weak">${weak.slice(0, 4).map(r => `<li>${topicLink(r.t)} ${testBadge(r.t, r.x)}</li>`).join("")}</ul>${more(weak.length, 4)}`;
+    <ul class="tc-weak">${weak.slice(0, 3).map(r => `<li>${topicLink(r.t)} ${testBadge(r.t, r.x)}</li>`).join("")}</ul>${more(weak.length, 3)}`;
   if(untested.length) html += `<h3>Hotové bez testu</h3><p class="tc-note">Témy na <i>ide to</i> a lepšie, ktoré ešte nemajú test.</p>
-    <p class="tc-chips">${untested.slice(0, 5).map(x => topicLink(x.id)).join("")}${more(untested.length, 5)}</p>`;
+    <p class="tc-chips">${untested.slice(0, 3).map(x => topicLink(x.id)).join("")}${more(untested.length, 3)}</p>`;
   host.innerHTML = html;
 }

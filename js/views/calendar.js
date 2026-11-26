@@ -1,5 +1,5 @@
 /* ============================================================
-   KALENDÁR — the study plan (js/planmodel.js; Info → Plán changes it) as a month / week calendar,
+   KALENDÁR — the study plan (js/planmodel.js; "Stav plánu" here changes it) as a month / week calendar,
    and the study diary (notes per day and per topic) in the same place.
    Routes: #/kalendar[/m|t[/<iso>[/p]]]   m month, t week (the one containing <iso>);
                                           p = Poznámky (diary) instead of Témy (the plan)
@@ -28,7 +28,7 @@ const isPlanTest = x => PLAN_TESTS.some(t => t.id === x.id);
 const toMin = s => { const [h, m] = s.split(":").map(Number); return h * 60 + m; };
 const mdBold = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
 const PLAN_DAY_LABEL = {prazdniny:"Prázdniny", volno:"Voľno", staze:"Stáž", test:"Test", precvic:"Bez testu", pred:"Pred maturitou"};
-const calHash = (mode, d, notes) => `#/kalendar/${mode}/${d}${notes ? "/p" : ""}`;
+const calHash = (mode, d, notes) => `#/kalendar/${mode === "g" && !notes ? "m" : mode}/${d}${notes ? "/p" : ""}`;
 
 /* the plan's tables (PLAN_SLOTS, PLAN_BY_DAY, PLAN_OVER …) come from compilePlan() in js/planmodel.js */
 const planDaysOf = x => Object.keys(PLAN_BY_DAY).filter(d => PLAN_BY_DAY[d].some(p => p.it === x)).sort();
@@ -287,6 +287,50 @@ function activityMap(){
 }
 const heat = n => !n ? 0 : n === 1 ? 1 : n <= 3 ? 2 : n <= 6 ? 3 : 4;
 
+/* the diary as a grid of days (Poznámky → Mriežka): a column per week, 17 weeks back and on to the exam;
+   the darker a day, the more happened that day. A day opens its week. */
+function notesGrid(map){
+  const t = todayIso(), start = mondayOf(addDays(t, -7 * 17));
+  const last = !PLAN_NONE && PLAN_EXAM > t ? PLAN_EXAM : t;
+  const weeks = Math.min(60, Math.floor(dayDiff(start, last) / 7) + 1);
+  let cols = "", months = "", lastMonth = -1;
+  for(let w = 0; w < weeks; w++){
+    let cells = "";
+    for(let i = 0; i < 7; i++){
+      const d = addDays(start, w * 7 + i), n = map[d] || 0;
+      const cls = ["hm-cell", d > t ? "future" : "k" + heat(n), d === t ? "today" : "", !PLAN_NONE && d === PLAN_EXAM ? "exam" : "", d <= t && dayNotes(d).some(e => e.text.trim()) ? "hm-note" : ""].filter(Boolean).join(" ");
+      const tip = `${WEEKDAYS[dateOf(d).getDay()]} ${fmtIso(d)}${d > t ? (cls.includes("exam") ? " · maturita" : "") : ` · ${n ? n + " " + plural(n, "aktivita", "aktivity", "aktivít") : "nič"}`}`;
+      cells += d > t ? `<i class="${cls}" title="${tip}"></i>` : `<i class="${cls}" data-act="cal-open" data-d="${d}" role="button" tabindex="0" title="${tip}"></i>`;
+    }
+    const sun = addDays(start, w * 7 + 6), m = dateOf(sun).getMonth();
+    months += `<span>${m !== lastMonth && dateOf(sun).getDate() <= 7 ? MONTHS[m].slice(0, 3) : ""}</span>`;
+    lastMonth = m;
+    cols += `<div class="hm-col">${cells}</div>`;
+  }
+  return `<div class="card hm-card"><div class="hm-scroll"><div class="hm">
+      <div class="hm-days"><span>Po</span><span></span><span>St</span><span></span><span>Pi</span><span></span><span>Ne</span></div>
+      <div><div class="hm-months">${months}</div><div class="hm-grid">${cols}</div></div>
+    </div></div>
+    <div class="hm-legend">menej <i class="hm-cell k0"></i><i class="hm-cell k1"></i><i class="hm-cell k2"></i><i class="hm-cell k3"></i><i class="hm-cell k4"></i> viac · poznámky, hodnotenia a testy v ten deň
+      <span class="hm-l2"><i class="hm-cell k2 hm-note"></i> deň s poznámkou</span>${PLAN_NONE ? "" : `<span class="hm-l2"><i class="hm-cell future exam"></i> maturita</span>`}</div>
+    <p class="muted hm-hint">Klik na deň otvorí jeho týždeň s poznámkami. Rovnaké dni po týždňoch alebo mesiacoch: prepínač Mesiac / Týždeň.</p></div>`;
+}
+
+/* the calendar's "Stav plánu": scope and whether it fits, pace, milestones, the plan itself (copy for an AI,
+   paste back, history; the card is planCardHtml in js/views/info.js) and its rules */
+function stavHtml(){
+  return `<div class="ov-grid st-grid">
+    <div class="ov-main">
+      <section class="card ec-card" id="scopeCard"></section>
+      ${planCardHtml()}
+    </div>
+    <div class="ov-side">
+      <section class="card plan-pace" id="planPace"></section>
+      <section class="card" id="milestones"></section>
+      ${planRulesHtml()}
+    </div></div>`;
+}
+
 function noteField(key, text, placeholder){
   if(cal.edit === key){
     EDITORS[key] = {
@@ -405,41 +449,51 @@ function calTitle(r, a){
 }
 
 VIEWS.kalendar = {
-  title: r => r.notes ? "Poznámky" : "Kalendár",
+  title: r => r.pane === "s" ? "Stav plánu" : r.notes ? "Poznámky" : "Kalendár",
   render(host){
-    const r = ui.route, a = calAnchor(r);
+    const r = ui.route, a = calAnchor(r), stav = r.pane === "s", grid = r.notes && r.mode === "g";
     const map = r.notes ? activityMap() : null;
-    const main = r.notes
-      ? (r.mode === "t" ? notesWeek(a, map) : monthGrid(a, notesCell(map)) + `<div class="cal-legend"><span>bodky: témy, ktoré si v ten deň bral, farba je ich úroveň</span><span>✎ počet poznámok</span></div>`)
+    const main = stav ? stavHtml() : r.notes
+      ? (r.mode === "t" ? notesWeek(a, map) : grid ? notesGrid(map) : monthGrid(a, notesCell(map)) + `<div class="cal-legend"><span>bodky: témy, ktoré si v ten deň bral, farba je ich úroveň</span><span>✎ počet poznámok</span></div>`)
       : PLAN_NONE ? planNoneHtml()
       : (r.mode === "t" ? weekGrid(a) : monthGrid(a, planCell) + `<div class="cal-legend"><span><i class="dot l0"></i>nepozreté</span><span><i class="dot l1"></i>neviem</span><span><i class="dot l2"></i>slabo</span><span><i class="dot l3"></i>ide to</span><span><i class="dot l4"></i>perfektne</span><span>↳ pokračovanie témy</span></div>`);
-    host.innerHTML = `<div class="page cal${r.notes ? " notes" : ""}">
+    host.innerHTML = `<div class="page cal${r.notes ? " notes" : ""}${stav ? " stav" : ""}">
       <header class="page-head"><h1>Kalendár</h1>
-        <p class="sub">${r.notes
+        <p class="sub">${stav
+          ? "Stav celého plánu: či sa rozsah učenia zmestí do plánu, tempo, míľniky a samotný plán. Keď si napred alebo pozadu, skopíruj plán pre AI a jej odpoveď vlož späť."
+          : r.notes
           ? "Denník po dňoch: poznámka k celému dňu a ku každej téme, ktorú si v ten deň bral. Témy sa pridajú samé, keď ich ohodnotíš alebo k nim napíšeš poznámku. Všetko sa ukladá počas písania."
-          : PLAN_NONE ? `Zatiaľ bez plánu. Vytvoríš si ho s AI v <a href="#/info" data-act="plan-goto">Info → Plán v kalendári</a>, poznámky k dňom môžeš písať aj bez neho.`
-          : `${planSpan()} Stav témy je jej úroveň v appke, klik na tému ju otvorí. <a href="#/info" data-act="plan-goto">Zmeniť plán</a>`}</p></header>
+          : PLAN_NONE ? `Zatiaľ bez plánu. Vytvoríš si ho s AI v <a href="#/kalendar/s" data-act="plan-goto">Kalendár → Stav plánu</a>, poznámky k dňom môžeš písať aj bez neho.`
+          : `${planSpan()} Stav témy je jej úroveň v appke, klik na tému ju otvorí. <a href="#/kalendar/s" data-act="plan-goto">Zmeniť plán</a>`}</p></header>
       <div class="cal-bar">
-        <div class="cal-navb">
+        ${stav || grid ? `<div class="cal-navb"><h2>${stav ? "Stav plánu" : "Denník po dňoch"}</h2></div>` : `<div class="cal-navb">
           <button class="btn ghost small" data-act="cal-nav" data-dir="-1" aria-label="Predošlý">‹</button>
           <button class="btn ghost small" data-act="cal-today">Dnes</button>
           <button class="btn ghost small" data-act="cal-nav" data-dir="1" aria-label="Ďalší">›</button>
           <h2>${calTitle(r, a)}</h2>
-        </div>
+        </div>`}
         <div class="cal-segs">
           <div class="seg cal-mode" role="group" aria-label="Čo zobraziť">
-            <button data-act="cal-pane" data-p="" aria-pressed="${!r.notes}">Témy</button>
+            <button data-act="cal-pane" data-p="" aria-pressed="${!r.notes && !stav}">Témy</button>
             <button data-act="cal-pane" data-p="p" aria-pressed="${!!r.notes}">Poznámky</button>
+            <button data-act="cal-pane" data-p="s" aria-pressed="${stav}">Stav plánu</button>
           </div>
-          <div class="seg cal-mode" role="group" aria-label="Zobrazenie">
-            <button data-act="cal-mode" data-m="m" aria-pressed="${r.mode !== "t"}">Mesiac</button>
+          ${stav ? "" : `<div class="seg cal-mode" role="group" aria-label="Zobrazenie">
+            <button data-act="cal-mode" data-m="m" aria-pressed="${r.mode === "m"}">Mesiac</button>
             <button data-act="cal-mode" data-m="t" aria-pressed="${r.mode === "t"}">Týždeň</button>
-          </div>
+            ${r.notes ? `<button data-act="cal-mode" data-m="g" aria-pressed="${grid}" title="Všetky dni ako mriežka">Mriežka</button>` : ""}
+          </div>`}
         </div>
       </div>
       ${r.notes ? notesStats(map) : ""}
       <div class="cal-main">${main}</div>
     </div>`;
+    if(stav){
+      renderScopeCard(); renderPlanPace(); renderMilestones();
+      if(ui.openPlan != null){ const t = ui.openPlan; ui.openPlan = null; openPlanBox(t); }
+      /* from "Zmeniť plán" and the like; after the route's own scroll to the top */
+      if(ui.showPlan){ ui.showPlan = false; setTimeout(() => { const c = $("#planCard"); if(c) c.scrollIntoView({block:"start"}); }, 0); }
+    }
     mountEditors(host);
     if(cal.edit){ const ta = $(`.editor[data-key="${CSS.escape(cal.edit)}"] .ed-in`, host); if(ta){ ta.focus({preventScroll:true}); ta.setSelectionRange(ta.value.length, ta.value.length); } }
     if(r.entry){ const el = $(`#cn-${CSS.escape(r.entry)}`); if(el){ el.scrollIntoView({block:"center"}); flashEl(el); } r.entry = null; }
@@ -447,9 +501,12 @@ VIEWS.kalendar = {
   },
   refresh(what){ if(what === "remote" && cal.edit) return; rerenderCal(); },
   key(e){
-    if(e.key === "ArrowLeft" || e.key === "ArrowRight"){ e.preventDefault(); calNav(e.key === "ArrowLeft" ? -1 : 1); }
-    else if(e.key === "t" || e.key === "m") go(calHash(e.key, calAnchor(ui.route), ui.route.notes));
-    else if(e.key === "p") go(calHash(ui.route.mode, calAnchor(ui.route), !ui.route.notes));
+    const r = ui.route, fixed = r.pane === "s" || r.mode === "g";
+    if(e.key === "ArrowLeft" || e.key === "ArrowRight"){ if(fixed) return; e.preventDefault(); calNav(e.key === "ArrowLeft" ? -1 : 1); }
+    else if(e.key === "t" || e.key === "m") go(calHash(e.key, calAnchor(r), r.notes));
+    else if(e.key === "g") go(calHash("g", calAnchor(r), true));
+    else if(e.key === "p") go(calHash(r.mode, calAnchor(r), !r.notes));
+    else if(e.key === "s") go("#/kalendar/s");
   }
 };
 function rerenderCal(){
@@ -470,9 +527,9 @@ action("cal-nav", el => calNav(+el.dataset.dir));
 /* no plan yet (the public app starts like this) */
 function planNoneHtml(){
   return `<section class="card plan-none"><h2>Zatiaľ nemáš študijný plán</h2>
-    <p>Plán si vytvoríš s AI (Claude, ChatGPT…). V Info klikni na <b>Vytvoriť plán s AI</b> a skopírovaný text vlož do chatu. AI sa ťa opýta, kedy maturuješ, ako vyzerá tvoj týždeň a koľko času máš na matiku. Potom ti pošle plán. Celú jej odpoveď vlož v Info cez <b>Vložiť plán</b>.</p>
+    <p>Plán si vytvoríš s AI (Claude, ChatGPT…). V <a href="#/kalendar/s">Stave plánu</a> klikni na <b>Vytvoriť plán s AI</b> a skopírovaný text vlož do chatu. AI sa ťa opýta, kedy maturuješ, ako vyzerá tvoj týždeň a koľko času máš na matiku. Potom ti pošle plán. Celú jej odpoveď vlož tam cez <b>Vložiť plán</b>.</p>
     <p>Appka potom rozloží témy do blokov v dňoch a ukáže ich tu, na prehľade uvidíš tempo a míľniky. Poznámky k dňom môžeš písať aj bez plánu.</p>
-    <a class="btn" href="#/info" data-act="plan-goto">Vytvoriť plán</a></section>`;
+    <a class="btn" href="#/kalendar/s" data-act="plan-goto">Vytvoriť plán</a></section>`;
 }
 /* "témy od … do …, potom testy" for the subtitle */
 function planSpan(){
@@ -483,7 +540,7 @@ function planSpan(){
 action("plan-goto", () => { ui.showPlan = true; });
 action("cal-today", () => go(calHash(ui.route.mode, todayIso(), ui.route.notes)));
 action("cal-mode", el => go(calHash(el.dataset.m, calAnchor(ui.route), ui.route.notes)));
-action("cal-pane", el => go(calHash(ui.route.mode, calAnchor(ui.route), !!el.dataset.p)));
+action("cal-pane", el => go(el.dataset.p === "s" ? "#/kalendar/s" : calHash(ui.route.mode, calAnchor(ui.route), el.dataset.p === "p")));
 action("cal-open", (el, e) => {
   if(e.target.closest("a, input")) return;
   go(calHash("t", el.dataset.d, ui.route.notes));

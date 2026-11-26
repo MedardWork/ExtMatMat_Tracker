@@ -1,6 +1,6 @@
 /* ============================================================
-   PLAN CARDS on the overview — today by the plan, next topics in the plan's
-   order, pace, milestones, the plan's rules. The plan's tables come from js/planmodel.js,
+   PLAN CARDS — on the overview today by the plan, next topics in the plan's order and the pace;
+   in the calendar's "Stav plánu" the pace again, milestones and the plan's rules. The plan's tables come from js/planmodel.js,
    its status helpers from js/views/calendar.js (loaded later; these run only when the overview renders).
    ============================================================ */
 
@@ -15,7 +15,7 @@ function renderPlanToday(){
     d = Object.keys(PLAN_SLOTS).sort().find(x => x > t && PLAN_SLOTS[x].some(s => s.it || s.k === "math" || s.k === "test")) || null;
   }
   let html = "";
-  if(PLAN_NONE) html = `<h2>Študijný plán</h2><p>Zatiaľ nemáš plán. Vytvor si ho s AI v <a href="#/info" data-act="plan-goto">Info → Plán v kalendári</a>: appka z neho spraví kalendár s témami po dňoch a ukáže ti, či ideš podľa plánu.</p>`;
+  if(PLAN_NONE) html = `<h2>Študijný plán</h2><p>Zatiaľ nemáš plán. Vytvor si ho s AI v <a href="#/kalendar/s" data-act="plan-goto">Kalendár → Stav plánu</a>: appka z neho spraví kalendár s témami po dňoch a ukáže ti, či ideš podľa plánu.</p>`;
   else if(!d) html = `<h2>Dnes podľa plánu</h2><p class="muted">Plán skončil.</p>`;
   else {
     const slots = groupSlots(PLAN_SLOTS[d]).filter(s => s.it || ["math", "rev", "test", "dses"].includes(s.k));
@@ -36,7 +36,7 @@ function renderPlanToday(){
       ${tops.length ? `<span class="pt-tops">${tops.map(r => `<i class="dot l${lv(r.t)}"></i>${esc(shortName(BY_ID[r.t]))}${testsOf(r.t).filter(x => x.d === last && hasScore(r.t, x)).map(x => ` <span class="tt-badge ${testCls(r.t, x)}">test ${scoreTxt(r.t, x)}</span>`).join("")}`).join(" · ")}</span>` : ""}</a>`;
   }
   html += `<div class="resume-acts">
-    ${PLAN_NONE ? `<a class="btn" href="#/info" data-act="plan-goto">Vytvoriť plán</a>` : ""}
+    ${PLAN_NONE ? `<a class="btn" href="#/kalendar/s" data-act="plan-goto">Vytvoriť plán</a>` : ""}
     <a class="btn${PLAN_NONE ? " ghost" : ""}" href="${calHash("t", t, true)}">✎ Poznámky k dnešku</a>
     ${PLAN_NONE ? "" : `<a class="btn ghost" href="${calHash("t", d || t, false)}">Týždeň v kalendári</a>`}</div>`;
   host.innerHTML = html;
@@ -117,5 +117,5 @@ function planRulesHtml(){
   ensurePlan();
   if(PLAN_NONE) return "";
   return `<details class="card plan-rules"><summary>Pravidlá plánu</summary>${PLAN_RULES.map(([h, ps]) => `<h3>${esc(h)}</h3><ul>${ps.map(p => `<li>${mdBold(p)}</li>`).join("")}</ul>`).join("")}
-    <p class="muted">Plán sa mení v <a href="#/info" data-act="plan-goto">Info → Plán v kalendári</a>: skopíruješ ho pre AI a jej odpoveď vložíš späť.</p></details>`;
+    <p class="muted">Plán sa mení v karte <a href="#/kalendar/s" data-act="plan-goto">Plán</a>: skopíruješ ho pre AI a jej odpoveď vložíš späť.</p></details>`;
 }

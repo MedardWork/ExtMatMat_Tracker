@@ -75,3 +75,19 @@ a.tp-id:hover{text-decoration:underline}
   .tp-key{grid-row:1;grid-column:3}
   .tp-l, .tp-meta{grid-column:1 / -1}
 }
+
+/* "Zmestí sa?" (calendar → Stav plánu) */
+.fit-bars{position:relative;margin:4px 0 2px;padding-bottom:22px}
+.fit-row{display:grid;grid-template-columns:118px minmax(0,1fr) 54px;gap:10px;align-items:center;width:100%;appearance:none;background:none;border:0;padding:5px 0;cursor:pointer;font:13px/1.3 var(--sans);color:var(--ink-soft);text-align:left}
+.fit-row.on{color:var(--ink);font-weight:600}
+.fit-row:hover .fit-n{color:var(--dk)}
+.fit-tr{position:relative;height:20px;background:var(--track);border-radius:3px;overflow:hidden}
+.fit-tr i{position:absolute;top:0;bottom:0;left:0}
+i.fit-in{background:color-mix(in srgb, var(--dk) 55%, var(--track))}
+i.fit-miss{background:color-mix(in srgb, var(--dk) 22%, var(--track))}
+i.fit-over{background:repeating-linear-gradient(135deg, color-mix(in srgb, var(--flag) 45%, transparent) 0 5px, transparent 5px 10px)}
+.fit-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.fit-cap{position:absolute;top:0;bottom:0;left:calc(128px + (100% - 192px) * var(--capf));border-left:2px solid var(--ink);pointer-events:none}
+.fit-cap span{position:absolute;bottom:0;left:0;transform:translateX(-50%);font-size:11.5px;font-weight:600;white-space:nowrap;background:var(--panel);padding:0 4px}
+.fit-legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px;color:var(--ink-soft);margin:6px 0 0}
+.fit-legend i{display:inline-block;width:12px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px;position:static}

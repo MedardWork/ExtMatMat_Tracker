@@ -1,6 +1,6 @@
 /* ============================================================
    ZÁPIS ZO SESSION — what an AI read out of an old study session, added to the progress (never replacing it).
-   The person pastes the AI's answer into Info → Vložiť postup; importText (js/views/info.js) finds the block here,
+   The person pastes the AI's answer into Nastavenia → Vložiť postup; importText (js/views/info.js) finds the block here,
    shows a preview (zapisPreview) and adds it on "Pridať do postupu" (zapisApply), with undo.
    Format "maturita-zapis-1" (ZAPIS_PROMPT asks the AI for it):
      { format, date: "YYYY-MM-DD" (the session's day),
