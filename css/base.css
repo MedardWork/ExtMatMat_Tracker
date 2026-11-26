@@ -80,6 +80,18 @@ kbd{
   border:1px solid var(--rule);border-bottom-width:2px;border-radius:4px;padding:3px 5px;background:var(--panel);
 }
 .muted{color:var(--ink-soft)}
+/* foldTxt (utils.js): a help text folded under its first sentence */
+:where(details.fold){margin:0}
+details.fold > summary{display:block;list-style:none;cursor:pointer}
+details.fold > summary::-webkit-details-marker{display:none}
+.fold-tg::after{content:"viac ▾";font:600 11.5px/1 var(--sans);color:var(--dk);white-space:nowrap}
+details.fold[open] .fold-tg::after{content:"menej ▴"}
+details.fold > summary:hover .fold-tg::after{text-decoration:underline}
+.fold-body{margin-top:5px}
+.fold-body p{margin:0 0 6px}
+.fold-body p:last-child{margin-bottom:0}
+.info .card details.fold, #planCard details.fold{font-size:14px;margin:0 0 10px;max-width:70ch}
+.ec-fit .ec-lines{font-size:13.5px;margin:6px 0 12px}
 .warn{color:var(--flag)}
 .small{font-size:13px}
 [hidden]{display:none!important}

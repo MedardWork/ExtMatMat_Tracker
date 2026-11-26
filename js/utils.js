@@ -18,6 +18,18 @@ function isoOf(ts){
   return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,"0")}-${String(n.getDate()).padStart(2,"0")}`;
 }
 function todayIso(){ return isoOf(Date.now()); }
+/* A longer explanation folds under its first sentence: the person (2026-11-26) wants help texts of more than two
+   lines out of the way ("dobré vedieť, ale zavadzia to"). lead stays visible, rest opens with "viac". */
+function foldTxt(lead, rest, cls = ""){
+  if(!rest) return `<p class="${cls}">${lead}</p>`;
+  return `<details class="fold ${cls}"><summary>${lead} <span class="fold-tg"></span></summary><div class="fold-body">${rest}</div></details>`;
+}
+/* the same, split after the first sentence of html */
+function foldFirst(html, cls = ""){
+  const m = html.match(/^(.+?[.!?…])\s+(?=[A-ZÁÄČĎÉÍĽĹŇÓÔŔŠŤÚÝŽ<„])/);
+  return m ? foldTxt(m[1], html.slice(m[0].length), cls) : `<p class="${cls}">${html}</p>`;
+}
+
 function fmtIso(iso){
   const [y,m,d] = iso.split("-").map(Number);
   return `${d}. ${m}. ${y}`;

@@ -43,7 +43,7 @@ function renderTestsCard(){
 
   let html = `<h2>Testy z tém</h2>`;
   if(!all.length){
-    html += `<p class="tc-intro">Na konci témy si daj krátky test a zapíš ho na stránke témy pod <b>Testy</b>: každú úlohu ako ✓, ½ alebo ✗, body sa spočítajú samy. Tu potom uvidíš posledné výsledky a čo treba zopakovať, v kalendári body po dňoch.</p>`;
+    html += foldTxt("Na konci témy si daj krátky test.", "Zapíš ho na stránke témy v záložke <b>Precvičovanie</b>: každú úlohu ako ✓, ½ alebo ✗, body sa spočítajú samy. Tu potom uvidíš posledné výsledky a čo treba zopakovať, v kalendári body po dňoch.", "tc-intro");
   } else {
     const avg = scored.length ? scored.reduce((a, r) => a + testPct(r.t, r.x), 0) / scored.length : null;
     const topics = new Set(all.map(r => r.t)).size;

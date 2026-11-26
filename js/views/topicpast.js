@@ -88,9 +88,10 @@ function ecVizHtml(id){
         <span class="nm"><i class="dot l${subLv(id, s.k)}"></i>${esc(s.n)}</span>
         <span class="br"><i style="width:${o ? Math.max(3, o.pts / max * 100) : 0}%"></i></span>
         <span class="v">${o ? ecPts(o.pts).replace(" b.", "") : "—"}</span></button>`).join("");
-    h += `<p class="ev-cap">${ec.years
-        ? `V <b>${ec.years} z ${EC.nTests}</b> testov, priemerne <b>${ecPts(ec.pts)}</b> z 30. Stĺpec = rok, štvorček = úloha (bledý: hlavne z inej témy). Klik vyberie úlohy.`
-        : `V rokoch ${EC.first}–${EC.last} sa na túto tému externá časť nepýtala.`}</p>
+    h += ec.years
+        ? foldTxt(`V <b>${ec.years} z ${EC.nTests}</b> testov, priemerne <b>${ecPts(ec.pts)}</b> z 30.`, "Stĺpec = rok, štvorček = úloha (bledý: hlavne z inej témy). Klik na rok alebo podtému vyberie úlohy.", "ev-cap")
+        : `<p class="ev-cap">V rokoch ${EC.first}–${EC.last} sa na túto tému externá časť nepýtala.</p>`;
+    h += `
       ${ec.years ? `<div class="ev-years">${cols}</div><div class="ev-yl">${labels}</div>` : ""}
       ${rows ? `<h3>Podtémy: body na test <span>bodka = tvoja úroveň</span></h3><div class="ev-subs">${rows}</div>` : ""}`;
   }

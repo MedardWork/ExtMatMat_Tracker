@@ -26,7 +26,7 @@ VIEWS.temy = {
     ui.tab = ui.route.tab;
     host.innerHTML = `<div class="page topics">
       <nav class="tabs" role="tablist" id="tabs"></nav>
-      <p class="intro" id="intro"></p>
+      <div class="intro" id="intro"></div>
       <details class="levels-help">
         <summary>Čo znamenajú úrovne?</summary>
         <div class="levels-key">${LV.map(l =>
@@ -54,7 +54,7 @@ function renderTabs(){
     return `<a class="tab" role="tab" href="#/temy/${t.k}" aria-selected="${ui.tab === t.k}">
       ${t.label}<span class="count" title="ešte nie na perfektne">${left}</span></a>`;
   }).join("");
-  $("#intro").innerHTML = TABS.find(t => t.k === ui.tab).intro + (ui.tab === "a" ? scopeLine() : "");
+  $("#intro").innerHTML = foldFirst(TABS.find(t => t.k === ui.tab).intro) + (ui.tab === "a" ? scopeLine() : "");
 }
 
 /* the scope switch over the Slovak list (js/ec.js) */

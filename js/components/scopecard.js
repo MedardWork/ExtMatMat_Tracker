@@ -26,7 +26,8 @@ function planFitHtml(sc){
   if(!f) return "";
   const lines = [`V pláne od dnes zostáva <b>${f.bIn}</b> ${skBlocks(f.bIn)} na témy v rozsahu${f.bOut ? ` a <b>${f.bOut}</b> na témy mimo rozsahu` : ""}.`];
   if(f.overIn) lines.push(`Do svojich týždňov sa nezmestilo ${f.overIn} ${skBlocks(f.overIn)} tém v rozsahu.`);
-  if(f.missing.length) lines.push(`V pláne chýba ${f.missing.length} ${skPieces(f.missing.length)} z rozsahu (asi ${f.missBlocks} ${skBlocks(f.missBlocks)}): ${f.missing.slice(0, 6).map(m => `<a href="#/tema/${m.id}">${esc(shortName(BY_ID[m.id]))}</a>`).join(", ")}${f.missing.length > 6 ? " …" : ""}.`);
+  if(f.missing.length) lines.push(`V pláne chýba ${f.missing.length} ${skPieces(f.missing.length)} z rozsahu (asi ${f.missBlocks} ${skBlocks(f.missBlocks)}).`);
+  const missing = f.missing.length ? `Chýbajú: ${f.missing.slice(0, 15).map(m => `<a href="#/tema/${m.id}">${esc(shortName(BY_ID[m.id]))}</a>`).join(", ")}${f.missing.length > 15 ? ` a ďalších ${f.missing.length - 15}` : ""}.` : "";
   let verdict, cls;
   if(!f.need && !f.bOut){ verdict = "Plán sedí s rozsahom."; cls = "ok"; }
   else if(f.need <= f.bOut){ verdict = `Plán sa zmestí: ${f.need ? `na chýbajúce stačí ${f.need} ${skBlocks(f.need)} z tých, čo sa uvoľnia` : `uvoľní sa ${f.bOut} ${skBlocks(f.bOut)}`}.`; cls = "ok"; }
@@ -34,7 +35,7 @@ function planFitHtml(sc){
   const replan = f.need || f.bOut;
   return `<div class="ec-fit">
     <p class="ec-verdict ${cls}"><b>${verdict}</b></p>
-    <p class="muted">${lines.join(" ")}</p>
+    ${foldTxt(lines.join(" "), missing, "muted ec-lines")}
     ${replan ? `<div class="tools"><button class="btn${cls === "late" ? "" : " ghost"}" data-act="ec-replan" title="Skopíruje plán s pokynmi pre AI: vyhodiť témy mimo rozsahu, doplniť chýbajúce a zoradiť ich podľa bodov za hodinu">Preplánovať s AI</button>
       <a class="btn ghost" href="#/kalendar/s" data-act="plan-goto">Vložiť nový plán</a></div>
     <textarea id="ecOut" class="plan-out" readonly hidden></textarea>` : ""}

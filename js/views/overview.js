@@ -25,7 +25,7 @@ VIEWS.prehlad = {
             <div class="blocks" id="blocks"></div>
             <div class="readout">
               <div><div class="score" id="score">0<span> / 30</span></div></div>
-              <p id="verdict"></p>
+              <div id="verdict"></div>
             </div>
             <div class="bar">
               <div class="bar-fill" id="barFill" style="width:0%"></div>

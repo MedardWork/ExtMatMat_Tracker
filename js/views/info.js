@@ -27,7 +27,7 @@ VIEWS.nastavenia = {
       <section class="card">
         <h2>Záloha</h2>
         <p><span id="storeNote"></span></p>
-        <p class="muted">Záloha obsahuje hodnotenia, všetky poznámky, testy z tém, denník aj plán v kalendári. Pri prechode na novú verziu sa staré poznámky zmenili na pomenované poznámky a pôvodné dáta sa uložili bokom ako záloha.</p>
+        ${foldTxt("Záloha obsahuje hodnotenia, všetky poznámky, testy z tém, denník aj plán v kalendári.", "Pri prechode na novú verziu sa staré poznámky zmenili na pomenované poznámky a pôvodné dáta sa uložili bokom ako záloha.", "muted")}
         <div class="tools">
           <button class="btn ghost" data-act="export">Skopírovať postup</button>
           <button class="btn ghost" data-act="download">Stiahnuť ako súbor</button>
@@ -59,12 +59,12 @@ VIEWS.nastavenia = {
 
       <section class="card prose">
         <h2>Odkiaľ sú dáta</h2>
-        <p>Zoznam tém vychádza z Cieľových požiadaviek na vedomosti a zručnosti maturantov z matematiky (ŠPÚ) a z rozdelenia úloh v teste podľa špecifikácie NIVaM: základy 7, funkcie 8, planimetria 6, stereometria 5, kombinatorika s pravdepodobnosťou a štatistikou 4. Štítky Y1–Y3 pri témach sú z porovnania sylabov s týmito požiadavkami — sylabus hovorí, čo sa učilo, nie čo sa naozaj stihlo.</p>
-        <p><b>Úrovne a odhad.</b> Každá téma sa delí na podtémy a úroveň sa dáva každej zvlášť. Odhad bodov na EČ počíta podtému na <i>perfektne</i> celú, <i>ide to</i> za dve tretiny a <i>slabo</i> za tretinu. <i>Nepozreté</i> a <i>neviem</i> sa nepočítajú, ale rozlišujú sa, aby si videl, čo ešte vôbec neotvoril. Úroveň celej témy je priemer podtém — <i>perfektne</i> je až vtedy, keď sú perfektne všetky.</p>
-        <p><b>Nerelevantné.</b> Témy, o ktorých vieš, že na teste nebudú, vyradíš tlačidlom ⊘ (v zozname alebo v okne témy). Presunú sa do záložky Nerelevantné a do odhadu, „Čo ďalej“ ani odpočtu sa nepočítajú — úlohy ich bloku sa rozdelia medzi zvyšné témy. Hodnotenie aj poznámky zostávajú a tlačidlom ↩ Vrátiť ich kedykoľvek vrátiš.</p>
-        <p><b>Poznámky</b> majú vlastné „rozumiem“: ako rozumieš tomu, čo je napísané práve v nich. Do odhadu sa nepočíta — slúži na orientáciu a filtrovanie.</p>
-        <p><b>Testy z tém.</b> Na stránke témy si pod <i>Testy</i> zapíšeš krátky test: deň a jeho úlohy, každú ako ✓ správne, ½ čiastočne alebo ✗ zle. Body sa spočítajú samy: každá úloha je 1 bod, ½ je pol bodu. K úlohe, v ktorej si chyboval, si pripíšeš poznámku. Farba výsledku: od 90 % ako <i>perfektne</i>, od 70 % <i>ide to</i>, od 40 % <i>slabo</i>, menej <i>neviem</i>. Téma s posledným testom pod 70 % je na prehľade medzi „Na zopakovanie“ a v zozname tém pod filtrom Slabý test. Body vidíš aj v kalendári pri dni, keď si test písal, a test splní opakovanie témy z plánu. Do odhadu bodov ani do tempa sa nepočítajú. Staré testy zo session s AI prenesieš cez <i>Vložiť postup</i> → <i>Skopírovať pokyny pre AI</i>: AI z tej session pripraví testy, úroveň témy a úrovne poznámok a appka ich k postupu pridá.</p>
-        <p><b>Dánsko.</b> Záložka Matematik A je nastavená na Matematik A na STX podľa læreplanu z roku 2024 a do odhadu na EČ sa nepočíta. Písomná skúška má 5 hodín: delprøve 1 (3 h, iba formelsamling) a delprøve 2 (2 h, všetky pomôcky vrátane CAS).</p>
+        ${foldFirst(`Zoznam tém vychádza z Cieľových požiadaviek na vedomosti a zručnosti maturantov z matematiky (ŠPÚ) a z rozdelenia úloh v teste podľa špecifikácie NIVaM: základy 7, funkcie 8, planimetria 6, stereometria 5, kombinatorika s pravdepodobnosťou a štatistikou 4. Štítky Y1–Y3 pri témach sú z porovnania sylabov s týmito požiadavkami — sylabus hovorí, čo sa učilo, nie čo sa naozaj stihlo.`)}
+        ${foldFirst(`<b>Úrovne a odhad.</b> Každá téma sa delí na podtémy a úroveň sa dáva každej zvlášť. Odhad bodov na EČ počíta podtému na <i>perfektne</i> celú, <i>ide to</i> za dve tretiny a <i>slabo</i> za tretinu. <i>Nepozreté</i> a <i>neviem</i> sa nepočítajú, ale rozlišujú sa, aby si videl, čo ešte vôbec neotvoril. Úroveň celej témy je priemer podtém — <i>perfektne</i> je až vtedy, keď sú perfektne všetky.`)}
+        ${foldFirst(`<b>Nerelevantné.</b> Témy, o ktorých vieš, že na teste nebudú, vyradíš tlačidlom ⊘ (v zozname alebo v okne témy). Presunú sa do záložky Nerelevantné a do odhadu, „Čo ďalej“ ani odpočtu sa nepočítajú — úlohy ich bloku sa rozdelia medzi zvyšné témy. Hodnotenie aj poznámky zostávajú a tlačidlom ↩ Vrátiť ich kedykoľvek vrátiš.`)}
+        ${foldFirst(`<b>Poznámky</b> majú vlastné „rozumiem“: ako rozumieš tomu, čo je napísané práve v nich. Do odhadu sa nepočíta — slúži na orientáciu a filtrovanie.`)}
+        ${foldFirst(`<b>Testy z tém.</b> Na stránke témy si v záložke <i>Precvičovanie</i> zapíšeš krátky test: deň a jeho úlohy, každú ako ✓ správne, ½ čiastočne alebo ✗ zle. Body sa spočítajú samy: každá úloha je 1 bod, ½ je pol bodu. K úlohe, v ktorej si chyboval, si pripíšeš poznámku. Farba výsledku: od 90 % ako <i>perfektne</i>, od 70 % <i>ide to</i>, od 40 % <i>slabo</i>, menej <i>neviem</i>. Téma s posledným testom pod 70 % je na prehľade medzi „Na zopakovanie“ a v zozname tém pod filtrom Slabý test. Body vidíš aj v kalendári pri dni, keď si test písal, a test splní opakovanie témy z plánu. Do odhadu bodov ani do tempa sa nepočítajú. Staré testy zo session s AI prenesieš cez <i>Vložiť postup</i> → <i>Skopírovať pokyny pre AI</i>: AI z tej session pripraví testy, úroveň témy a úrovne poznámok a appka ich k postupu pridá.`)}
+        ${foldFirst(`<b>Dánsko.</b> Záložka Matematik A je nastavená na Matematik A na STX podľa læreplanu z roku 2024 a do odhadu na EČ sa nepočíta. Písomná skúška má 5 hodín: delprøve 1 (3 h, iba formelsamling) a delprøve 2 (2 h, všetky pomôcky vrátane CAS).`)}
       </section>
     </div>`;
     renderStoreNote();
@@ -212,9 +212,9 @@ function planCardHtml(){
     <h2>Plán</h2>
     <p>${PLAN_NONE ? "Zatiaľ nemáš študijný plán." : `${planIsCustom() ? `${PLAN_DEFAULT ? "Upravený plán" : "Plán"} z ${fmtStamp(state.plan.at)}` : "Pôvodný plán"} · ${nWeeks(PLAN_WEEKS.length)} · ${nItems(PLAN_ITEMS.length)} · ${calNum(PLAN_TOTAL)} ${skSed(PLAN_TOTAL)} · maturita ${fmtD(PLAN_EXAM)}`}</p>
     ${PLAN_ERR ? `<p class="warn">Uložený plán sa nedá použiť${PLAN_NONE ? "" : ", kalendár preto ukazuje pôvodný"}: ${esc(PLAN_ERR.slice(0, 3).join(" · "))}</p>` : ""}
-    <p class="muted">${PLAN_NONE
-      ? "Plán si vytvoríš s AI (Claude, ChatGPT…): klikni na „Vytvoriť plán s AI“, vlož text do chatu a odpovedz na jej otázky (kedy maturuješ, ako vyzerá tvoj týždeň, koľko času máš na matiku). Keď ti pošle plán, vlož celú jej odpoveď cez „Vložiť plán“. Appka ho skontroluje a ukáže, než ho použije."
-      : "Keď si napred alebo pozadu, skopíruj plán pre AI (Claude, ChatGPT…), napíš, čo treba zmeniť, a celú odpoveď vlož späť. Appka plán skontroluje a ukáže zmeny. Mení sa len plán: hodnotenia, poznámky a body z testov zostanú."}</p>
+    ${PLAN_NONE
+      ? foldTxt("Plán si vytvoríš s AI (Claude, ChatGPT…).", "Klikni na „Vytvoriť plán s AI“, vlož text do chatu a odpovedz na jej otázky (kedy maturuješ, ako vyzerá tvoj týždeň, koľko času máš na matiku). Keď ti pošle plán, vlož celú jej odpoveď cez „Vložiť plán“. Appka ho skontroluje a ukáže, než ho použije.", "muted")
+      : foldTxt("Plán zmeníš cez AI (Claude, ChatGPT…).", "Keď si napred alebo pozadu, skopíruj plán pre AI, napíš, čo treba zmeniť, a celú odpoveď vlož späť. Appka plán skontroluje a ukáže zmeny. Mení sa len plán: hodnotenia, poznámky a body z testov zostanú.", "muted")}
     <div class="tools">
       <button class="btn ${PLAN_NONE ? "" : "ghost"}" data-act="plan-copy">${PLAN_NONE ? "Vytvoriť plán s AI" : "Skopírovať pre AI"}</button>
       ${PLAN_NONE ? "" : `<button class="btn ghost" data-act="plan-copy-raw" title="Len údaje plánu (JSON), bez pokynov pre AI">Skopírovať len plán</button>`}

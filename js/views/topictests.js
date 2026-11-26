@@ -20,8 +20,8 @@ function drawTTests(){
     <button class="btn${list.length ? " ghost" : ""}" data-act="test-new" title="Zapísať test z tejto témy (T)">+ Nový test</button>
   </div>`;
   if(!list.length){
-    host.innerHTML = `${head}<p class="tt-empty">${v >= 3 ? `Téma je na <i>${LV[v].label}</i>, over si to krátkym testom.` : "Na konci témy si daj krátky test."}
-      Každú úlohu testu si zapíšeš ako ✓, ½ alebo ✗ a body sa spočítajú samy. K úlohe, v ktorej si chyboval, si pripíšeš poznámku. Body uvidíš aj v kalendári pri dni, keď si test písal.</p>`;
+    host.innerHTML = head + foldTxt(v >= 3 ? `Téma je na <i>${LV[v].label}</i>, over si to krátkym testom.` : "Na konci témy si daj krátky test.",
+      "Každú úlohu testu si zapíšeš ako ✓, ½ alebo ✗ a body sa spočítajú samy. K úlohe, v ktorej si chyboval, si pripíšeš poznámku. Body uvidíš aj v kalendári pri dni, keď si test písal.", "tt-empty");
     return;
   }
   host.innerHTML = `${head}<div id="ttHint">${testHintHtml(id)}</div>${testTrendHtml(id)}

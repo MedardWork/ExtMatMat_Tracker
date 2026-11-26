@@ -88,7 +88,8 @@ function renderPlanPace(){
   const avg = scored.length ? scored.reduce((a, x) => a + planScore(x.id), 0) / scored.length : null;
   host.innerHTML = `<h2>Tempo podľa plánu</h2><p>${pace}</p>
     <div class="bar"><div class="bar-fill" style="width:${Math.min(100, pc.done / PLAN_TOTAL * 100)}%"></div><div class="tick" style="left:${Math.min(100, pc.ex / PLAN_TOTAL * 100)}%"></div></div>
-    <p class="muted pp-hint">Červená čiarka: kde by si mal byť dnes. Téma sa ráta až od „ide to“ a hotová má byť po poslednom dni, ktorý jej dáva plán. Témy na dnes a ďalšie dni ti sklz nerobia; keď niektorú dokončíš vopred, máš náskok.${avg != null ? ` Testy: priemer <b>${calNum(avg)}/30</b> z ${scored.length}.` : ""}</p>`;
+    ${avg != null ? `<p class="muted pp-hint">Testy: priemer <b>${calNum(avg)}/30</b> z ${scored.length}.</p>` : ""}
+    ${ui.route.view === "kalendar" ? foldTxt("Červená čiarka: kde by si mal byť dnes.", "Téma sa ráta až od „ide to“ a hotová má byť po poslednom dni, ktorý jej dáva plán. Témy na dnes a ďalšie dni ti sklz nerobia; keď niektorú dokončíš vopred, máš náskok.", "muted pp-hint") : ""}`;
 }
 
 function renderMilestones(){

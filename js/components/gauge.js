@@ -56,14 +56,14 @@ function renderGauge(){
   const v = document.getElementById("verdict");
   const pct = Math.round(total/30*100);
   if(total === 0){
-    v.innerHTML = "Odhad rastie z toho, čo si označíš nižšie — <b>perfektne</b> celé, <b>ide to</b> za dve tretiny, <b>slabo</b> za tretinu. Každá podtéma váži toľko, koľko bodov za ňu bývalo v minulých testoch." + scopeNote;
+    v.innerHTML = foldTxt("Odhad rastie z toho, ako ohodnotíš podtémy.", "Podtéma na <b>perfektne</b> sa počíta celá, <b>ide to</b> za dve tretiny, <b>slabo</b> za tretinu. Každá váži toľko, koľko bodov za ňu bývalo v minulých testoch." + scopeNote);
   } else {
     const to = p => ecNum(Math.max(0, p / 100 * 30 - total));
     let msg;
-    if(pct < 33)      msg = `Pod čiarou 33 %, chýba ti ${to(33.3)} b. Najrýchlejší posun dostaneš z blokov s najväčším sivým miestom.`;
+    if(pct < 33)      msg = `Pod čiarou 33 %, chýba ti ${to(33.3)} b.`;
     else if(pct < 80) msg = `Nad čiarou 33 %. Do 80 % ti chýba ${to(80)} b.`;
     else              msg = "Nad 80 %. Zvyšok je rýchlosť a presnosť pod 150 minútami.";
-    v.innerHTML = `Približne <b>${pct} %</b> testu. ${msg}${scopeNote}`;
+    v.innerHTML = `Približne <b>${pct} %</b> testu. ${msg}`;
   }
 
   /* distribution across the five levels */

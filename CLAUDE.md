@@ -268,6 +268,10 @@ icons in the nav, five level buttons, dense rows) and rejected an Apple-like res
   hidden by `data-tp` (css/topic.css), so the draw functions need no guards. A new note / test asked for from elsewhere
   (`ui.pendingNew`, `ui.pendingTest`) moves the page to its tab with `history.replaceState`; N, T, "+ poznámka", "✎ n" and the EČ
   badge (`ui.pastJump`) switch tabs themselves; ← → keep the tab.
+- **Help texts of more than two lines fold** under their first sentence, "viac ▾" opens the rest (the person, 2026-11-26:
+  "dobré vedieť, ale zavadzia to"): `foldTxt(lead, rest, cls)` / `foldFirst(html, cls)` in js/utils.js, a `<details class="fold">`
+  (so never inside a `<p>`). Use them for every new explanation. The estimate's verdict stays one line (percent + what is
+  missing to the next mark); the pace card explains the red mark only on Stav plánu. Topic content (O čom to je) is not folded.
 - Not wanted (asked 2026-11-26): a map of all topics by points, a "road to the exam" of weeks, a points-per-hour chart.
 
 ### Tools on their own page (2026-11-16, Fable)

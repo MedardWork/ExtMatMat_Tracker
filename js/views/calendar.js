@@ -460,9 +460,9 @@ VIEWS.kalendar = {
     host.innerHTML = `<div class="page cal${r.notes ? " notes" : ""}${stav ? " stav" : ""}">
       <header class="page-head"><h1>Kalendár</h1>
         <p class="sub">${stav
-          ? "Stav celého plánu: či sa rozsah učenia zmestí do plánu, tempo, míľniky a samotný plán. Keď si napred alebo pozadu, skopíruj plán pre AI a jej odpoveď vlož späť."
+          ? "Stav celého plánu: či sa rozsah učenia zmestí do plánu, tempo, míľniky a samotný plán."
           : r.notes
-          ? "Denník po dňoch: poznámka k celému dňu a ku každej téme, ktorú si v ten deň bral. Témy sa pridajú samé, keď ich ohodnotíš alebo k nim napíšeš poznámku. Všetko sa ukladá počas písania."
+          ? "Denník po dňoch: poznámka k celému dňu a ku každej téme, ktorú si v ten deň bral."
           : PLAN_NONE ? `Zatiaľ bez plánu. Vytvoríš si ho s AI v <a href="#/kalendar/s" data-act="plan-goto">Kalendár → Stav plánu</a>, poznámky k dňom môžeš písať aj bez neho.`
           : `${planSpan()} Stav témy je jej úroveň v appke, klik na tému ju otvorí. <a href="#/kalendar/s" data-act="plan-goto">Zmeniť plán</a>`}</p></header>
       <div class="cal-bar">
@@ -527,8 +527,8 @@ action("cal-nav", el => calNav(+el.dataset.dir));
 /* no plan yet (the public app starts like this) */
 function planNoneHtml(){
   return `<section class="card plan-none"><h2>Zatiaľ nemáš študijný plán</h2>
-    <p>Plán si vytvoríš s AI (Claude, ChatGPT…). V <a href="#/kalendar/s">Stave plánu</a> klikni na <b>Vytvoriť plán s AI</b> a skopírovaný text vlož do chatu. AI sa ťa opýta, kedy maturuješ, ako vyzerá tvoj týždeň a koľko času máš na matiku. Potom ti pošle plán. Celú jej odpoveď vlož tam cez <b>Vložiť plán</b>.</p>
-    <p>Appka potom rozloží témy do blokov v dňoch a ukáže ich tu, na prehľade uvidíš tempo a míľniky. Poznámky k dňom môžeš písať aj bez plánu.</p>
+    ${foldTxt("Plán si vytvoríš s AI (Claude, ChatGPT…).", `<p>V <a href="#/kalendar/s">Stave plánu</a> klikni na <b>Vytvoriť plán s AI</b> a skopírovaný text vlož do chatu. AI sa ťa opýta, kedy maturuješ, ako vyzerá tvoj týždeň a koľko času máš na matiku. Potom ti pošle plán. Celú jej odpoveď vlož tam cez <b>Vložiť plán</b>.</p>
+    <p>Appka potom rozloží témy do blokov v dňoch a ukáže ich tu, na prehľade uvidíš tempo. Poznámky k dňom môžeš písať aj bez plánu.</p>`)}
     <a class="btn" href="#/kalendar/s" data-act="plan-goto">Vytvoriť plán</a></section>`;
 }
 /* "témy od … do …, potom testy" for the subtitle */
