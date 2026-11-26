@@ -84,6 +84,7 @@
 .keys td{padding:6px 16px 6px 0;vertical-align:top;border-top:1px solid var(--rule)}
 .keys tr:first-child td{border-top:0}
 .keys td:first-child{white-space:nowrap}
+.keys td:last-child{padding-right:0}
 
 /* ---------- toast ---------- */
 .toast{
