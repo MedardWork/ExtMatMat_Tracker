@@ -1,7 +1,7 @@
 {
   "name": "maturita-tracker",
   "productName": "Maturita z matematiky",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Tracker prípravy na maturitu z matematiky — s vlastnou databázou, ktorá sa ukladá sama.",
   "private": true,
   "main": "desktop/main.js",
