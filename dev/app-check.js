@@ -220,6 +220,69 @@ const check = (cond, what) => { if(!cond) bad++; console.log(`${cond ? "ok  " : 
   await wait(150);
   check(await ev(() => !state.tests.a12 && topicNotes("a12").some(n => n.title === "Test z nerovníc") && topicNotes("a12").some(n => n.title === "A1: zlomok")), "Späť takes the whole zápis back");
 
+  /* ---------- zápis notes: a new ordinary note, a task taken out of its test; the same in the topic page ---------- */
+  const u1 = await ev(() => {
+    const x = addTest("a12", "2026-11-02"); x.n = "Starý";
+    const u = addNote("a12", "", x.id); Object.assign(u, {title:"U1: omylom v teste", body:"text U1", res:"ok"});
+    addNote("a12", "", x.id).res = "bad";
+    save();
+    return u.id;
+  });
+  const zap2 = await ev(([d, u1]) => "```json\n" + JSON.stringify({format:"maturita-zapis-1", date:d, topics:[{topic:"a12", notes:[
+    {title:"Nová: diskriminant", text:"$D = b^2 - 4ac$", level:"ide to", subtopic:subsOf("a12")[0].n},
+    {title:"Vzorce na nerovnice", text:"iný text", level:"ide to"},
+    {note:u1, level:"slabo"}]}]}) + "\n```", [d2, u1]);
+  await page.goto(BASE + "#/nastavenia");
+  await wait(250);
+  await page.click('[data-act="import-toggle"]');
+  await page.fill("#importArea", zap2);
+  await page.click('[data-act="import"]');
+  await wait(150);
+  const prev2 = await ev(() => document.querySelector("#zapisCheck").innerText);
+  check(/nová poznámka „Nová: diskriminant“/.test(prev2) && /„U1: omylom v teste“ sa vyberie z testu/.test(prev2) && !/nová poznámka „Vzorce/.test(prev2) && /Vzorce na nerovnice“ slabo → ide to/.test(prev2),
+    "zápis notes: the preview lists a new note, a task back among the notes and an existing note (same title) only re-rated");
+  await page.click('[data-act="zapis-apply"]');
+  await wait(150);
+  check(await ev(([d, u1]) => {
+    const nn = topicNotes("a12").filter(n => n.title === "Nová: diskriminant"), u = findNote("a12", u1);
+    return nn.length === 1 && nn[0].body === "$D = b^2 - 4ac$" && nn[0].lv === 3 && nn[0].sub === subsOf("a12")[0].k && isoOf(nn[0].c) === d && !nn[0].test
+      && !!u && !u.test && !("res" in u) && u.lv === 2 && u.body === "text U1" && topicNotes("a12").filter(n => n.title === "Vzorce na nerovnice").length === 1
+      && testTasks("a12", state.tests.a12[0].id).length === 1;
+  }, [d2, u1]), "zápis notes added: the new note on the session's day with its level and subtopic, the task an ordinary note with its text, no duplicate");
+  await page.goto(BASE + "#/nastavenia");
+  await wait(200);
+  await page.click('[data-act="import-toggle"]');
+  await page.fill("#importArea", zap2);
+  await page.click('[data-act="import"]');
+  await wait(150);
+  check(!/nová poznámka/.test(await ev(() => document.querySelector("#zapisCheck").innerText)), "the same zápis again adds no note twice");
+  await page.click('[data-act="zapis-cancel"]');
+  /* in the topic page: one task to the notes (with undo), then the whole test undone into notes */
+  const u2 = await ev(() => {
+    const x = state.tests.a12[0];
+    const u = addNote("a12", "", x.id); Object.assign(u, {title:"U2: ďalšia", body:"text U2", res:"part"});
+    save();
+    return u.id;
+  });
+  await page.goto(BASE + "#/tema/a12/precvic");
+  await wait(300);
+  await page.click(`#note-${u2} [data-act="task-out"]`);
+  await wait(150);
+  check(await ev(id => topicNotes("a12").some(n => n.id === id) && !document.querySelector("#tTests #note-" + id), u2), "Do poznámok: the task leaves its test and is a note");
+  await page.click('[data-act="toast-undo"]');
+  await wait(150);
+  check(await ev(id => isTask("a12", findNote("a12", id)) && findNote("a12", id).res === "part", u2), "Späť puts the task back with its mark");
+  const xu = await ev(() => state.tests.a12[0].id);
+  await page.click(`#test-${xu} [data-act="test-edit"]`);
+  await wait(150);
+  await page.click(`#test-${xu} [data-act="test-unwrap"]`);
+  await wait(150);
+  check(await ev(([id, x]) => !findTest("a12", x) && topicNotes("a12").some(n => n.id === id) && !notesOf("a12").some(n => n.test === x), [u2, xu]), "Zrušiť test: the test is gone, its task with text is a note, the bare mark went with the test");
+  await page.click('[data-act="toast-undo"]');
+  await wait(150);
+  check(await ev(([id, x]) => !!findTest("a12", x) && testTasks("a12", x).length === 2 && isTask("a12", findNote("a12", id)), [u2, xu]), "Späť brings the test back with both tasks");
+  await ev(b => { state = migrate(JSON.parse(b)); newEpoch(); save(); render(); }, before);
+
   /* ---------- the topic page's four tabs ---------- */
   await page.goto(BASE + "#/tema/a6");
   await wait(250);

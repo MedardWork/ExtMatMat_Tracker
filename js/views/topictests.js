@@ -89,7 +89,7 @@ function testCardHtml(id, x){
       </div>
       ${tasks.length ? "" : `<p class="tt-how">Každá úloha je 1 bod: ✓ správne 1, ½ čiastočne 0,5, ✗ zle 0. Počet úloh aj body sa spočítajú samy.</p>`}
     </div>
-    ${editing ? `<div class="tt-foot"><span class="muted small">Ukladá sa samo.</span><button class="btn" data-act="test-done">Hotovo</button></div>` : ""}
+    ${editing ? `<div class="tt-foot"><span class="muted small">Ukladá sa samo.</span>${tasks.some(n => !bareTask(n)) ? `<button class="btn ghost" data-act="test-unwrap" data-x="${x.id}" title="Test sa zmaže, úlohy s textom ostanú ako obyčajné poznámky témy">Zrušiť test, úlohy do poznámok</button>` : ""}<button class="btn" data-act="test-done">Hotovo</button></div>` : ""}
   </article>`;
 }
 
@@ -129,6 +129,7 @@ function taskHtml(tid, n, i){
       </div>
       <div class="note-acts">
         <button data-act="note-edit" data-n="${n.id}">Upraviť</button>
+        <button data-act="task-out" data-n="${n.id}" title="Vybrať z testu a nechať ako obyčajnú poznámku témy">Do poznámok</button>
         <button class="danger" data-act="note-del" data-n="${n.id}" title="Zmazať úlohu">Zmazať</button>
       </div>
     </header>
@@ -231,6 +232,34 @@ action("test-del", el => {
   if(!empty) toast(`Test „${name}“ zmazaný${rec.tasks.length ? ` aj s ${rec.tasks.length} ${plural(rec.tasks.length, "úlohou", "úlohami", "úlohami")}` : ""}.`, () => {
     restoreTest(tid, rec); save();
     if(ui.route.view === "tema" && ui.route.id === tid){ drawTTests(); drawTHead(); drawTSide(); }
+  });
+});
+/* a task out of its test: an ordinary note of the topic again (Poznámky tab) */
+action("task-out", el => {
+  const tid = ui.route.id, nid = el.dataset.n, n = findNote(tid, nid);
+  if(!n || !isTask(tid, n)) return;
+  if(ui.editing && ui.editing.n === nid){ ui.editing = null; $("#topicPage").classList.remove("editing"); }
+  const was = taskToNote(tid, nid);
+  save();
+  const redraw = () => { if(ui.route.view === "tema" && ui.route.id === tid){ drawTHead(); drawTSubs(); drawTTests(); drawTNotes(); drawTSide(); } };
+  redraw();
+  toast(`Úloha „${noteTitle(n)}“ je teraz poznámka (karta Poznámky).`, () => { noteToTask(tid, n, was); save(); redraw(); });
+});
+/* the test goes, its tasks with text stay as notes (bare marks go with the test) */
+action("test-unwrap", el => {
+  const tid = ui.route.id, xid = el.dataset.x, x = findTest(tid, xid);
+  if(!x) return;
+  if(ui.editing){ ui.editing = null; $("#topicPage").classList.remove("editing"); }
+  ui.testEdit = null;
+  const moved = testTasks(tid, xid).filter(n => !bareTask(n)).map(n => [n, taskToNote(tid, n.id)]);
+  const rec = removeTest(tid, xid), name = testName(tid, x);
+  save();
+  const redraw = () => { if(ui.route.view === "tema" && ui.route.id === tid){ drawTHead(); drawTSubs(); drawTTests(); drawTNotes(); drawTSide(); } };
+  redraw();
+  toast(`Test „${name}“ zrušený, ${moved.length} ${plural(moved.length, "úloha je", "úlohy sú", "úloh je")} teraz medzi poznámkami.`, () => {
+    restoreTest(tid, rec);
+    moved.forEach(([n, was]) => noteToTask(tid, n, was));
+    save(); redraw();
   });
 });
 /* a score typed by hand in the first version: from now on it comes from the tasks */

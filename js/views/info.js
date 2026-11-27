@@ -186,7 +186,7 @@ action("zapis-apply", () => {
   const r = zapisApply(zapisPending);
   zapisPending = null;
   save(); render();
-  const what = [r.tests ? `${r.tests} ${plural(r.tests, "test", "testy", "testov")}` : "", r.removed ? `zmazané ${r.removed} ${plural(r.removed, "poznámka", "poznámky", "poznámok")} s testami` : ""].filter(Boolean).join(", ");
+  const what = [r.tests ? `${r.tests} ${plural(r.tests, "test", "testy", "testov")}` : "", r.notes ? `${r.notes} ${plural(r.notes, "poznámka", "poznámky", "poznámok")}` : "", r.removed ? `zmazané ${r.removed} ${plural(r.removed, "poznámka", "poznámky", "poznámok")} s testami` : ""].filter(Boolean).join(", ");
   toast(`Pridané do postupu${what ? `: ${what}` : ""}.`, () => { state = migrate(JSON.parse(before)); newEpoch(); save(); render(); });
 });
 action("zapis-cancel", () => { zapisPending = null; $("#zapisCheck").innerHTML = ""; });

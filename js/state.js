@@ -593,6 +593,20 @@ function restoreTest(tid, {x, tasks}){
   tasks.forEach(n => restoreNote(tid, n));
   touch(tid);
 }
+/* a task back among the topic's own notes (its text, day, subtopic and level stay); returns what it was, for undo */
+function taskToNote(tid, nid){
+  const n = findNote(tid, nid);
+  if(!n || !n.test) return null;
+  const was = {test:n.test, res:n.res || ""};
+  delete n.test; delete n.res;
+  n.u = Date.now();
+  touch(tid);
+  return was;
+}
+function noteToTask(tid, n, was){
+  Object.assign(n, was, {u:Date.now()});
+  touch(tid);
+}
 /* nothing typed yet: no name, no tasks (and no hand-typed score) */
 const emptyTest = (tid, x) => x.s == null && !x.n.trim() && !testTasks(tid, x.id).length;
 const subHaystack = id => subsOf(id).map(x => x.n).join(" ");

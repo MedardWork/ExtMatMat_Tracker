@@ -210,7 +210,9 @@ to that test; shown in the calendar per day and topic, and wherever else it help
   (part A + B, "Ako sa darilo"), so a task names its note (`note`: id, plus `title`: its exact title, tried when the id is not in the app; an AI that lacks the ids makes up plausible ones, 2026-11-21) and that note **moves** under the test with its
   text (no duplicate); ✓ = first try without help, ½ = fixed later / after theory or a similar task, ✗ = after "ukáž postup".
   Levels may be names ("ide to"). The prompt tells the session not to return the whole tracker file (its rules otherwise do). `importText` routes such a paste to `zapisPreview` → "Pridať do postupu" → `zapisApply`
-  (adds, never replaces; undo restores the state before). Names are matched without case/accents (`zNorm`, `zFind`).
+  (adds, never replaces; undo restores the state before). Its `notes` (2026-11-27): an existing note is re-rated; one with `text`
+  the app lacks (exact title) becomes a new ordinary note; the id of a test's task takes it out of the test (`taskToNote`). On the
+  topic page a task has "Do poznámok" (`task-out`) and an open test "Zrušiť test, úlohy do poznámok" (`test-unwrap`), both with undo. Names are matched without case/accents (`zNorm`, `zFind`).
   `importText` refuses any other JSON with a `format` key, so nothing but a backup can replace the progress.
 - `testGrade`: from 90 / 70 / 40 % = colours tg4–tg1 (the level colours); `TEST_WEAK` = 0.7 (weak topic, hint, AI text).
 - A scored test counts as the plan's review (`opak:<topic>`) from that week on (`planStatus`). Tests don't feed the pace or the

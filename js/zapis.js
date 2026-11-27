@@ -6,11 +6,14 @@
      { format, date: "YYYY-MM-DD" (the session's day),
        topics: [ { topic: id or the app's name of the topic, level: 1–4 or its name (whole topic), subtopics: [{name, level}],
                    tests: [{date, name, from_note, tasks: [{res: "ok"|"part"|"bad", note | title, text, subtopic}]}],
-                   notes: [{note, level}] } ] }
+                   notes: [{note, title, level, text, subtopic, date}] } ] }
    The person's tutor sessions wrote one note per task (also for a mini test), so a task usually names its note
    (id or title): that note moves under the test with its text (n.test, n.res); a task without one becomes a new note.
    Rules: a level is set only if the app has no rating of that subtopic from a later day; a test already in the app
    (same topic, day and name) is skipped; from_note = one note that held the whole test, removed once the test is in.
+   notes: an existing note (id, else title) is rated again; one with "text" that the app does not have becomes a new
+   ordinary note (exact title match only, so pasting the zápis twice adds nothing twice); an id of a task of a test
+   takes that task out of its test (an ordinary note again).
    Notes are found by id, then by title; topics and subtopics by id or name; names match without case and accents.
    ============================================================ */
 const ZAPIS_FORMAT = "maturita-zapis-1";
@@ -144,11 +147,30 @@ function zapisPreview(list){
         ops.push({kind:"test", tid, d, name, tasks, from: from ? from.id : null});
         lines.push(`${tname}: test ${fmtD(d)}${name ? ` „${esc(name)}“` : ""} · <b>${numTxt(pts)}/${tasks.length}</b>${open ? ` (${open} bez známky)` : ""}${moved ? ` · ${moved} ${plural(moved, "poznámka sa presunie", "poznámky sa presunú", "poznámok sa presunie")} k testu ako úlohy` : ""}${from ? ` · poznámka „${esc(noteTitle(from))}“ sa zmaže` : ""}`);
       }
-      /* notes rated again */
-      const miss = [];
+      /* notes: rated again, new ones added, tasks taken out of their tests */
+      const miss = [], fresh = new Set();
       for(const r of Array.isArray(tp.notes) ? tp.notes : []){
         if(!isObj(r)) continue;
-        const ref = String(r.note || r.id || r.title || "").trim(), v = zLevel(r.level), n = zNote(tid, r.note || r.id, r.title);
+        const id = String(r.note || r.id || "").trim(), title = String(r.title || "").trim().slice(0, 200), body = String(r.text || r.body || "").trim();
+        const ref = id || title, v = zLevel(r.level);
+        const task = id ? findNote(tid, id) : null;
+        if(task && isTask(tid, task)){
+          if(used.has(task.id)) continue;
+          used.add(task.id);
+          ops.push({kind:"untask", tid, n:task.id, v});
+          lines.push(`${tname}: úloha „${esc(noteTitle(task))}“ sa vyberie z testu medzi poznámky${v && task.lv !== v ? ` (<b>${lvTxt(v)}</b>)` : ""}`);
+          continue;
+        }
+        const n = body ? (id ? zNote(tid, id, title) : null) || zSame(tid, title) : zNote(tid, id, title);
+        if(!n && body){
+          const key = zNorm(title || body.slice(0, 60));
+          if(fresh.has(key)) continue;
+          fresh.add(key);
+          const sub = r.subtopic ? (zFind(subsOf(tid), r.subtopic, y => [y.n]) || {}).k || "" : "";
+          ops.push({kind:"newnote", tid, title: zIdLike(title) ? "" : title, body, v, sub, day: zIso(r.date) || day});
+          lines.push(`${tname}: nová poznámka „${esc(title || plainText(body, 60))}“${v ? ` (<b>${lvTxt(v)}</b>)` : ""}`);
+          continue;
+        }
         if(!n){ if(ref) miss.push(ref); continue; }
         if(used.has(n.id) || !v || n.lv === v) continue;
         ops.push({kind:"note", tid, n:n.id, v});
@@ -163,7 +185,7 @@ function zapisPreview(list){
 /* adds what zapisPreview found; returns counts for the toast */
 function zapisApply(p){
   const now = Date.now();
-  let tests = 0, removed = 0;
+  let tests = 0, removed = 0, notes = 0;
   for(const o of p.ops){
     if(o.kind === "lv"){
       const noon = Math.min(new Date(o.day + "T12:00:00").getTime(), now);
@@ -185,9 +207,18 @@ function zapisApply(p){
       tests++;
     } else if(o.kind === "note"){
       updateNote(o.tid, o.n, {lv:o.v});
+    } else if(o.kind === "untask"){
+      taskToNote(o.tid, o.n);
+      if(o.v) updateNote(o.tid, o.n, {lv:o.v});
+      notes++;
+    } else if(o.kind === "newnote"){
+      const n = addNote(o.tid, o.sub);
+      const c = o.day ? Math.min(new Date(o.day + "T12:00:00").getTime(), now) : now;
+      Object.assign(n, {title:o.title, body:o.body, lv:o.v || 0, c, u:now});
+      notes++;
     }
   }
-  return {tests, removed};
+  return {tests, removed, notes};
 }
 
 /* the instructions for an old session's AI; withTopics adds the list of the app's topics with their ids.
@@ -203,7 +234,10 @@ function zapisPrompt(withTopics){
    Ak má úloha v trackeri poznámku (poznámky ku každej úlohe, ktoré si mi písal), daj do "note" jej id presne skopírované z JSON-u trackera a do "title" jej presný názov. Id nikdy nevymýšľaj: ak ho v JSON-e nevidíš, daj len "title". Tracker tú poznámku presunie k testu aj s celým textom, takže "text" k nej už nepíš. Úlohe bez poznámky daj "title" (krátko, napr. "B2: definičný obor") a "text" (zadanie, postup, výsledok, 💡).
    Ak je celý test zapísaný v jednej poznámke, daj jej id alebo presný názov do "from_note" testu; tracker ju po prenesení zmaže.
 2. Úroveň každej témy zo session, ako som ju vedel na konci session: "neviem", "slabo", "ide to" alebo "perfektne" (perfektne až po 2 rôznych úlohách bez pomoci). Podtémy len ak poznáš ich presné názvy z trackera.
-3. Ostatné poznámky z tejto session (tie, ktoré nie sú úlohou testu): "note" (id z JSON-u trackera, nikdy nie vymyslené), "title" (presný názov) a úroveň "neviem", "slabo", "ide to" alebo "perfektne" podľa toho, ako sa mi tá úloha darila.
+3. Ostatné poznámky z tejto session (tie, ktoré nie sú úlohou testu) idú do "notes" ako obyčajné poznámky témy, nie do testu:
+   - poznámka, ktorá už v trackeri je: "note" (id z JSON-u trackera, nikdy nie vymyslené), "title" (presný názov) a "level" ("neviem", "slabo", "ide to" alebo "perfektne") podľa toho, ako sa mi tá úloha darila,
+   - nová poznámka, ktorá v trackeri ešte nie je: bez "note", len "title", "text" (celý obsah poznámky) a "level"; tracker ju pridá ako novú poznámku témy (rovnaký názov sa druhýkrát nepridá),
+   - úloha, ktorá je v trackeri omylom v teste a má byť obyčajnou poznámkou: jej "note" (id) a "level"; tracker ju vyberie z testu.
 
 "date" je deň tejto session (RRRR-MM-DD): vezmi ho z času poznámok ("c" v ms) alebo sa ma opýtaj. "topic" je id témy z trackera (a5, a12…), inak presný názov témy zo zoznamu tém.
 
@@ -228,7 +262,10 @@ Odpovedz krátkym zhrnutím a potom jedným blokom kódu presne v tomto tvare (p
           ]
         }
       ],
-      "notes": [{"note": "id poznámky", "title": "jej presný názov", "level": "slabo"}]
+      "notes": [
+        {"note": "id poznámky", "title": "jej presný názov", "level": "slabo"},
+        {"title": "Diskriminant: kedy 2 korene", "text": "Obsah novej poznámky: vzorce, postup, 💡", "level": "ide to"}
+      ]
     }
   ]
 }

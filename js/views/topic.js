@@ -340,6 +340,7 @@ function noteEditorHtml(tid, n){
       : "Čo si zistil, kde robíš chyby, vzorce, vyriešený príklad…\n\nVzorec napíš medzi dolármi: $x^2 - 5x + 6 = 0$ — alebo klikni na ƒ Vzorec."})}
     <div class="note-edit-foot">
       <span class="saved" id="savedMark">Uložené</span>
+      ${task ? `<button class="btn ghost" data-act="task-out" data-n="${n.id}" title="Vybrať z testu a nechať ako obyčajnú poznámku témy">Do poznámok</button>` : ""}
       <button class="btn ghost" data-act="note-del" data-n="${n.id}">Zmazať${task ? " úlohu" : ""}</button>
       <button class="btn" data-act="note-done">Hotovo</button>
     </div>
