@@ -38,7 +38,7 @@ THEORY.b36 = {
      ["Ostatné tri miesta: ľubovoľná cifra.", R`10^3`],
      ["Spolu.", R`9 \cdot 10^3 = 9\,000`]
    ],
-   res:"9 000 čísel (od 1 000 po 9 999)."},
+   res:"9 000 čísel (od 1 000 po 9 999).", ans:[9000]},
   {tool:"strom", kind:"uloha", ask:R`Nastav $n$ a $k$ tak, aby bolo práve 8 variácií s opakovaním.`,
    hint:"8 = 2³: dva prvky, tri miesta.",
    goal:(P, st) => !!S(st) && S(st).N === 8,

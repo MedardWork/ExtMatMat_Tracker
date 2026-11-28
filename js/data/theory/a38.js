@@ -104,7 +104,7 @@ THEORY.a38 = {
      ["Trikrát líc.", R`LLL`],
      ["Spolu.", R`3 + 1 = 4`]
    ],
-   res:"4 výsledky z 8."},
+   res:"4 výsledky z 8.", ans:[4]},
   {warn:R`Pri vypisovaní sa ľahko stane, že $AB$ a $BA$ započítaš dvakrát, hoci ide o tú istú dvojicu. Najprv si ujasni, či na poradí záleží ([[a40]]).`}
 ]
 

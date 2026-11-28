@@ -54,7 +54,7 @@ THEORY.c16 = {
      ["The error is about proportional to h.", R`\frac{0{,}146}{0{,}5} \approx 0{,}29 \approx \frac{0{,}070}{0{,}25}`],
      ["For h = 0,1.", R`0{,}29 \cdot 0{,}1 \approx 0{,}03`]
    ],
-   res:R`About $0{,}03$, five times smaller than with $h = 0{,}5$.`},
+   res:R`About $0{,}03$, five times smaller than with $h = 0{,}5$.`, ans:[0.03]},
   {warn:R`A smaller step only helps if you still reach the same $x$: with $h = 0{,}1$ you need 20 steps to get from 0 to 2, not 4.`}
 ]
 

@@ -26,7 +26,7 @@ THEORY.c35 = {
      ["Differences grow.", R`0{,}8;\ 1{,}5;\ 1{,}8;\ 3{,}1;\ 4{,}1`],
      ["Ratios are almost constant.", R`1{,}38;\ 1{,}52;\ 1{,}41;\ 1{,}50;\ 1{,}44`]
    ],
-   res:"Exponential (factor about 1,45 per step)."},
+   res:"Exponential (factor about 1,45 per step).", ans:false},
   {tool:"regresia", ask:R`The data with a **linear** model. Look at the curve and $r^2$.`,
    take:R`$r^2 \approx 0{,}93$ looks fine, but the line misses systematically: above the points at the ends, below in the middle.`,
    cfg:{model:"lin", en:true, data:EXP, on:{rezidua:true}}},

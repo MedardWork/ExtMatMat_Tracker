@@ -357,6 +357,7 @@ js/state.js                        saved data (v4), migration, load/save, levels
 js/core.js                         UI state, routing (#/…), data-act click handling, toast
 js/ec.js                           scopes, points and hours per subtopic, does the plan fit, the AI text section
 js/theory.js                       theory blocks → HTML, loading theory files
+js/exercise.js                     worked examples as tasks: answer first, check numbers, marks ✓ ½ ✗ (state.ex)
 js/tools/core.js                   tool engine: expressions, sliders and locking, mounting, drawing helpers
 js/tools/<id>.js                   the tools themselves, one file each (the table in CLAUDE.md lists them)
 js/components/editor.js            note editor: toolbar, symbols, live preview, list keys

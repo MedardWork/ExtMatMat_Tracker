@@ -69,7 +69,7 @@ THEORY.b1 = {
      ["Logaritmus mocniny.", R`\log 2^{100} = 100 \cdot \log 2 \doteq 30{,}1`],
      [R`$10^{30} \leq 2^{100} < 10^{31}$.`, R`30 + 1 = 31`]
    ],
-   res:"Číslo $2^{100}$ má 31 cifier."},
+   res:"Číslo $2^{100}$ má 31 cifier.", ans:[31]},
   {tool:"graf", kind:"uloha", ask:R`Posuň bod $\vd{x_0}$ na grafe $y = \log x$ tam, kde je $\log x_0 = 2$.`,
    hint:R`$10^2$.`,
    goal:P => P.t === 100,

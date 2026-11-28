@@ -7,10 +7,10 @@ let thSpy = null;
 
 /* the switch between the four faces of a topic (cur = topicPane()), each with what it holds */
 function topicTabs(id, cur){
-  const past = ecTasksOf(id).length, tests = testsOf(id).length, notes = topicNotes(id).length;
+  const past = ecTasksOf(id).length, tests = testsOf(id).length, notes = topicNotes(id).length, exs = exDoneOf(id);
   const pr = [past ? `${past} ${skTasks(past)}` : "", tests ? `${tests} ${plural(tests, "test", "testy", "testov")}` : ""].filter(Boolean).join(", ");
   const a = (k, path, label, small) => `<a href="#/tema/${id}${path}"${cur === k ? ` aria-current="page"` : ""}>${label}${small ? ` <small>${small}</small>` : ""}</a>`;
-  return `<nav class="t-tabs" aria-label="Zobrazenie témy">${a("subs", "", "Podtémy")}${a("teoria", "/teoria", "Teória", hasTheory(id) ? "" : "pripravuje sa")}${a("precvic", "/precvic", "Precvičovanie", pr)}${a("poznamky", "/poznamky", "Poznámky", notes ? String(notes) : "")}</nav>`;
+  return `<nav class="t-tabs" aria-label="Zobrazenie témy">${a("subs", "", "Podtémy")}${a("teoria", "/teoria", "Teória", hasTheory(id) ? exs ? `${exs} ${plural(exs, "príklad", "príklady", "príkladov")} ✓` : "" : "pripravuje sa")}${a("precvic", "/precvic", "Precvičovanie", pr)}${a("poznamky", "/poznamky", "Poznámky", notes ? String(notes) : "")}</nav>`;
 }
 /* the tabs again after notes or tests changed (their counts) */
 function drawTTabs(){
@@ -57,6 +57,7 @@ function drawTheory(ok){
     `<a href="#/tema/${id}/teoria/${s.k}" data-act="th-jump" data-k="${s.k}"><i class="dot l${subLv(id, s.k)}"></i><span>${esc(s.n)}</span></a>`).join("");
   main.innerHTML = `
     <p class="th-meta">${secs.length} ${plural(secs.length, "podtéma", "podtémy", "podtém")} · ${tools} ${plural(tools, "interaktívna ukážka", "interaktívne ukážky", "interaktívnych ukážok")}${th.mins ? ` · asi ${th.mins} minút` : ""}</p>
+    <p class="th-meta th-exmeta" id="thExMeta"></p>
     ${th.brief ? `<details class="th-brief"><summary>V skratke (na zopakovanie)</summary><div class="md">${md(th.brief.map(l => "- " + l).join("\n"))}</div></details>` : ""}
     ${secs.map((s, i) => theorySectionHtml(id, s, i, secs.length)).join("")}`;
 
@@ -72,6 +73,7 @@ function drawTheory(ok){
     }, {rootMargin:"-25% 0px -60% 0px"});
     $$("#thMain .th-sec").forEach(s => thSpy.observe(s));
   }
+  exSecCounts();
   if(ui.route.sub) setTimeout(() => { const el = $(`#th-${ui.route.sub}`); if(el) el.scrollIntoView({block:"start"}); }, 0);
 }
 
@@ -81,6 +83,7 @@ function refreshTheory(){
   drawTNav(); drawTHead();
   $$("#thMain .th-seg").forEach(s => { s.innerHTML = subSeg(id, s.dataset.k, subName(id, s.dataset.k)); });
   $$("#thToc a").forEach(a => { $("i", a).className = `dot l${subLv(id, a.dataset.k)}`; });
+  exSyncAll();
 }
 
 action("th-jump", (el, e) => {

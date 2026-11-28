@@ -61,7 +61,7 @@ THEORY.a18 = {
      ["Hodnota funkcie: dosaď za $x$.", R`f(4) = 3 \cdot 4 - 2 = 10`],
      [R`Opačná otázka: polož predpis rovný 7 a vyrieš rovnicu.`, R`3x - 2 = 7 \;\Rightarrow\; x = 3`]
    ],
-   res:R`$f(4) = 10$ a $f(x) = 7$ pre $x = 3$.`},
+   res:R`$f(4) = 10$ a $f(x) = 7$ pre $x = 3$.`, ans:[10, 3], ord:true},
   {warn:R`Opačne to nevadí: dvom rôznym $x$ môže patriť to isté $y$. Pre $f(x) = x^2$ je $f(2) = f(-2) = 4$ a je to stále funkcia.`}
 ],
 

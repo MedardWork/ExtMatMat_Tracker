@@ -7,7 +7,9 @@
      {tool:"graf", kind:"skus"|"uloha"|"obr", ask:"…", take:"…", hint:"…", goal:"k == 2", cfg:{…}}
      {cards:[{fig, t:"title", d:"text", tex}]}      fig: {fns:["x^2"], view:[-3, 5, 3, -1]} draws a tiny graph
      {steps:[{t:"title", d:"text", tex}]}           a short procedure
-     {ex:"task", steps:[["what", R`tex`]], res:"result", fig:{tool, cfg}}     worked example
+     {ex:"task", steps:[["what", R`tex`]], res:"result", fig:{tool, cfg}}     worked example, answered before its
+                                                    solution shows (js/exercise.js); ans:[numbers] / ans:false override
+                                                    the numbers read from res (node dev/excheck.js lists them)
      {map:[["sentence", "what it is", R`tex`]], sum:["…", R`tex`]}            words → symbols
      {warn:"…"}  {tip:"…", label:"Súvislosť"}  {h:"Sub-heading"}
    In formulas \va{…} \vb{…} \vc{…} \vd{…} colour a quantity — the same four colours the tools use,
@@ -131,14 +133,24 @@ function theoryBlock(b, key){
       ${c.tex ? `<div class="th-card-f">${tex(c.tex, false)}</div>` : ""}
     </div>`).join("")}</div>`;
 
-  if(b.ex != null) return `<div class="th-ex">
+  if(b.ex != null){
+    /* a worked example as a task: the steps and the result stay hidden until answered (js/exercise.js) */
+    const k = exKey(key.split(":")[0], b);
+    exBlocks[k] = b;
+    const x = exOf(k), hints = x ? Infinity : (exUi[k] || {}).hints || 0;
+    return `<div class="th-ex${x ? "" : " ex-shut"}" data-ex="${esc(k)}">
     <div class="th-ex-h"><div class="th-label">Riešený príklad</div><div class="md">${md(b.ex)}</div></div>
     <div class="${b.fig ? "th-ex-two" : ""}">
-      <ol>${b.steps.map(s => `<li><span>${inline(s[0])}</span>${s[1] ? `<div class="th-ex-f">${tex("\\displaystyle " + s[1], false)}</div>` : ""}</li>`).join("")}</ol>
+      <div class="th-ex-sol">
+        <p class="ex-ph"${x || hints ? " hidden" : ""}>Riešenie je skryté. Skús to vypočítať a napíš odpoveď, potom sa ukáže postup aj výsledok.</p>
+        <ol class="th-ex-steps">${b.steps.map((s, i) => `<li${i >= hints ? " hidden" : ""}><span>${inline(s[0])}</span>${s[1] ? `<div class="th-ex-f">${tex("\\displaystyle " + s[1], false)}</div>` : ""}</li>`).join("")}</ol>
+      </div>
       ${b.fig ? `<div class="th-ex-fig">${toolFigure(Object.assign({kind:"obr"}, b.fig), key, "tw-bare")}</div>` : ""}
     </div>
-    <div class="th-ex-res"><div class="th-label">Výsledok</div><div class="md">${md(b.res)}</div></div>
+    <div class="th-ex-ans">${exFormHtml(k, b)}</div>
+    <div class="th-ex-res"${x ? "" : " hidden"}><div class="th-label">Výsledok</div><div class="md">${md(b.res)}</div></div>
   </div>`;
+  }
 
   if(b.steps) return `<ol class="th-steps">${b.steps.map(s => `<li><b>${inline(s.t)}</b>
       ${s.d ? `<span>${inline(s.d)}</span>` : ""}${s.tex ? `<div class="th-card-f">${tex("\\displaystyle " + s.tex, false)}</div>` : ""}</li>`).join("")}</ol>`;

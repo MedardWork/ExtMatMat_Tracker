@@ -16,6 +16,9 @@
                                                 s, m = a score typed by hand (only tests from the first version; null now:
                                                 the score comes from the tasks, see testScore)
                                                 (not state.plan.tests: those are the plan's past papers, scored /30)
+     ex:     { "topicId/hash": {r, a, h, n, u} }  worked examples of theory answered (js/exercise.js): r = "ok" | "part" |
+                                                "bad" | "" (solution open, not marked), a = the answer typed, h = solution steps
+                                                shown first, n = tries, u = when; a reset leaves the tombstone del["ex:" + key]
      upd:    { topicId: timestamp },            last change to levels or notes
      log:    [ {id, d:"YYYY-MM-DD", text, ts, u, links:[{t, n?}]} ]
                                                 study diary; links point at topics / notes
@@ -36,7 +39,7 @@ const STATE_V = 4;
 /* untouched copy of an older save, written once before upgrading it */
 const backupKey = v => `maturita-mat-v${v || 1}-backup`;
 
-const emptyState = () => ({v:STATE_V, slv:{}, slvAt:{}, subs:{}, rel:{}, notes:{}, tests:{}, upd:{}, log:[], del:{}, epoch:0, recent:[], prefs:{}, plan:{tests:{}, def:null, at:0, hist:[]}});
+const emptyState = () => ({v:STATE_V, slv:{}, slvAt:{}, subs:{}, rel:{}, notes:{}, tests:{}, ex:{}, upd:{}, log:[], del:{}, epoch:0, recent:[], prefs:{}, plan:{tests:{}, def:null, at:0, hist:[]}});
 const PLAN_HIST = 10;   /* earlier plans kept in state.plan.hist */
 let state = emptyState();
 let store = "none";
@@ -64,7 +67,7 @@ function migrate(old){
   const s = emptyState();
   let levels = {}, levelAt = {};
   if(old.v >= 2 && old.v <= STATE_V){
-    for(const k of ["slv","slvAt","subs","rel","notes","tests","upd","del","prefs","plan"]) if(isObj(old[k])) s[k] = old[k];
+    for(const k of ["slv","slvAt","subs","rel","notes","tests","ex","upd","del","prefs","plan"]) if(isObj(old[k])) s[k] = old[k];
     s.epoch = +old.epoch || 0;
     if(Array.isArray(old.log)) s.log = old.log;
     if(Array.isArray(old.recent)) s.recent = old.recent;
@@ -126,6 +129,12 @@ function tidy(s){
       s: num(x.s), m: num(x.m) || null, c: +x.c || Date.now(), u: +x.u || +x.c || Date.now()
     })) : [];
     if(list.length && BY_ID[id]) s.tests[id] = list; else delete s.tests[id];
+  }
+  for(const k in s.ex){
+    const x = s.ex[k];
+    if(isObj(x) && BY_ID[k.split("/")[0]] && +x.u) s.ex[k] = {r: TASK_RES.includes(x.r) ? x.r : "", a: String(x.a || "").slice(0, 400),
+      h: Math.max(0, +x.h || 0), n: Math.max(0, +x.n || 0), u: +x.u};
+    else delete s.ex[k];
   }
   for(const id in s.subs){
     const list = Array.isArray(s.subs[id]) ? s.subs[id].filter(x => isObj(x) && String(x.n || "").trim()).map(x => ({
@@ -335,6 +344,11 @@ function mergeStates(a, b){
     const tests = newest([...(xb[id] || []), ...(xa[id] || [])]).filter(alive);
     if(tests.length) out.tests[id] = tests;
   }
+  const ea = a.ex || {}, eb = b.ex || {};
+  for(const k of new Set([ea, eb].flatMap(Object.keys))){
+    const x = !eb[k] || (ea[k] && ea[k].u >= eb[k].u) ? ea[k] : eb[k];
+    if(!(out.del["ex:" + k] >= x.u)) out.ex[k] = x;
+  }
   for(const id of new Set([a.rel, b.rel].flatMap(Object.keys))){
     const ra = a.rel[id], rb = b.rel[id];
     out.rel[id] = !rb || (ra && ra.at >= rb.at) ? ra : rb;
@@ -365,7 +379,7 @@ function newest(list){
   return [...m.values()];
 }
 /* nothing rated, written or opened yet */
-const isEmptyState = () => !Object.keys(state.slv).length && !Object.keys(state.notes).length && !Object.keys(state.tests).length && !state.log.length;
+const isEmptyState = () => !Object.keys(state.slv).length && !Object.keys(state.notes).length && !Object.keys(state.tests).length && !Object.keys(state.ex).length && !state.log.length;
 const bury = id => { state.del[id] = Date.now(); };
 function newEpoch(){ state.epoch = Date.now(); }
 

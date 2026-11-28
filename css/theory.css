@@ -411,3 +411,39 @@
 .sv .ro-band{fill-opacity:.55}
 .tw-out span.ca{color:var(--va)}
 .sv .re-minor{stroke-opacity:.45}
+
+/* ---------- worked examples as tasks (js/exercise.js): answer first, then the solution ---------- */
+.th-ex [hidden]{display:none !important}
+.th-ex.ex-shut{border-style:dashed;border-color:color-mix(in srgb, var(--ink-soft) 45%, var(--rule))}
+.th-ex.ex-shut .th-ex-h .th-label::after{content:" · najprv to skús";text-transform:none;letter-spacing:0;font-weight:500;color:var(--ink-soft)}
+.ex-ph{margin:0;padding:16px 18px;color:var(--ink-soft);font:italic 14.5px/1.45 var(--sans);
+  background:repeating-linear-gradient(-45deg, transparent 0 9px, color-mix(in srgb, var(--rule) 55%, transparent) 9px 10px)}
+.th-ex-ans{padding:11px 18px 12px;border-top:1px solid var(--rule)}
+.ex-lab{display:block;font:600 11.5px/1.3 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px}
+.ex-lab small{text-transform:none;letter-spacing:0;font-weight:500}
+.ex-row{display:flex;gap:8px;flex-wrap:wrap}
+.ex-in{flex:1 1 220px;min-width:0;font:500 16px/1.3 var(--sans);padding:8px 10px;border:1.5px solid var(--rule);border-radius:8px;background:var(--paper);color:var(--ink)}
+.ex-in:focus{outline:none;border-color:var(--ink-soft);background:var(--panel)}
+.ex-help{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:baseline;margin-top:8px;font-size:13.5px}
+.ex-help small{color:var(--ink-soft)}
+.ex-msg{margin-top:8px;font:500 14px/1.4 var(--sans);color:var(--ink-soft)}
+.ex-msg.bad{color:var(--l1)}
+.ex-done{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+.ex-badge{flex:0 0 auto;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font:700 17px/1 var(--sans);
+  color:var(--on-level, #fff);background:var(--l0)}
+.ex-done.ex-ok .ex-badge{background:var(--l4)} .ex-done.ex-part .ex-badge{background:var(--l2)} .ex-done.ex-bad .ex-badge{background:var(--l1)}
+.ex-done.ex-open .ex-badge{background:none;border:1.5px dashed var(--ink-soft);color:var(--ink-soft)}
+.ex-what{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1 1 220px;font-size:14px}
+.ex-what span{color:var(--ink-soft)}
+.ex-what q{color:var(--ink);font-weight:600;quotes:"„" "“"}
+.ex-mks{display:inline-flex;border:1px solid var(--rule);border-radius:7px;overflow:hidden}
+.ex-mk{appearance:none;cursor:pointer;border:0;border-right:1px solid var(--rule);background:var(--panel);color:var(--ink-soft);font:600 14px/1 var(--sans);padding:7px 11px}
+.ex-mk:last-child{border-right:0}
+.ex-mk:hover{background:var(--paper);color:var(--ink)}
+.ex-mk.on{color:var(--on-level, #fff)} .ex-mk.ex-ok.on{background:var(--l4)} .ex-mk.ex-part.on{background:var(--l2)} .ex-mk.ex-bad.on{background:var(--l1)}
+.ex-done.ex-open .ex-mks{box-shadow:0 0 0 2px color-mix(in srgb, var(--l2) 45%, transparent)}
+.th-ex:not(.ex-shut) .th-ex-ans{background:color-mix(in srgb, var(--paper) 60%, var(--panel))}
+.th-exmeta:empty{display:none}
+.ex-sum b{font-weight:600;margin-left:6px} .ex-sum .ex-ok{color:var(--l4)} .ex-sum .ex-part{color:var(--l2)} .ex-sum .ex-bad{color:var(--l1)}
+.th-toc-ex{margin-left:auto;padding-left:6px;font:600 11px/1 var(--sans);color:var(--ink-soft);white-space:nowrap;font-variant-numeric:tabular-nums}
+.th-toc-ex.full{color:var(--l4)}

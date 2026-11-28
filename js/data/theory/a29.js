@@ -82,7 +82,7 @@ THEORY.a29 = {
      ["Najprv stenová uhlopriečka podstavy.", R`u_1 = \sqrt{9 + 16} = 5`],
      ["Potom pravouhlý trojuholník s výškou.", R`u = \sqrt{5^2 + 12^2} = 13`]
    ],
-   res:R`$13$, čo je aj $\sqrt{9 + 16 + 144}$.`},
+   res:R`$13$, čo je aj $\sqrt{9 + 16 + 144}$.`, ans:[13]},
   {ex:R`Aká je vzdialenosť bodov $A\,[1;\ 2]$ a $B\,[7;\ 10]$?`,
    steps:[
      ["Rozdiely súradníc.", R`\Delta x = 6,\quad \Delta y = 8`],

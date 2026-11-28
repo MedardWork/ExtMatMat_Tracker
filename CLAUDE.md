@@ -180,6 +180,24 @@ ask for a change and paste the answer back; so the format is made to be easy for
 - Check after touching the model: the compiled default must not change (compare `PLAN_SLOTS`/`PLAN_OVER` before and after
   in a browser), then paste a changed plan in Stav plánu and apply it.
 
+### Worked examples as tasks (2026-11-28)
+
+The person asked that the worked examples of theory (`{ex:…}` blocks, 676 of them) be answered first and remembered.
+js/exercise.js (header has the details): the steps and the result stay hidden; the reader types an answer. When `res` is a
+plain number or a few (`exExpect` reads them from the TeX; intervals, ±, sets of words, equations are left out), the answer is
+checked: decimal comma, fractions `26/3`, `2√3`, `π`, units and "x =" are fine, rounding to the decimals written passes,
+values in any order unless the result is a point. Otherwise "Ukázať riešenie" opens it and the reader marks it. Marks are the
+tests' ✓ / ½ / ✗ (✓ first try without help, ½ after a solution step shown or a later try, ✗ solution opened without a right
+answer), changeable afterwards; "Skúsiť znova" hides it again (undo in the toast).
+
+- `state.ex = {"<topic>/<hash of ex + res>": {r, a, h, n, u}}`, merged per key by `u`, reset = tombstone `del["ex:" + key]`.
+  Editing an example's task or result gives it a new key (it starts again). STATE_V stays 4.
+- Shown: "n z m riešených príkladov spravených" under the theory head, `done/all` per subtopic in the side list, "n príkladov ✓"
+  on the Teória tab.
+- A block can override the reading: `ans:[numbers]` (`ord:true` = in this order) or `ans:false`. `node dev/excheck.js`
+  (`LIST=1` checked ones with their numbers, `LIST=2` the rest) lists them; run it after writing examples and look at new
+  lines: numbers that repeat the task (`f(x) = 7 pre x = 3`) need an `ans`. In `res`, bold numbers win over the plain text.
+
 ### Topic tests (2026-11-21)
 
 The person asked for a short test per topic (written at the end of learning it): a score, a day, and the tasks as notes bound

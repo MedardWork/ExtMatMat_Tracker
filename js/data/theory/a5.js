@@ -61,7 +61,7 @@ THEORY.a5 = {
      [R`$\sqrt{97} \doteq 9{,}8$. Skús 2, 3, 5, 7: žiadne nedelí.`, R`97 \text{ je prvočíslo}`],
      [R`$\sqrt{221} \doteq 14{,}9$. Skús 2, 3, 5, 7, 11, 13.`, R`221 = 13 \cdot 17`]
    ],
-   res:"97 je prvočíslo, 221 je zložené."},
+   res:"97 je prvočíslo, 221 je zložené.", ans:false},
   {tool:"rozklad", kind:"uloha", ask:R`Nastav najmenšie prvočíslo väčšie než 100.`,
    hint:R`101: $\sqrt{101} \doteq 10$, skús 2, 3, 5, 7.`,
    goal:P => P.a === 101,
@@ -164,7 +164,7 @@ THEORY.a5 = {
      ["Strana dlaždice delí obe dĺžky.", R`D(360, 240) = 120`],
      ["Počet dlaždíc.", R`\frac{360}{120} \cdot \frac{240}{120} = 3 \cdot 2 = 6`]
    ],
-   res:"Dlaždice $120 \\times 120$ cm, treba ich 6."},
+   res:"Dlaždice $120 \\times 120$ cm, treba ich 6.", ans:false},
   {tool:"rozklad", kind:"uloha", ask:R`Linka A chodí každých 12 minút. Nastav interval linky B (v minútach, iný než 60), aby sa obe linky prvýkrát znova stretli po 60 minútach.`,
    hint:R`Potrebuješ $n(12, b) = 60$. V $b$ musí byť päťka.`,
    goal:P => P.b !== 60 && lcm(12, P.b) === 60,

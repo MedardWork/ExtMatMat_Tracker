@@ -99,7 +99,7 @@ THEORY.b8 = {
      [R`Koľko celých otočiek sa zmestí do $1110^\circ$?`, R`1110 : 360 = 3,\ \text{zvyšok } 30`],
      ["Odčítaj tri otočky.", R`1110^\circ - 3 \cdot 360^\circ = 30^\circ`]
    ],
-   res:R`$1110^\circ$ má základnú veľkosť $30^\circ$, takže napríklad $\sin 1110^\circ = \sin 30^\circ = \dfrac{1}{2}$.`},
+   res:R`$1110^\circ$ má základnú veľkosť $30^\circ$, takže napríklad $\sin 1110^\circ = \sin 30^\circ = \dfrac{1}{2}$.`, ans:[30]},
   {ex:R`Urči základnú veľkosť uhlov $-\dfrac{7\pi}{4}$ a $\dfrac{17\pi}{3}$.`,
    steps:[
      [R`Záporný uhol: pripočítaj $2\pi = \frac{8\pi}{4}$.`, R`-\frac{7\pi}{4} + \frac{8\pi}{4} = \frac{\pi}{4}`],
